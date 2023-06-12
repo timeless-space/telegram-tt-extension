@@ -8,13 +8,12 @@ import type { GlobalState } from '../../global/types';
 
 import { IS_TOUCH_ENV } from '../../util/windowEnvironment';
 import { pick } from '../../util/iteratees';
-import renderText from '../common/helpers/renderText';
 import useHistoryBack from '../../hooks/useHistoryBack';
 import useLang from '../../hooks/useLang';
 
 import InputText from '../ui/InputText';
 import Loading from '../ui/Loading';
-import TrackingMonkey from '../common/TrackingMonkey';
+import { fallbackLangPackInitial as langPack } from '../../util/fallbackLangPackInitial';
 
 type StateProps = Pick<GlobalState, 'authPhoneNumber' | 'authIsCodeViaApp' | 'authIsLoading' | 'authError'>;
 
@@ -22,7 +21,6 @@ const CODE_LENGTH = 5;
 
 const AuthCode: FC<StateProps> = ({
   authPhoneNumber,
-  authIsCodeViaApp,
   authIsLoading,
   authError,
 }) => {
@@ -35,10 +33,11 @@ const AuthCode: FC<StateProps> = ({
   const lang = useLang();
   // eslint-disable-next-line no-null/no-null
   const inputRef = useRef<HTMLInputElement>(null);
+  // eslint-disable-next-line no-null/no-null
+  const logoRef = useRef<HTMLDivElement>(null);
 
   const [code, setCode] = useState<string>('');
   const [isTracking, setIsTracking] = useState(false);
-  const [trackingDirection, setTrackingDirection] = useState(1);
 
   useEffect(() => {
     if (!IS_TOUCH_ENV) {
@@ -50,6 +49,14 @@ const AuthCode: FC<StateProps> = ({
     isActive: true,
     onBack: returnToAuthPhoneNumber,
   });
+
+  const onFocusInput = useCallback(() => {
+    logoRef.current?.scrollIntoView(
+      {
+        behavior: 'smooth',
+      },
+    );
+  }, []);
 
   const onCodeChange = useCallback((e: FormEvent<HTMLInputElement>) => {
     if (authError) {
@@ -71,12 +78,6 @@ const AuthCode: FC<StateProps> = ({
       setIsTracking(false);
     }
 
-    if (code && code.length > target.value.length) {
-      setTrackingDirection(-1);
-    } else {
-      setTrackingDirection(1);
-    }
-
     if (target.value.length === CODE_LENGTH) {
       setAuthCode({ code: target.value });
     }
@@ -89,12 +90,7 @@ const AuthCode: FC<StateProps> = ({
   return (
     <div id="auth-code-form" className="custom-scroll">
       <div className="auth-form">
-        <TrackingMonkey
-          code={code}
-          codeLength={CODE_LENGTH}
-          isTracking={isTracking}
-          trackingDirection={trackingDirection}
-        />
+        <div ref={logoRef} id="logo" />
         <h1>
           {authPhoneNumber}
           <div
@@ -108,13 +104,18 @@ const AuthCode: FC<StateProps> = ({
           </div>
         </h1>
         <p className="note">
-          {renderText(lang(authIsCodeViaApp ? 'SentAppCode' : 'Login.JustSentSms'), ['simple_markdown'])}
+          {langPack.SentAppCode1.value} <br /> {langPack.SentAppCode2.value}
         </p>
+        <div className="label">
+          {langPack.EnterCode.value}
+        </div>
         <InputText
           ref={inputRef}
+          className="custom-input"
           id="sign-in-code"
-          label={lang('Code')}
+          placeholder={lang('5 digit verification code')}
           onInput={onCodeChange}
+          onKeyPress={onFocusInput}
           value={code}
           error={authError && lang(authError)}
           autoComplete="off"

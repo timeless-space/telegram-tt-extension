@@ -7,9 +7,17 @@ export const fallbackLangPackInitial = {
     key: 'WrongNumber',
     value: 'Wrong number?',
   },
-  SentAppCode: {
+  SentAppCode1: {
     key: 'SentAppCode',
-    value: 'We\'ve sent the code to the **Telegram** app on your other device.',
+    value: 'We have sent you a message in ',
+  },
+  SentAppCode2: {
+    key: 'SentAppCode',
+    value: 'Telegram with the verfication code.',
+  },
+  EnterCode: {
+    key: 'EnterCode',
+    value: 'Enter verification code',
   },
   'Login.JustSentSms': {
     key: 'Login.JustSentSms',
@@ -23,9 +31,13 @@ export const fallbackLangPackInitial = {
     key: 'Login.EnterPasswordDescription',
     value: 'You have Two-Step Verification enabled, so your account is protected with an additional password.',
   },
-  StartText: {
+  StartText1: {
     key: 'StartText',
-    value: 'Please confirm your country code and enter your phone number.',
+    value: 'Please enter your phone number ',
+  },
+  StartText2: {
+    key: 'StartText',
+    value: 'associated with your telegram account.',
   },
   'Login.PhonePlaceholder': {
     key: 'Login.PhonePlaceholder',

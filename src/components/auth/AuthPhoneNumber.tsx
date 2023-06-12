@@ -25,9 +25,7 @@ import useLangString from '../../hooks/useLangString';
 import { getSuggestedLanguage } from './helpers/getSuggestedLanguage';
 
 import Button from '../ui/Button';
-import Checkbox from '../ui/Checkbox';
 import InputText from '../ui/InputText';
-import Loading from '../ui/Loading';
 import CountryCodeInput from './CountryCodeInput';
 
 type StateProps = Pick<GlobalState, (
@@ -49,9 +47,7 @@ const AuthPhoneNumber: FC<StateProps> = ({
   authState,
   authPhoneNumber,
   authIsLoading,
-  authIsLoadingQrCode,
   authError,
-  authRememberMe,
   authNearestCountry,
   phoneCodeList,
   language,
@@ -62,13 +58,14 @@ const AuthPhoneNumber: FC<StateProps> = ({
     loadNearestCountry,
     loadCountryList,
     clearAuthError,
-    goToAuthQrCode,
     setSettingOption,
   } = getActions();
 
   const lang = useLang();
   // eslint-disable-next-line no-null/no-null
   const inputRef = useRef<HTMLInputElement>(null);
+  // eslint-disable-next-line no-null/no-null
+  const formRef = useRef<HTMLFormElement>(null);
   const suggestedLanguage = getSuggestedLanguage();
 
   const continueText = useLangString(suggestedLanguage, 'ContinueOnThisLanguage', true);
@@ -86,6 +83,10 @@ const AuthPhoneNumber: FC<StateProps> = ({
       inputRef.current!.focus();
     }
   }, [country]);
+
+  useEffect(() => {
+    setAuthRememberMe(true);
+  }, []);
 
   useEffect(() => {
     if (connectionState === 'connectionStateReady' && !authNearestCountry) {
@@ -188,10 +189,6 @@ const AuthPhoneNumber: FC<StateProps> = ({
     parseFullNumber(shouldFixSafariAutoComplete ? `${country!.countryCode} ${value}` : value);
   }, [authError, clearAuthError, country, fullNumber, parseFullNumber]);
 
-  const handleKeepSessionChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setAuthRememberMe(e.target.checked);
-  }, [setAuthRememberMe]);
-
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -204,19 +201,17 @@ const AuthPhoneNumber: FC<StateProps> = ({
     }
   }
 
-  const handleGoToAuthQrCode = useCallback(() => {
-    goToAuthQrCode();
-  }, [goToAuthQrCode]);
-
   const isAuthReady = authState === 'authorizationStateWaitPhoneNumber';
+
+  const handlePhoneNumberBlur = useCallback(() => setIsTouched(false), []);
 
   return (
     <div id="auth-phone-number-form" className="custom-scroll">
       <div className="auth-form">
         <div id="logo" />
-        <h1>Telegram</h1>
-        <p className="note">{lang('StartText')}</p>
-        <form className="form" action="" onSubmit={handleSubmit}>
+        <h1>Sign in to Telegram</h1>
+        <p className="note">{lang('StartText1')}<br />{lang('StartText2')}</p>
+        <form ref={formRef} className="form" action="" onSubmit={handleSubmit}>
           <CountryCodeInput
             id="sign-in-phone-code"
             value={country}
@@ -231,26 +226,23 @@ const AuthPhoneNumber: FC<StateProps> = ({
             error={authError && lang(authError)}
             inputMode="tel"
             onChange={handlePhoneNumberChange}
+            onBlur={handlePhoneNumberBlur}
             onPaste={IS_SAFARI ? handlePaste : undefined}
           />
-          <Checkbox
-            id="sign-in-keep-session"
-            label="Keep me signed in"
-            checked={Boolean(authRememberMe)}
-            onChange={handleKeepSessionChange}
-          />
-          {canSubmit && (
-            isAuthReady ? (
-              <Button type="submit" ripple isLoading={authIsLoading}>{lang('Login.Next')}</Button>
-            ) : (
-              <Loading />
-            )
-          )}
-          {isAuthReady && (
+
+          <Button
+            className={`capitalize-text ${canSubmit && isAuthReady ? 'btn-enable' : 'btn-disable'}`}
+            type="submit"
+            disabled={!canSubmit || !isAuthReady}
+            ripple={(canSubmit && isAuthReady) || '' || undefined}
+            isLoading={authIsLoading}
+          >{lang('Login.Next')}
+          </Button>
+          {/* {isAuthReady && false && (
             <Button isText ripple isLoading={authIsLoadingQrCode} onClick={handleGoToAuthQrCode}>
               {lang('Login.QR.Login')}
             </Button>
-          )}
+          )} */}
           {suggestedLanguage && suggestedLanguage !== language && continueText && (
             <Button isText isLoading={isLoading} onClick={handleLangChange}>{continueText}</Button>
           )}
