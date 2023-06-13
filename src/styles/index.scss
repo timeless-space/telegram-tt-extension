@@ -41,8 +41,10 @@ noscript {
   display: grid;
   align-content: center;
   justify-items: center;
+
   .nojs-video {
     pointer-events: none;
+
     &::-webkit-media-controls {
       display: none;
     }
@@ -300,5 +302,14 @@ body:not(.is-ios) {
   to {
     transform: scale(0.5);
     opacity: 0;
+  }
+}
+
+
+@media (max-width: 600px) {
+  .tl-custom-padding {
+    /* stylelint-disable-next-line plugin/no-low-performance-animation-properties */
+    transition-property: padding-top !important;
+    transition-duration: 0.5s !important;
   }
 }
