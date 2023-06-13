@@ -196,7 +196,9 @@ const App: FC<StateProps> = ({
   }
 
   useLayoutEffect(() => {
+    const { signOut } = getActions();
     document.body.classList.add(styles.bg);
+    (window as any).signOutGlobal = signOut;
   }, []);
 
   useLayoutEffect(() => {
