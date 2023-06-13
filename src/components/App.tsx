@@ -30,6 +30,7 @@ import UiLoader from './common/UiLoader';
 
 import styles from './App.module.scss';
 import { setupBeforeInstallPrompt } from '../util/installPrompt';
+import { mobileSubscribe, mobileUnsubscribe } from '../util/notifications';
 
 type StateProps = {
   authState: GlobalState['authState'];
@@ -197,6 +198,8 @@ const App: FC<StateProps> = ({
 
   useLayoutEffect(() => {
     document.body.classList.add(styles.bg);
+    (window as any).mobileSubscribeGlobal = mobileSubscribe;
+    (window as any).mobileUnsubscribeGlobal = mobileUnsubscribe;
   }, []);
 
   useLayoutEffect(() => {

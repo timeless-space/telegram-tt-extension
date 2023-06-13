@@ -227,7 +227,16 @@ let isSubscriptionFailed = false;
 export function checkIfOfflinePushFailed() {
   return isSubscriptionFailed;
 }
-
+export async function mobileSubscribe(
+  { token, tokenType, appSanbox }: { token: string; tokenType: number; appSanbox: boolean },
+) {
+  const result = await callApi('registerMobileDevice', token, tokenType, appSanbox);
+  return result;
+}
+export async function mobileUnsubscribe({ token, tokenType }: { token: string; tokenType: number }) {
+  const result = await callApi('unregisterMobileDevice', token, tokenType);
+  return result;
+}
 export async function subscribe() {
   const { setDeviceToken, updateWebNotificationSettings } = getActions();
   let hasWebNotifications = false;
