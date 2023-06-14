@@ -494,6 +494,7 @@ function LeftColumn({
       shouldWrap
       wrapExceptionKey={ContentType.Main}
       id="LeftColumn"
+      className="tl-custom-padding"
     >
       {renderContent}
     </Transition>
