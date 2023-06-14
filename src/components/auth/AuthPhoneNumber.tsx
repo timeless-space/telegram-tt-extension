@@ -26,7 +26,6 @@ import { getSuggestedLanguage } from './helpers/getSuggestedLanguage';
 
 import Button from '../ui/Button';
 import InputText from '../ui/InputText';
-import CountryCodeInput from './CountryCodeInput';
 
 type StateProps = Pick<GlobalState, (
   'connectionState' | 'authState' |
@@ -66,6 +65,8 @@ const AuthPhoneNumber: FC<StateProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   // eslint-disable-next-line no-null/no-null
   const formRef = useRef<HTMLFormElement>(null);
+  // eslint-disable-next-line no-null/no-null
+  const btnRef = useRef<HTMLAnchorElement | HTMLButtonElement>(null);
   const suggestedLanguage = getSuggestedLanguage();
 
   const continueText = useLangString(suggestedLanguage, 'ContinueOnThisLanguage', true);
@@ -156,11 +157,6 @@ const AuthPhoneNumber: FC<StateProps> = ({
     });
   }, []);
 
-  const handleCountryChange = useCallback((value: ApiCountryCode) => {
-    setCountry(value);
-    setPhoneNumber('');
-  }, []);
-
   const handlePhoneNumberChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     if (authError) {
       clearAuthError();
@@ -206,48 +202,42 @@ const AuthPhoneNumber: FC<StateProps> = ({
   const handlePhoneNumberBlur = useCallback(() => setIsTouched(false), []);
 
   return (
-    <div id="auth-phone-number-form" className="custom-scroll">
-      <div className="auth-form">
-        <div id="logo" />
-        <h1>Sign in to Telegram</h1>
-        <p className="note">{lang('StartText1')}<br />{lang('StartText2')}</p>
-        <form ref={formRef} className="form" action="" onSubmit={handleSubmit}>
-          <CountryCodeInput
-            id="sign-in-phone-code"
-            value={country}
-            isLoading={!authNearestCountry && !country}
-            onChange={handleCountryChange}
-          />
-          <InputText
-            ref={inputRef}
-            id="sign-in-phone-number"
-            label={lang('Login.PhonePlaceholder')}
-            value={fullNumber}
-            error={authError && lang(authError)}
-            inputMode="tel"
-            onChange={handlePhoneNumberChange}
-            onBlur={handlePhoneNumberBlur}
-            onPaste={IS_SAFARI ? handlePaste : undefined}
-          />
+    <div className="auth-form">
+      <div id="logo" />
+      <h1>Sign in to Telegram</h1>
+      <p className="note">{lang('StartText1')}<br />{lang('StartText2')}</p>
+      <form ref={formRef} className="form" action="" onSubmit={handleSubmit}>
+        {/* <CountryCodeInput
+          id="sign-in-phone-code"
+          value={country}
+          isLoading={!authNearestCountry && !country}
+          onChange={handleCountryChange}
+        /> */}
+        <InputText
+          ref={inputRef}
+          id="sign-in-phone-number"
+          label={lang('Login.PhonePlaceholder')}
+          value={fullNumber}
+          error={authError && lang(authError)}
+          inputMode="tel"
+          onChange={handlePhoneNumberChange}
+          onBlur={handlePhoneNumberBlur}
+          onPaste={IS_SAFARI ? handlePaste : undefined}
+        />
 
-          <Button
-            className={`capitalize-text ${canSubmit && isAuthReady ? 'btn-enable' : 'btn-disable'}`}
-            type="submit"
-            disabled={!canSubmit || !isAuthReady}
-            ripple={(canSubmit && isAuthReady) || '' || undefined}
-            isLoading={authIsLoading}
-          >{lang('Login.Next')}
-          </Button>
-          {/* {isAuthReady && false && (
-            <Button isText ripple isLoading={authIsLoadingQrCode} onClick={handleGoToAuthQrCode}>
-              {lang('Login.QR.Login')}
-            </Button>
-          )} */}
-          {suggestedLanguage && suggestedLanguage !== language && continueText && (
-            <Button isText isLoading={isLoading} onClick={handleLangChange}>{continueText}</Button>
-          )}
-        </form>
-      </div>
+        <Button
+          ref={btnRef}
+          className={`capitalize-text ${canSubmit && isAuthReady ? 'btn-enable' : 'btn-disable'}`}
+          type="submit"
+          disabled={!canSubmit || !isAuthReady}
+          ripple={(canSubmit && isAuthReady) || '' || undefined}
+          isLoading={authIsLoading}
+        >{lang('Login.Next')}
+        </Button>
+        {suggestedLanguage && suggestedLanguage !== language && continueText && (
+          <Button isText isLoading={isLoading} onClick={handleLangChange}>{continueText}</Button>
+        )}
+      </form>
     </div>
   );
 };
