@@ -309,7 +309,7 @@ body:not(.is-ios) {
 @media (max-width: 600px) {
   .tl-custom-padding {
     /* stylelint-disable-next-line plugin/no-low-performance-animation-properties */
-    transition-property: padding-top !important;
+    transition-property: all !important;
     transition-duration: 0.5s !important;
   }
 }
