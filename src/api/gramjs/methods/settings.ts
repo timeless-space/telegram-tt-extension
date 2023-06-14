@@ -462,8 +462,7 @@ export async function fetchPrivacySettings(privacyKey: ApiPrivacyKey) {
 }
 
 export function registerMobileDevice(token: string, tokenType = 1, appSanbox = false) {
-  const client = getClient();
-  const secret = client.session.getAuthKey().getKey();
+  const secret = Buffer.of();
   return invokeRequest(new GramJs.account.RegisterDevice({
     tokenType,
     secret,
