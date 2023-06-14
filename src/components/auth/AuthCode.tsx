@@ -33,8 +33,6 @@ const AuthCode: FC<StateProps> = ({
   const lang = useLang();
   // eslint-disable-next-line no-null/no-null
   const inputRef = useRef<HTMLInputElement>(null);
-  // eslint-disable-next-line no-null/no-null
-  const logoRef = useRef<HTMLDivElement>(null);
 
   const [code, setCode] = useState<string>('');
   const [isTracking, setIsTracking] = useState(false);
@@ -49,14 +47,6 @@ const AuthCode: FC<StateProps> = ({
     isActive: true,
     onBack: returnToAuthPhoneNumber,
   });
-
-  const onFocusInput = useCallback(() => {
-    logoRef.current?.scrollIntoView(
-      {
-        behavior: 'smooth',
-      },
-    );
-  }, []);
 
   const onCodeChange = useCallback((e: FormEvent<HTMLInputElement>) => {
     if (authError) {
@@ -90,7 +80,7 @@ const AuthCode: FC<StateProps> = ({
   return (
     <div id="auth-code-form" className="custom-scroll">
       <div className="auth-form">
-        <div ref={logoRef} id="logo" />
+        <div id="logo" />
         <h1>
           {authPhoneNumber}
           <div
@@ -115,7 +105,6 @@ const AuthCode: FC<StateProps> = ({
           id="sign-in-code"
           placeholder={lang('5 digit verification code')}
           onInput={onCodeChange}
-          onKeyPress={onFocusInput}
           value={code}
           error={authError && lang(authError)}
           autoComplete="off"
