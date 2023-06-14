@@ -214,7 +214,7 @@ body:not(.is-ios) {
   }
 
   &.not-shown {
-    display: none;
+    display: none !important;
   }
 
   &.slow {
