@@ -1,5 +1,5 @@
 .NewChatButton {
-  position: absolute;
+  position: fixed;
   right: 1rem;
   bottom: 1rem;
   transform: translateY(5rem);
@@ -32,7 +32,8 @@
     }
   }
 
-  > .Button {
+  >.Button {
+
     .icon-new-chat-filled,
     .icon-close {
       position: absolute;

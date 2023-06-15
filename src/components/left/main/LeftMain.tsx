@@ -153,6 +153,19 @@ const LeftMain: FC<OwnProps> = ({
 
   const lang = useLang();
 
+  useEffect(() => {
+    const child: any = document.getElementsByClassName('tl-id-custom-scroll-contact')[0];
+    const parent: any = document.getElementById('LeftColumn-main');
+
+    parent.addEventListener('scroll', () => {
+      if (parent.scrollHeight - parent.scrollTop === parent.clientHeight) {
+        child.style.overflow = 'auto';
+      } else {
+        child.style.overflow = 'hidden';
+      }
+    });
+  }, []);
+
   return (
     <div
       id="LeftColumn-main"

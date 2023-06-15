@@ -72,6 +72,7 @@
   }
 
   &.no-transition {
+
     &,
     &::before,
     &::after {
@@ -166,8 +167,13 @@
   }
 }
 
+.tl-id-custom-scroll-contact {
+  overflow: hidden;
+}
+
 // Used by Avatar and ProfilePhoto components
-.Avatar, .ProfilePhoto {
+.Avatar,
+.ProfilePhoto {
   &.color-bg-1 {
     --color-user: var(--color-user-1);
   }
