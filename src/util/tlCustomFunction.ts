@@ -1,7 +1,6 @@
 export function changePaddingTopMobile(padding = '0px') {
-  const elList: any = document.getElementsByClassName('tl-custom-padding');
-  for (const el of elList) {
-    el.style.paddingTop = padding;
-  }
+  const element: any = document.getElementById('LeftColumn');
+  element.style.top = padding;
+  element.style.height = `calc(100vh - ${padding})`;
   return true;
 }

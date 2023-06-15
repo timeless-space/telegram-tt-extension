@@ -304,12 +304,3 @@ body:not(.is-ios) {
     opacity: 0;
   }
 }
-
-
-@media (max-width: 600px) {
-  .tl-custom-padding {
-    /* stylelint-disable-next-line plugin/no-low-performance-animation-properties */
-    transition-property: all !important;
-    transition-duration: 0.5s !important;
-  }
-}
