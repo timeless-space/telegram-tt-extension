@@ -189,8 +189,8 @@ export const INITIAL_GLOBAL_STATE: GlobalState = {
 
   settings: {
     byKey: {
-      theme: 'light',
-      shouldUseSystemTheme: true,
+      theme: 'dark',
+      shouldUseSystemTheme: false,
       messageTextSize: IS_IOS
         ? IOS_DEFAULT_MESSAGE_TEXT_SIZE_PX
         : (IS_MAC_OS ? MACOS_DEFAULT_MESSAGE_TEXT_SIZE_PX : DEFAULT_MESSAGE_TEXT_SIZE_PX),
