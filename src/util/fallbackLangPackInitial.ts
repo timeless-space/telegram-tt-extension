@@ -15,6 +15,10 @@ export const fallbackLangPackInitial = {
     key: 'SentAppCode',
     value: 'Telegram with the verfication code.',
   },
+  VerifyAppCode: {
+    key: 'VerifyAppCode',
+    value: '5 digits verification code',
+  },
   EnterCode: {
     key: 'EnterCode',
     value: 'Enter verification code',
