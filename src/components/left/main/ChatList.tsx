@@ -190,7 +190,10 @@ const ChatList: FC<OwnProps> = ({
 
   return (
     <InfiniteScroll
-      className={buildClassName('chat-list custom-scroll', isForumPanelOpen && 'forum-panel-open')}
+      className={buildClassName(
+        'chat-list custom-scroll tl-custom-class-triger-scroll',
+        isForumPanelOpen && 'forum-panel-open',
+      )}
       ref={containerRef}
       items={viewportIds}
       itemSelector=".ListItem:not(.chat-item-archive)"

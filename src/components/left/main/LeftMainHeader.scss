@@ -1,5 +1,11 @@
 @import "../../../styles/mixins";
 
+.LeftMainHeader {
+  /* stylelint-disable-next-line plugin/no-low-performance-animation-properties */
+  transition: 0.3s height ease;
+  height: 56px;
+}
+
 #LeftMainHeader {
   position: relative;
 
@@ -14,11 +20,9 @@
     z-index: 2;
 
     &.right-aligned {
-      transform: translateX(calc(clamp(
-        var(--left-column-min-width),
-        var(--left-column-width),
-        var(--left-column-max-width)
-      ) - 4.375rem));
+      transform: translateX(calc(clamp(var(--left-column-min-width),
+              var(--left-column-width),
+              var(--left-column-max-width)) - 4.375rem));
     }
 
     &.disable-transition {

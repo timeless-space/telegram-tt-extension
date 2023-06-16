@@ -151,6 +151,17 @@ const LeftMain: FC<OwnProps> = ({
     };
   }, [content]);
 
+  useEffect(() => {
+    const chatScrollRef: any = document.getElementsByClassName('tl-custom-class-triger-scroll')[0];
+    chatScrollRef.addEventListener('scroll', () => {
+      if (chatScrollRef.scrollTop === 0) {
+        (document.getElementsByClassName('LeftMainHeader')[0] as any).style.height = '56px';
+      } else {
+        (document.getElementsByClassName('LeftMainHeader')[0] as any).style.height = '0px';
+      }
+    });
+  }, []);
+
   const lang = useLang();
 
   return (
