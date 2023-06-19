@@ -12,7 +12,6 @@ import useHistoryBack from '../../hooks/useHistoryBack';
 import useLang from '../../hooks/useLang';
 
 import InputText from '../ui/InputText';
-import Loading from '../ui/Loading';
 import { fallbackLangPackInitial as langPack } from '../../util/fallbackLangPackInitial';
 
 type StateProps = Pick<GlobalState, 'authPhoneNumber' | 'authIsCodeViaApp' | 'authIsLoading' | 'authError'>;
@@ -33,14 +32,47 @@ const AuthCode: FC<StateProps> = ({
   const lang = useLang();
   // eslint-disable-next-line no-null/no-null
   const inputRef = useRef<HTMLInputElement>(null);
+  // eslint-disable-next-line no-null/no-null
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const [code, setCode] = useState<string>('');
   const [isTracking, setIsTracking] = useState(false);
+  const currentViewportHeight = useRef<number>(Number(window.visualViewport!.height));
+  const isFocused = useRef<boolean>(false);
 
   useEffect(() => {
     if (!IS_TOUCH_ENV) {
       inputRef.current!.focus();
     }
+
+    inputRef.current!.addEventListener('touchstart', (event) => {
+      if (!isFocused.current) {
+        event.stopPropagation();
+        inputRef.current!.style.transform = 'TranslateY(-10000px)';
+        inputRef.current!.style.caretColor = 'transparent';
+        inputRef.current!.focus();
+        setTimeout(() => {
+          inputRef.current!.style.transform = 'none';
+          const scrollPixel = containerRef.current!.clientHeight
+            - currentViewportHeight.current + (window.numberKeyboardHeight ?? 0);
+
+          if (scrollPixel > 0) {
+            containerRef.current!.style.transform = `translateY(${-scrollPixel}px)`;
+            containerRef.current!.style.transition = 'transform 0.2s linear';  
+          }
+          setTimeout(() => {
+            inputRef.current!.style.caretColor = '#8774E1';
+          }, 150);
+        }, 100);
+        isFocused.current = true;
+      }
+    });
+
+    inputRef.current!.addEventListener('blur', (_) => {
+      isFocused.current = false;
+      containerRef.current!.style.transform = 'translateY(0)';
+      containerRef.current!.style.transition = 'transform 0.2s linear';
+    });
   }, []);
 
   useHistoryBack({
@@ -78,10 +110,10 @@ const AuthCode: FC<StateProps> = ({
   }
 
   return (
-    <div id="auth-code-form" className="custom-scroll">
-      <div className="auth-form">
+    <div className="custom-wrapper">
+      <div ref={containerRef} className="auth-form">
         <div id="logo" />
-        <h1>
+        <h1 className="flex center">
           {authPhoneNumber}
           <div
             className="auth-number-edit div-button"
@@ -101,7 +133,7 @@ const AuthCode: FC<StateProps> = ({
         </div>
         <InputText
           ref={inputRef}
-          className="custom-input"
+          className="custom-input noMarginBottom"
           id="sign-in-code"
           placeholder={lang('5 digit verification code')}
           onInput={onCodeChange}
@@ -109,8 +141,9 @@ const AuthCode: FC<StateProps> = ({
           error={authError && lang(authError)}
           autoComplete="off"
           inputMode="numeric"
+          onLoading={authIsLoading}
+          loadingSize="medium"
         />
-        {authIsLoading && <Loading />}
       </div>
     </div>
   );
