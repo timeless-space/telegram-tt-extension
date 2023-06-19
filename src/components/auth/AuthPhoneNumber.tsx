@@ -1,8 +1,6 @@
 import type { ChangeEvent } from 'react';
 import { requestMeasure } from '../../lib/fasterdom/fasterdom';
 
-import monkeyPath from '../../assets/monkey.svg';
-
 import type { FC } from '../../lib/teact/teact';
 import React, {
   memo, useCallback, useEffect, useLayoutEffect, useRef, useState,
@@ -14,7 +12,6 @@ import type { LangCode } from '../../types';
 import type { ApiCountryCode } from '../../api/types';
 
 import { IS_SAFARI, IS_TOUCH_ENV } from '../../util/windowEnvironment';
-import { preloadImage } from '../../util/files';
 import preloadFonts from '../../util/fonts';
 import { pick } from '../../util/iteratees';
 import { formatPhoneNumber, getCountryCodesByIso, getCountryFromPhoneNumber } from '../../util/phoneNumber';
@@ -64,12 +61,10 @@ const AuthPhoneNumber: FC<StateProps> = ({
   // eslint-disable-next-line no-null/no-null
   const inputRef = useRef<HTMLInputElement>(null);
   // eslint-disable-next-line no-null/no-null
-  const formRef = useRef<HTMLFormElement>(null);
-  // eslint-disable-next-line no-null/no-null
-  const btnRef = useRef<HTMLAnchorElement | HTMLButtonElement>(null);
-  // eslint-disable-next-line no-null/no-null
   const containerRef = useRef<HTMLDivElement>(null);
   const suggestedLanguage = getSuggestedLanguage();
+  const currentViewportHeight = useRef<number>(Number(window.visualViewport!.height));
+  const isFocused = useRef<boolean>(false);
 
   const continueText = useLangString(suggestedLanguage, 'ContinueOnThisLanguage', true);
   const [country, setCountry] = useState<ApiCountryCode | undefined>();
@@ -91,21 +86,30 @@ const AuthPhoneNumber: FC<StateProps> = ({
     setAuthRememberMe(true);
 
     inputRef.current!.addEventListener('touchstart', (event) => {
-      event.stopPropagation();
-      inputRef.current!.style.transform = 'TranslateY(-10000px)';
-      inputRef.current!.style.caretColor = 'transparent';
-      inputRef.current!.focus();
-      setTimeout(() => {
-        inputRef.current!.style.transform = 'none';
-        containerRef.current!.style.transform = 'translateY(-130px)';
-        containerRef.current!.style.transition = 'all 0.2s linear';
+      if (!isFocused.current) {
+        event.stopPropagation();
+        inputRef.current!.style.transform = 'TranslateY(-10000px)';
+        inputRef.current!.style.caretColor = 'transparent';
+        inputRef.current!.focus();
         setTimeout(() => {
-          inputRef.current!.style.caretColor = '#8774E1';
-        }, 150);
-      }, 100);
+          inputRef.current!.style.transform = 'none';
+          const scrollPixel = containerRef.current!.clientHeight
+            - currentViewportHeight.current + (window.numberKeyboardHeight ?? 0);
+
+          if (scrollPixel > 0) {
+            containerRef.current!.style.transform = `translateY(${-scrollPixel}px)`;
+            containerRef.current!.style.transition = 'transform 0.2s linear';
+          }
+          setTimeout(() => {
+            inputRef.current!.style.caretColor = '#8774E1';
+          }, 150);
+        }, 100);
+        isFocused.current = true;
+      }
     });
 
     inputRef.current!.addEventListener('blur', (_) => {
+      isFocused.current = false;
       containerRef.current!.style.transform = 'translateY(0)';
       containerRef.current!.style.transition = 'transform 0.2s linear';
     });
@@ -188,7 +192,6 @@ const AuthPhoneNumber: FC<StateProps> = ({
     if (!isPreloadInitiated) {
       isPreloadInitiated = true;
       preloadFonts();
-      void preloadImage(monkeyPath);
     }
 
     const { value, selectionStart, selectionEnd } = e.target;
@@ -231,7 +234,7 @@ const AuthPhoneNumber: FC<StateProps> = ({
         <div id="logo" />
         <h1>Sign in to Telegram</h1>
         <p className="note">{lang('StartText1')}<br />{lang('StartText2')}</p>
-        <form ref={formRef} className="form" action="" onSubmit={handleSubmit}>
+        <form className="form" action="" onSubmit={handleSubmit}>
           <InputText
             ref={inputRef}
             className="relative"
@@ -248,7 +251,6 @@ const AuthPhoneNumber: FC<StateProps> = ({
           />
 
           <Button
-            ref={btnRef}
             className={`capitalize-text ${canSubmit && isAuthReady ? 'btn-enable' : 'btn-disable'}`}
             type="submit"
             disabled={!canSubmit || !isAuthReady}
