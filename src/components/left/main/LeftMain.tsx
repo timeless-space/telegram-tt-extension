@@ -159,7 +159,7 @@ const LeftMain: FC<OwnProps> = ({
       onMouseEnter={!IS_TOUCH_ENV ? handleMouseEnter : undefined}
       onMouseLeave={!IS_TOUCH_ENV ? handleMouseLeave : undefined}
     >
-      <LeftMainHeader
+      {/* <LeftMainHeader
         shouldHideSearch={isForumPanelVisible}
         content={content}
         contactsFilter={contactsFilter}
@@ -170,7 +170,7 @@ const LeftMain: FC<OwnProps> = ({
         onReset={onReset}
         shouldSkipTransition={shouldSkipTransition}
         isClosingSearch={isClosingSearch}
-      />
+      /> */}
       <Transition
         name={shouldSkipTransition ? 'none' : 'zoomFade'}
         renderCount={TRANSITION_RENDER_COUNT}
