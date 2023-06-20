@@ -45,12 +45,10 @@ const AuthCode: FC<StateProps> = ({
       inputRef.current!.focus();
     }
 
-    inputRef.current!.addEventListener('focusin', (event) => {
+    inputRef.current!.addEventListener('focusin', (_) => {
       if (!isFocused.current) {
-        // event.stopPropagation();
         inputRef.current!.style.transform = 'TranslateY(-10000px)';
         inputRef.current!.style.caretColor = 'transparent';
-        // inputRef.current!.focus();
         setTimeout(() => {
           inputRef.current!.style.transform = 'none';
           const scrollPixel = containerRef.current!.clientHeight

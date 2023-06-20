@@ -85,12 +85,10 @@ const AuthPhoneNumber: FC<StateProps> = ({
   useEffect(() => {
     setAuthRememberMe(true);
 
-    inputRef.current!.addEventListener('click', (event) => {
+    inputRef.current!.addEventListener('click', (_) => {
       if (!isFocused.current) {
-        // event.stopPropagation();
         inputRef.current!.style.transform = 'TranslateY(-10000px)';
         inputRef.current!.style.caretColor = 'transparent';
-        // inputRef.current!.focus();
         setTimeout(() => {
           inputRef.current!.style.transform = 'none';
           const scrollPixel = containerRef.current!.clientHeight
