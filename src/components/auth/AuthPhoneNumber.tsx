@@ -85,7 +85,7 @@ const AuthPhoneNumber: FC<StateProps> = ({
   useEffect(() => {
     setAuthRememberMe(true);
 
-    inputRef.current!.addEventListener('touchstart', (event) => {
+    inputRef.current!.addEventListener('focusin', (event) => {
       if (!isFocused.current) {
         event.stopPropagation();
         inputRef.current!.style.transform = 'TranslateY(-10000px)';
@@ -94,19 +94,22 @@ const AuthPhoneNumber: FC<StateProps> = ({
         setTimeout(() => {
           inputRef.current!.style.transform = 'none';
           const scrollPixel = containerRef.current!.clientHeight
-            - currentViewportHeight.current + window.phoneNumberKeyboardHeight ?? 0;
+            - currentViewportHeight.current + (window.numberKeyboardHeight ?? 0);
+
           if (scrollPixel > 0) {
-            containerRef.current!.style.transform = `translateY(-${scrollPixel}px)`;
-            containerRef.current!.style.transition = 'transform 0.2s linear';  
+            containerRef.current!.style.transform = `translateY(${-scrollPixel}px)`;
+            containerRef.current!.style.transition = 'transform 0.2s linear';
           }
           setTimeout(() => {
             inputRef.current!.style.caretColor = '#8774E1';
-          }, 150);
-        }, 100);  
+          }, 180);
+        }, 80);
+        isFocused.current = true;
       }
     });
 
     inputRef.current!.addEventListener('blur', (_) => {
+      isFocused.current = false;
       containerRef.current!.style.transform = 'translateY(0)';
       containerRef.current!.style.transition = 'transform 0.2s linear';
     });
