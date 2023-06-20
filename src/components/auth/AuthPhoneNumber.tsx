@@ -230,7 +230,7 @@ const AuthPhoneNumber: FC<StateProps> = ({
         className="auth-form"
       >
         <div id="logo" />
-        <h1>Sign in to Telegram {parseInt((window.numberKeyboardHeight / 1.15)).toString()}</h1>
+        <h1>Sign in to Telegram</h1>
         <p className="note">{lang('StartText1')}<br />{lang('StartText2')}</p>
         <form className="form" action="" onSubmit={handleSubmit}>
           <InputText
