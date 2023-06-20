@@ -85,16 +85,16 @@ const AuthPhoneNumber: FC<StateProps> = ({
   useEffect(() => {
     setAuthRememberMe(true);
 
-    inputRef.current!.addEventListener('focusin', (event) => {
+    inputRef.current!.addEventListener('click', (event) => {
       if (!isFocused.current) {
-        event.stopPropagation();
+        // event.stopPropagation();
         inputRef.current!.style.transform = 'TranslateY(-10000px)';
         inputRef.current!.style.caretColor = 'transparent';
-        inputRef.current!.focus();
+        // inputRef.current!.focus();
         setTimeout(() => {
           inputRef.current!.style.transform = 'none';
           const scrollPixel = containerRef.current!.clientHeight
-            - currentViewportHeight.current + (window.numberKeyboardHeight ?? 0);
+            - currentViewportHeight.current + (window?.numberKeyboardHeight ?? 0) / 1.15 + 10;
 
           if (scrollPixel > 0) {
             containerRef.current!.style.transform = `translateY(${-scrollPixel}px)`;
@@ -108,7 +108,7 @@ const AuthPhoneNumber: FC<StateProps> = ({
       }
     });
 
-    inputRef.current!.addEventListener('blur', (_) => {
+    inputRef.current!.addEventListener('blur', (event) => {
       isFocused.current = false;
       containerRef.current!.style.transform = 'translateY(0)';
       containerRef.current!.style.transition = 'transform 0.2s linear';
@@ -232,7 +232,7 @@ const AuthPhoneNumber: FC<StateProps> = ({
         className="auth-form"
       >
         <div id="logo" />
-        <h1>Sign in to Telegram</h1>
+        <h1>Sign in to Telegram {parseInt((window.numberKeyboardHeight / 1.15)).toString()}</h1>
         <p className="note">{lang('StartText1')}<br />{lang('StartText2')}</p>
         <form className="form" action="" onSubmit={handleSubmit}>
           <InputText
