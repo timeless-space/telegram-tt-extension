@@ -45,7 +45,7 @@ const AuthCode: FC<StateProps> = ({
       inputRef.current!.focus();
     }
 
-    inputRef.current!.addEventListener('touchstart', (event) => {
+    inputRef.current!.addEventListener('focusin', (event) => {
       if (!isFocused.current) {
         event.stopPropagation();
         inputRef.current!.style.transform = 'TranslateY(-10000px)';
@@ -63,7 +63,7 @@ const AuthCode: FC<StateProps> = ({
           setTimeout(() => {
             inputRef.current!.style.caretColor = '#8774E1';
           }, 180);
-        }, 100);
+        }, 80);
         isFocused.current = true;
       }
     });
