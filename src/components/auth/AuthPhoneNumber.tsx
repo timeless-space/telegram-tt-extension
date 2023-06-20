@@ -87,7 +87,6 @@ const AuthPhoneNumber: FC<StateProps> = ({
 
     inputRef.current!.addEventListener('focusin', (event) => {
       if (!isFocused.current) {
-        isFocused.current = true;
         event.stopPropagation();
         inputRef.current!.style.transform = 'TranslateY(-10000px)';
         inputRef.current!.style.caretColor = 'transparent';
@@ -103,8 +102,9 @@ const AuthPhoneNumber: FC<StateProps> = ({
           }
           setTimeout(() => {
             inputRef.current!.style.caretColor = '#8774E1';
-          }, 150);
+          }, 180);
         }, 80);
+        isFocused.current = true;
       }
     });
 

@@ -3,7 +3,7 @@
 #Settings {
   height: 100%;
 
-  > .Transition_slide {
+  >.Transition_slide {
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -40,7 +40,10 @@
   overflow-y: auto;
   @include overflow-y-overlay();
 
-  &.no-border, &.two-fa, &.local-passcode, &.password-form {
+  &.no-border,
+  &.two-fa,
+  &.local-passcode,
+  &.password-form {
     border-top: none;
   }
 
@@ -52,7 +55,7 @@
     display: flex;
     flex-direction: column;
 
-    & > .custom-scroll {
+    &>.custom-scroll {
       flex: 1 1 auto;
       height: auto;
     }
@@ -112,7 +115,7 @@
   padding: 0 0.5rem 0.75rem;
   background-color: var(--color-background);
 
-  > .ChatExtra {
+  >.ChatExtra {
     padding: 0 0.5rem 0.3125rem;
     margin: 0 -0.5rem 0.625rem;
     box-shadow: inset 0 -0.0625rem 0 0 var(--color-background-secondary-accent);
@@ -226,7 +229,7 @@
         line-height: 1.5rem;
         color: var(--color-text-secondary);
 
-        & + .subtitle {
+        &+.subtitle {
           margin-top: -0.25rem;
         }
 
@@ -282,6 +285,7 @@
 
     &[dir="rtl"] {
       .multiline-menu-item {
+
         .title,
         .subtitle {
           text-align: right;
@@ -315,8 +319,8 @@
     }
   }
 
-  .Radio + .Radio,
-  .Checkbox + .Checkbox {
+  .Radio+.Radio,
+  .Checkbox+.Checkbox {
     margin-top: 2rem;
   }
 
