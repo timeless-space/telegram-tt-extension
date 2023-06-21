@@ -169,7 +169,7 @@ const ChatList: FC<OwnProps> = ({
 
     const pinnedCount = getPinnedChatsCount(resolvedFolderId) || 0;
     setTimeout(() => {
-      if (containerRef.current) {
+      if (containerRef.current && firstScroll.current) {
         containerRef.current.scrollTo({ top: HEIGHT_HEADER_FIXED });
         setTimeout(() => {
           firstScroll.current = false;
