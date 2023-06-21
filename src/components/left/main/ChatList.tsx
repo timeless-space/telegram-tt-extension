@@ -226,21 +226,18 @@ const ChatList: FC<OwnProps> = ({
       itemSelector=".ListItem:not(.chat-item-archive)"
       preloadBackwards={CHAT_LIST_SLICE}
       withAbsolutePositioning
-      maxHeight={chatsHeight + archiveHeight}
+      maxHeight={chatsHeight + archiveHeight + HEIGHT_HEADER_FIXED}
       onLoadMore={getMore}
       onDragLeave={handleDragLeave}
       onScroll={handleScroll}
     >
       {shouldDisplayArchive && (
-        <div>
-          <div className="padding-top-56px"></div>
-          <Archive
-            key="archive"
-            archiveSettings={archiveSettings}
-            onClick={handleArchivedClick}
-            onDragEnter={handleArchivedDragEnter}
-          />
-        </div>
+        <Archive
+          key="archive"
+          archiveSettings={archiveSettings}
+          onClick={handleArchivedClick}
+          onDragEnter={handleArchivedDragEnter}
+        />
       )}
       {viewportIds?.length ? (
         renderChats()
