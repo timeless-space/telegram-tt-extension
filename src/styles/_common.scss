@@ -98,6 +98,7 @@
   height: 100%;
   padding: 0.5rem 0.4375rem 0.5rem 0.4375rem;
 
+  overflow-anchor: auto;
   overflow-y: auto;
   @include overflow-y-overlay();
 

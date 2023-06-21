@@ -49,6 +49,7 @@ type OwnProps = {
 const INTERSECTION_THROTTLE = 200;
 const DRAG_ENTER_DEBOUNCE = 500;
 const RESERVED_HOTKEYS = new Set(['9', '0']);
+const HEIGHT_HEADER_FIXED = 56;
 
 const ChatList: FC<OwnProps> = ({
   folderType,
@@ -65,6 +66,7 @@ const ChatList: FC<OwnProps> = ({
   // eslint-disable-next-line no-null/no-null
   const containerRef = useRef<HTMLDivElement>(null);
   const shouldIgnoreDragRef = useRef(false);
+  const firstScroll = useRef<any>(true);
 
   const resolvedFolderId = (
     folderType === 'all' ? ALL_FOLDER_ID : folderType === 'archived' ? ARCHIVED_FOLDER_ID : folderId!
@@ -169,7 +171,7 @@ const ChatList: FC<OwnProps> = ({
 
     return viewportIds!.map((id, i) => {
       const isPinned = viewportOffset + i < pinnedCount;
-      const offsetTop = archiveHeight + (viewportOffset + i) * CHAT_HEIGHT_PX;
+      const offsetTop = archiveHeight + (viewportOffset + i) * CHAT_HEIGHT_PX + HEIGHT_HEADER_FIXED;
 
       return (
         <Chat
@@ -188,6 +190,33 @@ const ChatList: FC<OwnProps> = ({
     });
   }
 
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTo({ top: HEIGHT_HEADER_FIXED });
+      setTimeout(() => {
+        firstScroll.current = false;
+      }, 200)
+    }
+  }, []);
+
+  function handleScroll(event){
+    if (firstScroll.current) return;
+    const doc = document.documentElement;
+    const scrollTop = event.currentTarget.scrollTop;
+    const scrollPercentRounded = Math.min(100, Math.round(scrollTop / HEIGHT_HEADER_FIXED * 100) * 0.7);
+    const opacity = 1 - scrollPercentRounded * 0.01
+    const opacityOffset = scrollTop >= HEIGHT_HEADER_FIXED + 10 || scrollPercentRounded == 100 ? 0 : opacity;
+
+    doc.style.setProperty(
+      "--header-translate",
+      `-${scrollPercentRounded}%`
+    );
+    doc.style.setProperty(
+      "--fi-show-header-opacity",
+      `${opacityOffset}`
+    );
+}
+
   return (
     <InfiniteScroll
       className={buildClassName('chat-list custom-scroll', isForumPanelOpen && 'forum-panel-open')}
@@ -199,6 +228,7 @@ const ChatList: FC<OwnProps> = ({
       maxHeight={chatsHeight + archiveHeight}
       onLoadMore={getMore}
       onDragLeave={handleDragLeave}
+      onScroll={handleScroll}
     >
       {shouldDisplayArchive && (
         <Archive

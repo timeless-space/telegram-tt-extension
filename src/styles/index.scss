@@ -8,6 +8,11 @@
 @import "../assets/fonts/roboto.css";
 @import "./print";
 
+html {
+  --header-translate: -100%;
+  --default-translateY-transition: -56px;
+}
+
 html,
 body {
   width: 100%;
@@ -312,4 +317,17 @@ body:not(.is-ios) {
     transition-property: all !important;
     transition-duration: 0.5s !important;
   }
+}
+
+.fix-issue {
+  // visibility: var(--fi-show-header);
+  opacity: var(--fi-show-header-opacity);
+  // height: var(--header-height);
+  transform: translateY(var(--header-translate));
+  transition: all 0.1s ease-out;
+  max-height: 56px;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 100;
 }
