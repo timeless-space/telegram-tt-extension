@@ -168,7 +168,14 @@ const ChatList: FC<OwnProps> = ({
     const viewportOffset = orderedIds!.indexOf(viewportIds![0]);
 
     const pinnedCount = getPinnedChatsCount(resolvedFolderId) || 0;
-
+    setTimeout(() => {
+      if (containerRef.current) {
+        containerRef.current.scrollTo({ top: HEIGHT_HEADER_FIXED });
+        setTimeout(() => {
+          firstScroll.current = false;
+        }, 200)
+      }  
+    }, 0)
     return viewportIds!.map((id, i) => {
       const isPinned = viewportOffset + i < pinnedCount;
       const offsetTop = archiveHeight + (viewportOffset + i) * CHAT_HEIGHT_PX + HEIGHT_HEADER_FIXED;
@@ -191,12 +198,6 @@ const ChatList: FC<OwnProps> = ({
   }
 
   useEffect(() => {
-    if (containerRef.current) {
-      containerRef.current.scrollTo({ top: HEIGHT_HEADER_FIXED });
-      setTimeout(() => {
-        firstScroll.current = false;
-      }, 200)
-    }
   }, []);
 
   function handleScroll(event){
@@ -231,12 +232,15 @@ const ChatList: FC<OwnProps> = ({
       onScroll={handleScroll}
     >
       {shouldDisplayArchive && (
-        <Archive
-          key="archive"
-          archiveSettings={archiveSettings}
-          onClick={handleArchivedClick}
-          onDragEnter={handleArchivedDragEnter}
-        />
+        <div>
+          <div className="padding-top-56px"></div>
+          <Archive
+            key="archive"
+            archiveSettings={archiveSettings}
+            onClick={handleArchivedClick}
+            onDragEnter={handleArchivedDragEnter}
+          />
+        </div>
       )}
       {viewportIds?.length ? (
         renderChats()
