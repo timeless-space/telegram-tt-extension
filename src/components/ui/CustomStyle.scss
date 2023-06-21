@@ -1,29 +1,29 @@
-.relative {
-    position: relative !important;
+.custom-relative {
+    position: relative;
 }
 
-.absolute {
-    position: absolute !important;
+.custom-absolute {
+    position: absolute;
 }
 
-.small {
-    transform: scale(0.5) !important;
+.custom-small {
+    transform: scale(0.5);
 }
 
-.medium {
-    transform: scale(0.75) !important;
+.custom-medium {
+    transform: scale(0.75);
 }
 
-.large {
-    transform: scale(1) !important;
+.custom-large {
+    transform: scale(1);
 }
 
-.x-large {
-    transform: scale(1.25) !important;
+.custom-x-large {
+    transform: scale(1.25);
 }
 
-.right {
-    right: 10px !important;
-    top: 0 !important;
-    bottom: 0 !important;
+.custom-right {
+    right: 10px;
+    top: 0;
+    bottom: 0;
 }

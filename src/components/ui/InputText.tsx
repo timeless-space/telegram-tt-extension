@@ -78,7 +78,7 @@ const InputText: FC<OwnProps> = ({
   return (
     <div className={fullClassName} dir={lang.isRtl ? 'rtl' : undefined}>
       {
-        onLoading && <Loading className={`absolute right ${loadingSize}`} />
+        onLoading && <Loading className={`custom-absolute custom-right custom-${loadingSize}`} />
       }
       <input
         ref={ref}
