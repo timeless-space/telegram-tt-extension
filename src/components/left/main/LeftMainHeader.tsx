@@ -266,9 +266,6 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
     : lang('Search');
 
   const versionString = IS_BETA ? `${APP_VERSION} Beta (${APP_REVISION})` : (DEBUG ? APP_REVISION : APP_VERSION);
-  // const animationLevelValue = animationLevel !== ANIMATION_LEVEL_MIN
-  //   ? (animationLevel === ANIMATION_LEVEL_MAX ? 'max' : 'mid')
-  //   : 'min';
 
   const isFullscreen = useFullscreenStatus();
 
