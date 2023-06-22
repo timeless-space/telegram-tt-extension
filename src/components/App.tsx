@@ -211,6 +211,7 @@ const App: FC<StateProps> = ({
       '--theme-background-color',
       theme === 'dark' ? DARK_THEME_BG_COLOR : LIGHT_THEME_BG_COLOR,
     );
+    sessionStorage.clear();
   }, [theme]);
 
   return (
