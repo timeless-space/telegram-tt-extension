@@ -66,6 +66,10 @@
   &.gray {
     .Spinner__inner {
       background-image: var(--spinner-gray-data);
+
+      .theme-dark & {
+        background-image: var(--spinner-gray-data);
+      }
     }
   }
 
@@ -102,3 +106,6 @@
   }
 }
 
+.custom-medium {
+  transform: scale(0.75);
+}

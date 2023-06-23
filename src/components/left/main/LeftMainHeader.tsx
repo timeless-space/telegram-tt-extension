@@ -389,7 +389,7 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
           value={isClosingSearch ? undefined : (contactsFilter || searchQuery)}
           focused={isSearchFocused}
           isLoading={isLoading || connectionStatusPosition === 'minimized'}
-          spinnerColor={connectionStatusPosition === 'minimized' ? 'yellow' : undefined}
+          spinnerColor={connectionStatusPosition === 'minimized' ? 'gray' : undefined}
           // spinnerBackgroundColor={connectionStatusPosition === 'minimized' && theme === 'light' ? 'light' : undefined}
           spinnerBackgroundColor={connectionStatusPosition === 'minimized' && theme === 'light' ? 'light' : undefined}
           placeholder={searchInputPlaceholder}

@@ -10,13 +10,14 @@ const Spinner: FC<{
   backgroundColor?: 'light' | 'dark';
   className?: string;
 }> = ({
-  color = 'blue',
+  color = 'gray',
   backgroundColor,
   className,
 }) => {
   return (
     <div className={buildClassName(
-      'Spinner', className, color, backgroundColor && 'with-background', backgroundColor && `bg-${backgroundColor}`,
+      // eslint-disable-next-line max-len
+      'Spinner custom-medium', className, color, backgroundColor && 'with-background', backgroundColor && `bg-${backgroundColor}`,
     )}
     >
       <div className="Spinner__inner" />
