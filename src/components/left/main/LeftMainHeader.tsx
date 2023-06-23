@@ -397,6 +397,7 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
           isLoading={isLoading || connectionStatusPosition === 'minimized'}
           spinnerColor={connectionStatusPosition === 'minimized' ? 'gray' : undefined}
           // spinnerBackgroundColor={connectionStatusPosition === 'minimized' && theme === 'light' ? 'light' : undefined}
+          spinnerBackgroundColor={connectionStatusPosition === 'minimized' && theme === 'light' ? 'light' : undefined}
           placeholder={searchInputPlaceholder}
           autoComplete="off"
           canClose={Boolean(globalSearchChatId || searchDate)}
