@@ -5,13 +5,13 @@
 .custom-dropdown-visible {
   // display: none;
   width: 0px;
-  transition: width 0.25s ease-in-out;
+  transition: width 0.25s ease-out;
 }
 
 .custom-dropdown-invisible {
   // display: block;
   width: 3rem;
-  transition: width 0.25s ease-in-out;
+  transition: width 0.25s ease-out;
 }
 
 .custom-style {

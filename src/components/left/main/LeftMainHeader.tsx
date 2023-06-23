@@ -131,7 +131,6 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
     lang, connectionState, isSyncing, isMessageListOpen, isConnectionStatusMinimized, !areChatsLoaded,
   );
 
-  const [isFocused, setIsFocused] = useState<boolean>(false);
 
   const handleLockScreenHotkey = useCallback((e: KeyboardEvent) => {
     e.preventDefault();
@@ -173,15 +172,10 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
   }, [hasMenu, isMobile, lang, onReset]);
 
   const handleSearchFocus = useCallback(() => {
-    setIsFocused(true);
     if (!searchQuery) {
       onSearchQuery('');
     }
   }, [searchQuery, onSearchQuery]);
-
-  const handleSearchBlur = useCallback(() => {
-    setIsFocused(false);
-  }, []);
 
   const toggleConnectionStatus = useCallback(() => {
     setSettingOption({ isConnectionStatusMinimized: !isConnectionStatusMinimized });
@@ -376,7 +370,7 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
             lang.isRtl && 'rtl',
             shouldHideSearch && lang.isRtl && 'right-aligned',
             shouldDisableDropdownMenuTransitionRef.current && lang.isRtl && 'disable-transition',
-            isFocused ? 'custom-dropdown-invisible' : 'custom-dropdown-visible',
+            isSearchFocused ? 'custom-dropdown-invisible' : 'custom-dropdown-visible',
           )}
           positionX={shouldHideSearch && lang.isRtl ? 'right' : 'left'}
           transformOriginX={IS_ELECTRON && !isFullscreen ? 90 : undefined}
@@ -404,7 +398,6 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
           onChange={onSearchQuery}
           onReset={onReset}
           onFocus={handleSearchFocus}
-          onBlur={handleSearchBlur}
           onSpinnerClick={connectionStatusPosition === 'minimized' ? toggleConnectionStatus : undefined}
         >
           {selectedSearchDate && (
