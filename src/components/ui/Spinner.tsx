@@ -10,7 +10,7 @@ const Spinner: FC<{
   backgroundColor?: 'light' | 'dark';
   className?: string;
 }> = ({
-  color,
+  color = 'gray',
   backgroundColor,
   className,
 }) => {
