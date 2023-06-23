@@ -1,6 +1,6 @@
 import type { FC } from '../../../lib/teact/teact';
 import React, {
-  memo, useCallback, useEffect, useMemo, useRef,
+  memo, useCallback, useEffect, useMemo, useRef, useState,
 } from '../../../lib/teact/teact';
 import { getActions, withGlobal } from '../../../global';
 
@@ -131,6 +131,8 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
     lang, connectionState, isSyncing, isMessageListOpen, isConnectionStatusMinimized, !areChatsLoaded,
   );
 
+  const [isFocused, setIsFocused] = useState<boolean>(false);
+
   const handleLockScreenHotkey = useCallback((e: KeyboardEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -163,20 +165,23 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
         ariaLabel={hasMenu ? lang('AccDescrOpenMenu2') : 'Return to chat list'}
       >
         <div className={buildClassName(
-          'animated-menu-icon',
-          !hasMenu && 'state-back',
-          shouldSkipTransition && 'no-animation',
+          'animated-menu-icon no-animation state-back',
         )}
         />
       </Button>
     );
-  }, [hasMenu, isMobile, lang, onReset, shouldSkipTransition]);
+  }, [hasMenu, isMobile, lang, onReset]);
 
   const handleSearchFocus = useCallback(() => {
+    setIsFocused(true);
     if (!searchQuery) {
       onSearchQuery('');
     }
   }, [searchQuery, onSearchQuery]);
+
+  const handleSearchBlur = useCallback(() => {
+    setIsFocused(false);
+  }, []);
 
   const toggleConnectionStatus = useCallback(() => {
     setSettingOption({ isConnectionStatusMinimized: !isConnectionStatusMinimized });
@@ -371,6 +376,7 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
             lang.isRtl && 'rtl',
             shouldHideSearch && lang.isRtl && 'right-aligned',
             shouldDisableDropdownMenuTransitionRef.current && lang.isRtl && 'disable-transition',
+            isFocused ? 'custom-dropdown-invisible' : 'custom-dropdown-visible',
           )}
           positionX={shouldHideSearch && lang.isRtl ? 'right' : 'left'}
           transformOriginX={IS_ELECTRON && !isFullscreen ? 90 : undefined}
@@ -384,6 +390,7 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
           className={buildClassName(
             (globalSearchChatId || searchDate) ? 'with-picker-item' : undefined,
             shouldHideSearch && 'SearchInput--hidden',
+            'custom-style',
           )}
           value={isClosingSearch ? undefined : (contactsFilter || searchQuery)}
           focused={isSearchFocused}
@@ -397,6 +404,7 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
           onChange={onSearchQuery}
           onReset={onReset}
           onFocus={handleSearchFocus}
+          onBlur={handleSearchBlur}
           onSpinnerClick={connectionStatusPosition === 'minimized' ? toggleConnectionStatus : undefined}
         >
           {selectedSearchDate && (
