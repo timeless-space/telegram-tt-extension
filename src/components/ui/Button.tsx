@@ -202,7 +202,12 @@ const Button: FC<OwnProps> = ({
     >
       {isLoading ? (
         <div>
-          <span dir={isRtl ? 'auto' : undefined}>Please wait...</span>
+          {
+            /**
+             * TL - Custom button styles
+             */
+          }
+          <span className="capitalize-text" dir={isRtl ? 'auto' : undefined}>Please wait...</span>
           <Spinner color={isText ? 'blue' : 'white'} />
         </div>
       ) : children}

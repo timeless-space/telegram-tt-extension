@@ -461,6 +461,31 @@ export async function fetchPrivacySettings(privacyKey: ApiPrivacyKey) {
   };
 }
 
+/**
+ * TL - Register mobile divice to receive push notifications
+ * https://core.telegram.org/api/push-updates
+ */
+export function registerMobileDevice(token: string, tokenType = 1, appSanbox = false) {
+  const secret = Buffer.of();
+  return invokeRequest(new GramJs.account.RegisterDevice({
+    tokenType,
+    secret,
+    appSandbox: appSanbox,
+    otherUids: [],
+    token,
+  }));
+}
+
+/**
+ * TL - Unregister mobile divice from receive push notifications
+ */
+export function unregisterMobileDevice(token: string, tokenType = 1) {
+  return invokeRequest(new GramJs.account.UnregisterDevice({
+    tokenType,
+    otherUids: [],
+    token,
+  }));
+}
 export function registerDevice(token: string) {
   const client = getClient();
   const secret = client.session.getAuthKey().getKey();
@@ -609,7 +634,7 @@ export async function fetchGlobalPrivacySettings() {
   };
 }
 
-export async function updateGlobalPrivacySettings({ shouldArchiveAndMuteNewNonContact } : {
+export async function updateGlobalPrivacySettings({ shouldArchiveAndMuteNewNonContact }: {
   shouldArchiveAndMuteNewNonContact: boolean;
 }) {
   const result = await invokeRequest(new GramJs.account.SetGlobalPrivacySettings({

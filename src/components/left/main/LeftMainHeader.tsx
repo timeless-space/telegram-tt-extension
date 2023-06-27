@@ -9,28 +9,28 @@ import type { AnimationLevel, ISettings } from '../../../types';
 import { LeftColumnContent, SettingsScreens } from '../../../types';
 
 import {
-  ANIMATION_LEVEL_MAX,
-  ANIMATION_LEVEL_MIN,
+  // ANIMATION_LEVEL_MAX,
+  // ANIMATION_LEVEL_MIN,
   APP_NAME,
   ARCHIVED_FOLDER_ID,
-  BETA_CHANGELOG_URL,
+  // BETA_CHANGELOG_URL,
   DEBUG,
-  FEEDBACK_URL,
+  // FEEDBACK_URL,
   IS_BETA,
-  IS_TEST,
+  // IS_TEST,
   IS_ELECTRON,
-  PRODUCTION_HOSTNAME,
+  // PRODUCTION_HOSTNAME,
 } from '../../../config';
 import { IS_APP } from '../../../util/windowEnvironment';
-import {
-  INITIAL_PERFORMANCE_STATE_MAX,
-  INITIAL_PERFORMANCE_STATE_MID,
-  INITIAL_PERFORMANCE_STATE_MIN,
-} from '../../../global/initialState';
+// import {
+//   INITIAL_PERFORMANCE_STATE_MAX,
+//   INITIAL_PERFORMANCE_STATE_MID,
+//   INITIAL_PERFORMANCE_STATE_MIN,
+// } from '../../../global/initialState';
 import buildClassName from '../../../util/buildClassName';
 import { formatDateToString } from '../../../util/dateFormat';
-import { setPermanentWebVersion } from '../../../util/permanentWebVersion';
-import { clearWebsync } from '../../../util/websync';
+// import { setPermanentWebVersion } from '../../../util/permanentWebVersion';
+// import { clearWebsync } from '../../../util/websync';
 import {
   selectCanSetPasscode,
   selectCurrentMessageList, selectIsCurrentUserPremium, selectTabState, selectTheme,
@@ -38,9 +38,8 @@ import {
 import useLang from '../../../hooks/useLang';
 import useConnectionStatus from '../../../hooks/useConnectionStatus';
 import { useHotkeys } from '../../../hooks/useHotkeys';
-import { getPromptInstall } from '../../../util/installPrompt';
+// import { getPromptInstall } from '../../../util/installPrompt';
 import captureEscKeyListener from '../../../util/captureEscKeyListener';
-
 import useLastCallback from '../../../hooks/useLastCallback';
 import useLeftHeaderButtonRtlForumTransition from './hooks/useLeftHeaderButtonRtlForumTransition';
 import { useFullscreenStatus } from '../../../hooks/useFullscreen';
@@ -53,11 +52,11 @@ import MenuItem from '../../ui/MenuItem';
 import Button from '../../ui/Button';
 import SearchInput from '../../ui/SearchInput';
 import PickerSelectedItem from '../../common/PickerSelectedItem';
-import Switcher from '../../ui/Switcher';
+// import Switcher from '../../ui/Switcher';
 import ShowTransition from '../../ui/ShowTransition';
 import ConnectionStatusOverlay from '../ConnectionStatusOverlay';
 import StatusButton from './StatusButton';
-import Toggle from '../../ui/Toggle';
+// import Toggle from '../../ui/Toggle';
 
 import './LeftMainHeader.scss';
 
@@ -93,7 +92,7 @@ type StateProps =
   & Pick<GlobalState, 'connectionState' | 'isSyncing' | 'archiveSettings'>
   & Pick<TabState, 'canInstall'>;
 
-const WEBK_VERSION_URL = 'https://web.telegram.org/k/';
+// const WEBK_VERSION_URL = 'https://web.telegram.org/k/';
 
 const LeftMainHeader: FC<OwnProps & StateProps> = ({
   shouldHideSearch,
@@ -108,12 +107,12 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
   searchQuery,
   isLoading,
   isCurrentUserPremium,
-  shouldSkipTransition,
+  // shouldSkipTransition,
   currentUserId,
   globalSearchChatId,
   searchDate,
   theme,
-  animationLevel,
+  // animationLevel,
   connectionState,
   isSyncing,
   isMessageListOpen,
@@ -121,7 +120,7 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
   areChatsLoaded,
   hasPasscode,
   canSetPasscode,
-  canInstall,
+  // canInstall,
   archiveSettings,
 }) => {
   const {
@@ -132,9 +131,9 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
     openChatByUsername,
     lockScreen,
     requestNextSettingsScreen,
-    skipLockOnUnload,
-    openUrl,
-    updatePerformanceSettings,
+    // skipLockOnUnload,
+    // openUrl,
+    // updatePerformanceSettings,
   } = getActions();
 
   const lang = useLang();
@@ -171,7 +170,7 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
     ...(IS_APP && { 'Mod+L': handleLockScreenHotkey }),
   } : undefined);
 
-  const withOtherVersions = window.location.hostname === PRODUCTION_HOSTNAME || IS_TEST;
+  // const withOtherVersions = window.location.hostname === PRODUCTION_HOSTNAME || IS_TEST;
 
   const MainButton: FC<{ onTrigger: () => void; isOpen?: boolean }> = useMemo(() => {
     return ({ onTrigger, isOpen }) => (
@@ -186,14 +185,14 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
         ariaLabel={hasMenu ? lang('AccDescrOpenMenu2') : 'Return to chat list'}
       >
         <div className={buildClassName(
-          'animated-menu-icon',
-          !hasMenu && 'state-back',
-          shouldSkipTransition && 'no-animation',
+          'animated-menu-icon no-animation state-back',
+          // !hasMenu && 'state-back',
+          // shouldSkipTransition && 'no-animation',
         )}
         />
       </Button>
     );
-  }, [hasMenu, isMobile, lang, onReset, shouldSkipTransition]);
+  }, [hasMenu, isMobile, lang, onReset]);
 
   const handleSearchFocus = useLastCallback(() => {
     if (!searchQuery) {
@@ -209,46 +208,51 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
     openChat({ id: currentUserId, shouldReplaceHistory: true });
   });
 
-  const handleDarkModeToggle = useLastCallback((e: React.SyntheticEvent<HTMLElement>) => {
-    e.stopPropagation();
-    const newTheme = theme === 'light' ? 'dark' : 'light';
+  // const handleDarkModeToggle = useLastCallback((e: React.SyntheticEvent<HTMLElement>) => {
+  //   // No action in here/ default dark mode
+  //   e.stopPropagation();
+  //   const newTheme = theme === 'light' ? 'dark' : 'light';
+  //   setSettingOption({ theme: newTheme });
+  //   setSettingOption({ shouldUseSystemTheme: false });
+  // });
 
-    setSettingOption({ theme: newTheme });
+  useEffect(() => {
+    setSettingOption({ theme: 'dark' });
     setSettingOption({ shouldUseSystemTheme: false });
-  });
+  }, []);
 
-  const handleAnimationLevelChange = useLastCallback((e: React.SyntheticEvent<HTMLElement>) => {
-    e.stopPropagation();
+  // const handleAnimationLevelChange = useLastCallback((e: React.SyntheticEvent<HTMLElement>) => {
+  //   e.stopPropagation();
 
-    let newLevel = animationLevel + 1;
-    if (newLevel > ANIMATION_LEVEL_MAX) {
-      newLevel = ANIMATION_LEVEL_MIN;
-    }
-    const performanceSettings = newLevel === ANIMATION_LEVEL_MIN
-      ? INITIAL_PERFORMANCE_STATE_MIN
-      : (newLevel === ANIMATION_LEVEL_MAX ? INITIAL_PERFORMANCE_STATE_MAX : INITIAL_PERFORMANCE_STATE_MID);
+  //   let newLevel = animationLevel + 1;
+  //   if (newLevel > ANIMATION_LEVEL_MAX) {
+  //     newLevel = ANIMATION_LEVEL_MIN;
+  //   }
+  //   const performanceSettings = newLevel === ANIMATION_LEVEL_MIN
+  //     ? INITIAL_PERFORMANCE_STATE_MIN
+  //     : (newLevel === ANIMATION_LEVEL_MAX ? INITIAL_PERFORMANCE_STATE_MAX : INITIAL_PERFORMANCE_STATE_MID);
 
-    setSettingOption({ animationLevel: newLevel as AnimationLevel });
-    updatePerformanceSettings(performanceSettings);
-  });
+  //   setSettingOption({ animationLevel: newLevel as AnimationLevel });
+  //   updatePerformanceSettings(performanceSettings);
+  // }, [animationLevel, setSettingOption]);
 
-  const handleChangelogClick = useLastCallback(() => {
-    window.open(BETA_CHANGELOG_URL, '_blank', 'noopener');
-  });
+  // const handleChangelogClick = useCallback(() => {
+  //   window.open(BETA_CHANGELOG_URL, '_blank', 'noopener');
+  // }, []);
 
-  const handleSwitchToWebK = useLastCallback(() => {
-    setPermanentWebVersion('K');
-    clearWebsync();
-    skipLockOnUnload();
-  });
+  // const handleSwitchToWebK = useCallback(() => {
+  //   setPermanentWebVersion('K');
+  //   clearWebsync();
+  //   skipLockOnUnload();
+  // });
 
   const handleOpenTipsChat = useLastCallback(() => {
     openChatByUsername({ username: lang('Settings.TipsUsername') });
   });
 
-  const handleBugReportClick = useLastCallback(() => {
-    openUrl({ url: FEEDBACK_URL });
-  });
+  // const handleBugReportClick = useLastCallback(() => {
+  //   openUrl({ url: FEEDBACK_URL });
+  // });
 
   const handleLockScreen = useLastCallback(() => {
     lockScreen();
@@ -267,9 +271,9 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
     : lang('Search');
 
   const versionString = IS_BETA ? `${APP_VERSION} Beta (${APP_REVISION})` : (DEBUG ? APP_REVISION : APP_VERSION);
-  const animationLevelValue = animationLevel !== ANIMATION_LEVEL_MIN
-    ? (animationLevel === ANIMATION_LEVEL_MAX ? 'max' : 'mid')
-    : 'min';
+  // const animationLevelValue = animationLevel !== ANIMATION_LEVEL_MIN
+  //   ? (animationLevel === ANIMATION_LEVEL_MAX ? 'max' : 'mid')
+  //   : 'min';
 
   const isFullscreen = useFullscreenStatus();
 
@@ -314,7 +318,7 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
       >
         {lang('Settings')}
       </MenuItem>
-      <MenuItem
+      {/* <MenuItem
         icon="darkmode"
         onClick={handleDarkModeToggle}
       >
@@ -325,35 +329,35 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
           checked={theme === 'dark'}
           noAnimation
         />
-      </MenuItem>
-      <MenuItem
+      </MenuItem> */}
+      {/* <MenuItem
         icon="animations"
         onClick={handleAnimationLevelChange}
       >
         <span className="menu-item-name capitalize">{lang('Appearance.Animations').toLowerCase()}</span>
         <Toggle value={animationLevelValue} />
-      </MenuItem>
+      </MenuItem> */}
       <MenuItem
         icon="help"
         onClick={handleOpenTipsChat}
       >
         {lang('TelegramFeatures')}
       </MenuItem>
-      <MenuItem
+      {/* <MenuItem
         icon="bug"
         onClick={handleBugReportClick}
       >
         Report Bug
-      </MenuItem>
-      {IS_BETA && (
+      </MenuItem> */}
+      {/* {IS_BETA && (
         <MenuItem
           icon="permissions"
           onClick={handleChangelogClick}
         >
           Beta Changelog
         </MenuItem>
-      )}
-      {withOtherVersions && (
+      )} */}
+      {/* {withOtherVersions && (
         <MenuItem
           icon="K"
           isCharIcon
@@ -362,20 +366,19 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
         >
           Switch to K Version
         </MenuItem>
-      )}
-      {canInstall && (
+      )} */}
+      {/* {canInstall && (
         <MenuItem
           icon="install"
           onClick={getPromptInstall()}
         >
           Install App
         </MenuItem>
-      )}
+      )} */}
     </>
   ), [
-    animationLevelValue, archivedUnreadChatsCount, canInstall, handleAnimationLevelChange, handleBugReportClick, lang,
-    handleChangelogClick, handleDarkModeToggle, handleOpenTipsChat, handleSelectSaved, handleSwitchToWebK,
-    onSelectArchived, onSelectContacts, onSelectSettings, theme, withOtherVersions, archiveSettings,
+    archivedUnreadChatsCount, lang, handleOpenTipsChat, handleSelectSaved,
+    onSelectArchived, onSelectContacts, onSelectSettings, archiveSettings,
   ]);
 
   return (
@@ -390,6 +393,10 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
             lang.isRtl && 'rtl',
             shouldHideSearch && lang.isRtl && 'right-aligned',
             shouldDisableDropdownMenuTransitionRef.current && lang.isRtl && 'disable-transition',
+            /**
+             * TL - Trigger hide hamburger menu when search input focused in
+             */
+            isSearchFocused ? 'custom-dropdown-invisible' : 'custom-dropdown-visible',
           )}
           positionX={shouldHideSearch && lang.isRtl ? 'right' : 'left'}
           transformOriginX={IS_ELECTRON && !isFullscreen ? 90 : undefined}
@@ -403,11 +410,12 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
           className={buildClassName(
             (globalSearchChatId || searchDate) ? 'with-picker-item' : undefined,
             shouldHideSearch && 'SearchInput--hidden',
+            'custom-style',
           )}
           value={isClosingSearch ? undefined : (contactsFilter || searchQuery)}
           focused={isSearchFocused}
           isLoading={isLoading || connectionStatusPosition === 'minimized'}
-          spinnerColor={connectionStatusPosition === 'minimized' ? 'yellow' : undefined}
+          spinnerColor={connectionStatusPosition === 'minimized' ? 'gray' : undefined}
           spinnerBackgroundColor={connectionStatusPosition === 'minimized' && theme === 'light' ? 'light' : undefined}
           placeholder={searchInputPlaceholder}
           autoComplete="off"

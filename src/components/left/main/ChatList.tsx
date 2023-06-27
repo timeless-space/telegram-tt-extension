@@ -45,11 +45,13 @@ type OwnProps = {
   foldersDispatch: FolderEditDispatch;
   onSettingsScreenSelect: (screen: SettingsScreens) => void;
   onLeftColumnContentChange: (content: LeftColumnContent) => void;
+  activeChatFolder?: number;
 };
 
 const INTERSECTION_THROTTLE = 200;
 const DRAG_ENTER_DEBOUNCE = 500;
 const RESERVED_HOTKEYS = new Set(['9', '0']);
+const HEIGHT_HEADER_FIXED = 56;
 
 const ChatList: FC<OwnProps> = ({
   folderType,
@@ -61,11 +63,13 @@ const ChatList: FC<OwnProps> = ({
   foldersDispatch,
   onSettingsScreenSelect,
   onLeftColumnContentChange,
+  activeChatFolder,
 }) => {
   const { openChat, openNextChat, closeForumPanel } = getActions();
   // eslint-disable-next-line no-null/no-null
   const containerRef = useRef<HTMLDivElement>(null);
   const shouldIgnoreDragRef = useRef(false);
+  const firstScroll = useRef<any>(true);
 
   const resolvedFolderId = (
     folderType === 'all' ? ALL_FOLDER_ID : folderType === 'archived' ? ARCHIVED_FOLDER_ID : folderId!
@@ -167,10 +171,17 @@ const ChatList: FC<OwnProps> = ({
     const viewportOffset = orderedIds!.indexOf(viewportIds![0]);
 
     const pinnedCount = getPinnedChatsCount(resolvedFolderId) || 0;
-
+    setTimeout(() => {
+      if (containerRef.current && firstScroll.current) {
+        containerRef.current.scrollTo({ top: HEIGHT_HEADER_FIXED });
+        setTimeout(() => {
+          firstScroll.current = false;
+        }, 200);
+      }
+    }, 0);
     return viewportIds!.map((id, i) => {
       const isPinned = viewportOffset + i < pinnedCount;
-      const offsetTop = archiveHeight + (viewportOffset + i) * CHAT_HEIGHT_PX;
+      const offsetTop = archiveHeight + (viewportOffset + i) * CHAT_HEIGHT_PX + HEIGHT_HEADER_FIXED;
 
       return (
         <Chat
@@ -189,6 +200,43 @@ const ChatList: FC<OwnProps> = ({
     });
   }
 
+  function handleScroll(event: React.UIEvent<HTMLDivElement, UIEvent>) {
+    if (firstScroll.current) return;
+    const doc = document.documentElement;
+    const scrollTop = event.currentTarget.scrollTop;
+    const scrollPercentRounded = Math.min(
+      100,
+      Math.round((scrollTop / HEIGHT_HEADER_FIXED) * 100),
+    );
+    const opacity = 1 - scrollPercentRounded * 0.01;
+    const opacityOffset = scrollTop >= HEIGHT_HEADER_FIXED + 10 || scrollPercentRounded == 100
+      ? 0
+      : opacity;
+
+    const translatePixel = scrollTop >= HEIGHT_HEADER_FIXED || scrollPercentRounded == 100 ? 0 : Math.min(
+      HEIGHT_HEADER_FIXED,
+      ((100 - scrollPercentRounded) * HEIGHT_HEADER_FIXED) / 100,
+    );
+    const tabFolderTranslatePixel = translatePixel;
+    const currentPropertyInStorage = sessionStorage.getItem(activeChatFolder);
+    if (currentPropertyInStorage) {
+      sessionStorage.setItem(
+        activeChatFolder,
+        JSON.stringify({
+          scrollPercentRounded,
+          tabFolderTranslatePixel,
+          opacityOffset,
+        }),
+      );
+    }
+    doc.style.setProperty('--header-translate', `-${scrollPercentRounded}%`);
+    doc.style.setProperty(
+      '--tab-folder-translate',
+      `${tabFolderTranslatePixel}px`,
+    );
+    doc.style.setProperty('--fi-show-header-opacity', `${opacityOffset}`);
+  }
+
   return (
     <InfiniteScroll
       className={buildClassName('chat-list custom-scroll', isForumPanelOpen && 'forum-panel-open')}
@@ -197,9 +245,10 @@ const ChatList: FC<OwnProps> = ({
       itemSelector=".ListItem:not(.chat-item-archive)"
       preloadBackwards={CHAT_LIST_SLICE}
       withAbsolutePositioning
-      maxHeight={chatsHeight + archiveHeight}
+      maxHeight={chatsHeight + archiveHeight + HEIGHT_HEADER_FIXED}
       onLoadMore={getMore}
       onDragLeave={handleDragLeave}
+      onScroll={handleScroll}
     >
       {shouldDisplayArchive && (
         <Archive

@@ -264,10 +264,47 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
     shouldRender: shouldRenderPlaceholder, transitionClassNames,
   } = useShowTransition(!orderedFolderIds, undefined, true);
 
+  useEffect(() => {
+    const currentPropertyInStorage = JSON.parse(
+      sessionStorage.getItem(activeChatFolder)
+    );
+
+    const doc = document.documentElement;
+    if (currentPropertyInStorage) {
+      doc.style.setProperty(
+        '--header-translate',
+        `-${currentPropertyInStorage.scrollPercentRounded}%`,
+      );
+      doc.style.setProperty(
+        '--tab-folder-translate',
+        `${currentPropertyInStorage.tabFolderTranslatePixel}px`,
+      );
+      doc.style.setProperty(
+        '--fi-show-header-opacity',
+        `${currentPropertyInStorage.opacityOffset}`,
+      );
+    } else {
+      doc.style.setProperty('--header-translate', '-100%');
+      doc.style.setProperty('--tab-folder-translate', '0px');
+      doc.style.setProperty('--fi-show-header-opacity', '0');
+    }
+  }, [activeChatFolder]);
+
   function renderCurrentTab(isActive: boolean) {
     const activeFolder = Object.values(chatFoldersById)
       .find(({ id }) => id === folderTabs![activeChatFolder].id);
     const isFolder = activeFolder && !isInAllChatsFolder;
+    const folderHasProperty = sessionStorage.getItem(activeChatFolder);
+    if (!folderHasProperty) {
+      sessionStorage.setItem(
+        activeChatFolder,
+        JSON.stringify({
+          scrollPercentRounded: 100,
+          tabFolderTranslatePixel: 0,
+          opacityOffset: 0,
+        }),
+      );
+    }
 
     return (
       <ChatList
@@ -281,6 +318,7 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
         onLeftColumnContentChange={onLeftColumnContentChange}
         canDisplayArchive={hasArchivedChats && !archiveSettings.isHidden}
         archiveSettings={archiveSettings}
+        activeChatFolder={activeChatFolder}
       />
     );
   }

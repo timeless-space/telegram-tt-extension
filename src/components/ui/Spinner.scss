@@ -66,6 +66,13 @@
   &.gray {
     .Spinner__inner {
       background-image: var(--spinner-gray-data);
+
+      /**
+       * TL - Add gray color for dark theme
+       */
+      .theme-dark & {
+        background-image: var(--spinner-gray-data);
+      }
     }
   }
 
@@ -102,3 +109,9 @@
   }
 }
 
+/**
+ * TL - Add medium size for loading indicator
+ */
+.custom-medium {
+  transform: scale(0.75);
+}

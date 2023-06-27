@@ -62,6 +62,10 @@ export {
   fetchWebAuthorizations, terminateWebAuthorization, terminateAllWebAuthorizations,
   fetchNotificationExceptions, fetchNotificationSettings, updateContactSignUpNotification, updateNotificationSettings,
   fetchLanguages, fetchLangPack, fetchPrivacySettings, setPrivacySettings, registerDevice, unregisterDevice,
+  /**
+   * TL - Export 2 custom functions
+   */
+  registerMobileDevice, unregisterMobileDevice,
   updateIsOnline, fetchContentSettings, updateContentSettings, fetchLangStrings, fetchCountryList, fetchAppConfig,
   fetchGlobalPrivacySettings, updateGlobalPrivacySettings, toggleUsername, reorderUsernames, fetchConfig,
   uploadContactProfilePhoto,

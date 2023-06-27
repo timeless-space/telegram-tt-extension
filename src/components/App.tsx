@@ -16,8 +16,6 @@ import { addActiveTabChangeListener } from '../util/activeTabMonitor';
 import { hasStoredSession } from '../util/sessions';
 import buildClassName from '../util/buildClassName';
 import { parseInitialLocationHash } from '../util/routing';
-import { setupBeforeInstallPrompt } from '../util/installPrompt';
-
 import useFlag from '../hooks/useFlag';
 import usePrevious from '../hooks/usePrevious';
 import useAppLayout from '../hooks/useAppLayout';
@@ -28,9 +26,12 @@ import LockScreen from './main/LockScreen.async';
 import AppInactive from './main/AppInactive';
 import Transition from './ui/Transition';
 import UiLoader from './common/UiLoader';
-// import Test from './test/TestUpdateRef';
+// import Test from './components/test/TestNoRedundancy';
 
 import styles from './App.module.scss';
+import { setupBeforeInstallPrompt } from '../util/installPrompt';
+import { mobileSubscribe, mobileUnsubscribe } from '../util/notifications';
+import { changePaddingTopMobile } from '../util/tlCustomFunction';
 
 type StateProps = {
   authState: GlobalState['authState'];
@@ -197,7 +198,15 @@ const App: FC<StateProps> = ({
   }
 
   useLayoutEffect(() => {
+    /**
+     * TL - Set window properties for esier call registration and unregistration
+     */
+    const { signOut } = getActions();
+    (window as any).signOutGlobal = signOut;
+    (window as any).changePaddingTopMobileGlobal = changePaddingTopMobile;
     document.body.classList.add(styles.bg);
+    (window as any).mobileSubscribeGlobal = mobileSubscribe;
+    (window as any).mobileUnsubscribeGlobal = mobileUnsubscribe;
   }, []);
 
   useLayoutEffect(() => {
@@ -205,6 +214,7 @@ const App: FC<StateProps> = ({
       '--theme-background-color',
       theme === 'dark' ? DARK_THEME_BG_COLOR : LIGHT_THEME_BG_COLOR,
     );
+    sessionStorage.clear();
   }, [theme]);
 
   return (

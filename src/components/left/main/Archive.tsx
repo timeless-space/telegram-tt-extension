@@ -153,6 +153,7 @@ const Archive: FC<OwnProps> = ({
         archiveSettings.isMinimized && styles.minimized,
         'chat-item-clickable',
         'chat-item-archive',
+        'padding-top-56px',
       )}
       buttonClassName={styles.button}
       contextActions={contextActions}

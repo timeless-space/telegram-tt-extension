@@ -15,6 +15,9 @@ import ShowTransition from './ShowTransition';
 
 import './SearchInput.scss';
 
+/**
+ * TL - Add gray color or loading indicator
+ */
 type OwnProps = {
   ref?: RefObject<HTMLInputElement>;
   children?: React.ReactNode;
@@ -24,7 +27,7 @@ type OwnProps = {
   value?: string;
   focused?: boolean;
   isLoading?: boolean;
-  spinnerColor?: 'yellow';
+  spinnerColor?: 'yellow' | 'gray';
   spinnerBackgroundColor?: 'light';
   placeholder?: string;
   disabled?: boolean;

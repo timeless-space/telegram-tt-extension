@@ -6,6 +6,8 @@ import React, { memo } from '../../lib/teact/teact';
 
 import buildClassName from '../../util/buildClassName';
 import useLang from '../../hooks/useLang';
+import Loading from './Loading';
+import './CustomStyle.scss';
 
 type OwnProps = {
   ref?: RefObject<HTMLInputElement>;
@@ -22,14 +24,26 @@ type OwnProps = {
   maxLength?: number;
   tabIndex?: number;
   teactExperimentControlled?: boolean;
+  onLoading?: boolean;
   inputMode?: 'text' | 'none' | 'tel' | 'url' | 'email' | 'numeric' | 'decimal' | 'search';
+  loadingSize?: 'small' | 'medium' | 'large' | 'x-large';
+  caretColor?: string;
   onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
   onInput?: (e: FormEvent<HTMLInputElement>) => void;
   onKeyPress?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   onPaste?: (e: React.ClipboardEvent<HTMLInputElement>) => void;
+  onClick?: (e: React.MouseEventHandler<HTMLInputElement>) => void;
 };
+
+/**
+ * TL - Custom InputText
+ * Description: Input text was changed, add some properties to trigger
+ *   - onLoading: Handle loading state. The Loading is on the right side of the input element.
+ *   - loadingSize: The size of the loading element.
+ *   - caretColor: The color of the caret.
+ */
 
 const InputText: FC<OwnProps> = ({
   ref,
@@ -47,11 +61,14 @@ const InputText: FC<OwnProps> = ({
   maxLength,
   tabIndex,
   teactExperimentControlled,
+  loadingSize,
+  onLoading,
   onChange,
   onInput,
   onKeyPress,
   onKeyDown,
   onBlur,
+  onClick,
   onPaste,
 }) => {
   const lang = useLang();
@@ -68,6 +85,9 @@ const InputText: FC<OwnProps> = ({
 
   return (
     <div className={fullClassName} dir={lang.isRtl ? 'rtl' : undefined}>
+      {
+        onLoading && <Loading className={`custom-absolute custom-right custom-${loadingSize}`} />
+      }
       <input
         ref={ref}
         className="form-control"
@@ -88,6 +108,7 @@ const InputText: FC<OwnProps> = ({
         onKeyDown={onKeyDown}
         onBlur={onBlur}
         onPaste={onPaste}
+        onClick={onClick}
         aria-label={labelText}
         teactExperimentControlled={teactExperimentControlled}
       />

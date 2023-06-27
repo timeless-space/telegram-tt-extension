@@ -6,15 +6,22 @@ import buildClassName from '../../util/buildClassName';
 
 import './Loading.scss';
 
+/**
+ * TL - Custom Loading Component, add gray color
+ */
 type OwnProps = {
-  color?: 'blue' | 'white' | 'black' | 'yellow';
+  color?: 'blue' | 'white' | 'black' | 'yellow' | 'gray';
   backgroundColor?: 'light' | 'dark';
   onClick?: NoneToVoidFunction;
+  ref?: React.Ref<HTMLDivElement>;
+  className?: string;
 };
 
-const Loading: FC<OwnProps> = ({ color = 'blue', backgroundColor, onClick }) => {
+const Loading: FC<OwnProps> = ({
+  color, backgroundColor, onClick, ref, className,
+}) => {
   return (
-    <div className={buildClassName('Loading', onClick && 'interactive')} onClick={onClick}>
+    <div ref={ref} className={buildClassName('Loading', onClick && 'interactive', className)} onClick={onClick}>
       <Spinner color={color} backgroundColor={backgroundColor} />
     </div>
   );

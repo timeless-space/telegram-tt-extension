@@ -171,7 +171,7 @@ const Menu: FC<OwnProps> = ({
         onClick={autoClose ? onClose : undefined}
       >
         {children}
-        {footer && <div className="footer">{footer}</div>}
+        {/* {footer && <div className="footer">{footer}</div>} */}
       </div>
     </div>
   );
