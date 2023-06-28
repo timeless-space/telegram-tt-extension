@@ -171,6 +171,9 @@ const ChatList: FC<OwnProps> = ({
     const viewportOffset = orderedIds!.indexOf(viewportIds![0]);
 
     const pinnedCount = getPinnedChatsCount(resolvedFolderId) || 0;
+    /**
+     * TL - This function scroll the header whenever the chatList render.
+     */
     setTimeout(() => {
       if (containerRef.current && firstScroll.current) {
         containerRef.current.scrollTo({ top: HEIGHT_HEADER_FIXED });
@@ -200,6 +203,10 @@ const ChatList: FC<OwnProps> = ({
     });
   }
 
+  /**
+   * TL - Custom functions for chatList scroll
+   * Description: This function is used to trigger the header show or hide with an animation
+   */
   function handleScroll(event: React.UIEvent<HTMLDivElement, UIEvent>) {
     if (firstScroll.current) return;
     const doc = document.documentElement;

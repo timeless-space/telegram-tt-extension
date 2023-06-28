@@ -295,6 +295,11 @@ const AuthPhoneNumber: FC<StateProps> = ({
               {lang('Login.QR.Login')}
             </Button>
           )} */}
+          {
+            /**
+             * TL - Custom button styles follow sketch design
+             */
+          }
           <Button
             className={`capitalize-text ${canSubmit && isAuthReady ? 'btn-enable' : 'btn-disable'}`}
             type="submit"

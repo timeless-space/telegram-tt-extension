@@ -216,11 +216,6 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
   //   setSettingOption({ shouldUseSystemTheme: false });
   // });
 
-  useEffect(() => {
-    setSettingOption({ theme: 'dark' });
-    setSettingOption({ shouldUseSystemTheme: false });
-  }, []);
-
   // const handleAnimationLevelChange = useLastCallback((e: React.SyntheticEvent<HTMLElement>) => {
   //   e.stopPropagation();
 

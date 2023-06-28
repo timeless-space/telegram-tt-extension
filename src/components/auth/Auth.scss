@@ -76,6 +76,9 @@
     }
   }
 
+  /**
+   * TL - Custom styles for label
+   */
   .label {
     font-size: 0.875rem;
     font-weight: 400;
@@ -96,6 +99,9 @@
     }
   }
 
+  /**
+   * TL - Custom styles for input
+   */
   .custom-input {
     border: var(--border-width) solid var(--color-borders-input);
   }
@@ -109,12 +115,18 @@
   }
 }
 
+/**
+ * TL - Custom button style that can click on
+ */
 .btn-enable {
   margin-top: 26px !important;
   font-size: 17px !important;
   line-height: 22px !important;
 }
 
+/**
+ * TL - Custom button style that can't click on
+ */
 .btn-disable {
   background-color: #272727 !important;
   font-size: 17px !important;

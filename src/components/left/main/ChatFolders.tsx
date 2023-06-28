@@ -264,6 +264,10 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
     shouldRender: shouldRenderPlaceholder, transitionClassNames,
   } = useShowTransition(!orderedFolderIds, undefined, true);
 
+  /**
+   * TL - Custom transition interact with header
+   * Description: This useEffect hook active when activeChatFolder is selected. Get translate value from session storage
+   */
   useEffect(() => {
     const currentPropertyInStorage = JSON.parse(
       sessionStorage.getItem(activeChatFolder)
@@ -294,6 +298,9 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
     const activeFolder = Object.values(chatFoldersById)
       .find(({ id }) => id === folderTabs![activeChatFolder].id);
     const isFolder = activeFolder && !isInAllChatsFolder;
+    /**
+     * TL - Check and set default values for each screens that have header.
+     */
     const folderHasProperty = sessionStorage.getItem(activeChatFolder);
     if (!folderHasProperty) {
       sessionStorage.setItem(

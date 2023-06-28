@@ -33,6 +33,9 @@
       border-bottom: 0;
       z-index: 1;
       opacity: 1;
+      /**
+       * TL - Custom animation for TabList whenever the tab is selected or disabled.
+       */
       transform: translateY(var(--tab-folder-translate));
       transition: opacity var(--layer-transition), transform 0.1s ease-out;
     }

@@ -63,7 +63,7 @@ export {
   fetchNotificationExceptions, fetchNotificationSettings, updateContactSignUpNotification, updateNotificationSettings,
   fetchLanguages, fetchLangPack, fetchPrivacySettings, setPrivacySettings, registerDevice, unregisterDevice,
   /**
-   * TL - Export 2 custom functions
+   * TL - Export 2 custom functions to import easier
    */
   registerMobileDevice, unregisterMobileDevice,
   updateIsOnline, fetchContentSettings, updateContentSettings, fetchLangStrings, fetchCountryList, fetchAppConfig,
