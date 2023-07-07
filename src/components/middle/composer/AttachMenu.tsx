@@ -40,9 +40,11 @@ export type OwnProps = {
   canSendAudios: boolean;
   isScheduled?: boolean;
   attachBots: GlobalState['attachMenu']['bots'];
+  isChatWithBot: boolean;
   peerType?: ApiAttachMenuPeerType;
   onFileSelect: (files: File[], shouldSuggestCompression?: boolean) => void;
   onPollCreate: () => void;
+  handleSendCrypto: () => void;
   theme: ISettings['theme'];
 };
 
@@ -59,8 +61,10 @@ const AttachMenu: FC<OwnProps> = ({
   attachBots,
   peerType,
   isScheduled,
+  isChatWithBot,
   onFileSelect,
   onPollCreate,
+  handleSendCrypto,
   theme,
 }) => {
   const [isAttachMenuOpen, openAttachMenu, closeAttachMenu] = useFlag();
@@ -178,6 +182,24 @@ const AttachMenu: FC<OwnProps> = ({
         )}
         {canAttachPolls && (
           <MenuItem icon="poll" onClick={onPollCreate}>{lang('Poll')}</MenuItem>
+        )}
+        {
+          /**
+           * TL - Add send crypto button to attachments
+           * Description: Only chat 1-1 (except with bot and self) or group has this button
+           */
+        }
+        {!isChatWithBot && (
+          <MenuItem
+            icon="lock"
+            className="margin-left-1px"
+            customIcon={(
+              <img className="icon" src="/wallet_20px.svg" alt="" />
+            )}
+            onClick={handleSendCrypto}
+          >
+            {lang('Send Crypto')}
+          </MenuItem>
         )}
 
         {canAttachMedia && !isScheduled && bots.map((bot) => (

@@ -214,6 +214,17 @@ const RightHeader: FC<OwnProps & StateProps> = ({
 
   const [shouldSkipTransition, setShouldSkipTransition] = useState(!isColumnOpen);
 
+  /**
+   * TL - Send a post message to Timeless Wallet
+   * Description: The data is an object with 2 properties: chatId and threadId
+   */
+  const handleSendCrypto = () => {
+    (window as any).webkit?.messageHandlers?.sendCrypto.postMessage({
+      chatId,
+      threadId,
+    });
+  };
+
   useEffect(() => {
     setTimeout(() => {
       setShouldSkipTransition(!isColumnOpen);
@@ -453,6 +464,22 @@ const RightHeader: FC<OwnProps & StateProps> = ({
             <h3>{getHeaderTitle()}
             </h3>
             <section className="tools">
+              {
+                /**
+                 * TL - Custom send crypto button
+                 */
+                !isBot && (
+                  <Button
+                    round
+                    color="translucent"
+                    size="smaller"
+                    ariaLabel={lang('Send Crypto')}
+                    onClick={handleSendCrypto}
+                  >
+                    <img src="/wallet_24px.svg" alt="" />
+                  </Button>
+                )
+              }
               {canAddContact && (
                 <Button
                   round
