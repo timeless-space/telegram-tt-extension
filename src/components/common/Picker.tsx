@@ -24,6 +24,7 @@ import PickerSelectedItem from './PickerSelectedItem';
 import Loading from '../ui/Loading';
 
 import './Picker.scss';
+import { BOT_ID } from '../../config';
 
 type OwnProps = {
   itemIds: string[];
@@ -139,15 +140,20 @@ const Picker: FC<OwnProps> = ({
             />
           ))}
           {unlockedSelectedIds.map((id, i) => (
-            <PickerSelectedItem
-              chatOrUserId={id}
-              isMinimized={
-                shouldMinimize && i + lockedSelectedIds.length < selectedIds.length - ALWAYS_FULL_ITEMS_COUNT
-              }
-              canClose
-              onClick={handleItemClick}
-              clickArg={id}
-            />
+            /**
+             * TL - Only the item id !== Bot_id is visible
+             */
+            BOT_ID !== id && (
+              <PickerSelectedItem
+                chatOrUserId={id}
+                isMinimized={
+                  shouldMinimize && i + lockedSelectedIds.length < selectedIds.length - ALWAYS_FULL_ITEMS_COUNT
+                }
+                canClose
+                onClick={handleItemClick}
+                clickArg={id}
+              />
+            )
           ))}
           <InputText
             id={searchInputId}
@@ -177,7 +183,10 @@ const Picker: FC<OwnProps> = ({
                 />
               );
             };
-            return (
+            /**
+             * TL - Only the item id !== Bot_id is visible
+             */
+            return BOT_ID !== id && (
               <ListItem
                 key={id}
                 className={buildClassName('chat-item-clickable picker-list-item', isRoundCheckbox && 'chat-item')}
