@@ -1,0 +1,33 @@
+/**
+ * TL - custom style for input text component
+ */
+
+.custom-relative {
+    position: relative;
+}
+
+.custom-absolute {
+    position: absolute;
+}
+
+.custom-small {
+    transform: scale(0.5);
+}
+
+.custom-medium {
+    transform: scale(0.75);
+}
+
+.custom-large {
+    transform: scale(1);
+}
+
+.custom-x-large {
+    transform: scale(1.25);
+}
+
+.custom-right {
+    right: 10px;
+    top: 0;
+    bottom: 0;
+}

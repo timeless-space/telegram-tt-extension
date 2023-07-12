@@ -284,7 +284,10 @@ export const FEEDBACK_URL = 'https://bugs.telegram.org/?tag_ids=41&sort=time';
 export const GENERAL_TOPIC_ID = 1;
 
 export const LIGHT_THEME_BG_COLOR = '#99BA92';
-export const DARK_THEME_BG_COLOR = '#0F0F0F';
+/**
+ * TL - Change background color for dark theme
+ */
+export const DARK_THEME_BG_COLOR = '#131314';
 export const DEFAULT_PATTERN_COLOR = '#4A8E3A8C';
 export const DARK_THEME_PATTERN_COLOR = '#0A0A0A8C';
 export const MAX_UPLOAD_FILEPART_SIZE = 524288;

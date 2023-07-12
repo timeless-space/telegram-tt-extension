@@ -8,13 +8,14 @@ import type { GlobalState } from '../../global/types';
 
 import { IS_TOUCH_ENV } from '../../util/windowEnvironment';
 import { pick } from '../../util/iteratees';
-import renderText from '../common/helpers/renderText';
+// import renderText from '../common/helpers/renderText';
 import useHistoryBack from '../../hooks/useHistoryBack';
 import useLang from '../../hooks/useLang';
 
 import InputText from '../ui/InputText';
-import Loading from '../ui/Loading';
-import TrackingMonkey from '../common/TrackingMonkey';
+// import Loading from '../ui/Loading';
+// import TrackingMonkey from '../common/TrackingMonkey';
+import { fallbackLangPackInitial as langPack } from '../../util/fallbackLangPackInitial';
 
 type StateProps = Pick<GlobalState, 'authPhoneNumber' | 'authIsCodeViaApp' | 'authIsLoading' | 'authError'>;
 
@@ -22,7 +23,7 @@ const CODE_LENGTH = 5;
 
 const AuthCode: FC<StateProps> = ({
   authPhoneNumber,
-  authIsCodeViaApp,
+  // authIsCodeViaApp,
   authIsLoading,
   authError,
 }) => {
@@ -35,15 +36,53 @@ const AuthCode: FC<StateProps> = ({
   const lang = useLang();
   // eslint-disable-next-line no-null/no-null
   const inputRef = useRef<HTMLInputElement>(null);
+  // eslint-disable-next-line no-null/no-null
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const [code, setCode] = useState<string>('');
   const [isTracking, setIsTracking] = useState(false);
-  const [trackingDirection, setTrackingDirection] = useState(1);
+  // const [trackingDirection, setTrackingDirection] = useState(1);
+  const currentViewportHeight = useRef<number>(Number(window.visualViewport!.height));
+  const isFocused = useRef<boolean>(false);
 
   useEffect(() => {
     if (!IS_TOUCH_ENV) {
       inputRef.current!.focus();
     }
+
+    /**
+     * TL - Use trick to make button always above keyboard
+     * Description:
+     *   - First, prevent input from being scroll to the center of the screen
+     *   - Second, caculate x value. It calculates by substract clientHeight and viewHeight
+     *   - Third, translate view up by x pixels.
+     */
+    inputRef.current!.addEventListener('focusin', () => {
+      if (!isFocused.current) {
+        inputRef.current!.style.transform = 'TranslateY(-10000px)';
+        inputRef.current!.style.caretColor = 'transparent';
+        setTimeout(() => {
+          inputRef.current!.style.transform = 'none';
+          const scrollPixel = containerRef.current!.clientHeight
+            - currentViewportHeight.current + ((window as any).numberKeyboardHeight ?? 0) / 1.15 + 10;
+
+          if (scrollPixel > 0) {
+            containerRef.current!.style.transform = `translateY(${-scrollPixel}px)`;
+            containerRef.current!.style.transition = 'transform 0.2s linear';
+          }
+          setTimeout(() => {
+            inputRef.current!.style.caretColor = '#8774E1';
+          }, 180);
+        }, 80);
+        isFocused.current = true;
+      }
+    });
+
+    inputRef.current!.addEventListener('blur', () => {
+      isFocused.current = false;
+      containerRef.current!.style.transform = 'translateY(0)';
+      containerRef.current!.style.transition = 'transform 0.2s linear';
+    });
   }, []);
 
   useHistoryBack({
@@ -71,12 +110,6 @@ const AuthCode: FC<StateProps> = ({
       setIsTracking(false);
     }
 
-    if (code && code.length > target.value.length) {
-      setTrackingDirection(-1);
-    } else {
-      setTrackingDirection(1);
-    }
-
     if (target.value.length === CODE_LENGTH) {
       setAuthCode({ code: target.value });
     }
@@ -87,15 +120,10 @@ const AuthCode: FC<StateProps> = ({
   }
 
   return (
-    <div id="auth-code-form" className="custom-scroll">
-      <div className="auth-form">
-        <TrackingMonkey
-          code={code}
-          codeLength={CODE_LENGTH}
-          isTracking={isTracking}
-          trackingDirection={trackingDirection}
-        />
-        <h1>
+    <div className="custom-wrapper">
+      <div ref={containerRef} className="auth-form">
+        <div id="logo" />
+        <h1 className="flex center">
           {authPhoneNumber}
           <div
             className="auth-number-edit div-button"
@@ -108,19 +136,24 @@ const AuthCode: FC<StateProps> = ({
           </div>
         </h1>
         <p className="note">
-          {renderText(lang(authIsCodeViaApp ? 'SentAppCode' : 'Login.JustSentSms'), ['simple_markdown'])}
+          {langPack.SentAppCode1.value} <br /> {langPack.SentAppCode2.value}
         </p>
+        <div className="label">
+          {langPack.EnterCode.value}
+        </div>
         <InputText
           ref={inputRef}
+          className="custom-input noMarginBottom"
           id="sign-in-code"
-          label={lang('Code')}
+          placeholder={lang('5 digit verification code')}
           onInput={onCodeChange}
           value={code}
           error={authError && lang(authError)}
           autoComplete="off"
           inputMode="numeric"
+          onLoading={authIsLoading}
+          loadingSize="medium"
         />
-        {authIsLoading && <Loading />}
       </div>
     </div>
   );

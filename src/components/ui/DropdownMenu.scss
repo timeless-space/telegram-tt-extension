@@ -1,3 +1,26 @@
 .DropdownMenu {
   position: relative;
 }
+
+/**
+ * TL - Custom styles for dropdown menus
+ */
+
+.custom-dropdown-visible {
+  width: 0px;
+  transition: width 0.25s ease-out;
+}
+
+.custom-dropdown-invisible {
+  width: 3rem;
+  transition: width 0.25s ease-out;
+}
+
+.custom-style {
+  border: none !important;
+  background-color: var(--color-chat-hover) !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-left: 0 !important;
+  transition: max-width 2.25s linear 0.5s !important;
+}

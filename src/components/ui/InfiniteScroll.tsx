@@ -246,7 +246,10 @@ const InfiniteScroll: FC<OwnProps> = ({
       {withAbsolutePositioning && items?.length ? (
         <div
           teactFastList={!noFastList}
-          style={buildStyle('position: relative', IS_ANDROID && `height: ${maxHeight}px`)}
+          /**
+           * TL - Custom infinite scroll, set auto scroll although is not enough items.
+           */
+          style={buildStyle('position: relative', IS_ANDROID && `height: ${maxHeight}px`, 'min-height: 720px')}
         >
           {children}
         </div>

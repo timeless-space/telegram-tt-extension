@@ -32,9 +32,12 @@
       padding-bottom: 1px;
       border-bottom: 0;
       z-index: 1;
-
       opacity: 1;
-      transition: opacity var(--layer-transition);
+      /**
+       * TL - Custom animation for TabList whenever the tab is selected or disabled.
+       */
+      transform: translateY(var(--tab-folder-translate));
+      transition: opacity var(--layer-transition), transform 0.1s ease-out;
     }
 
     &--tabs-hidden .TabList {
