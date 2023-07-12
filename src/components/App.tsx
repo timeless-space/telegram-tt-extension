@@ -217,6 +217,10 @@ const App: FC<StateProps> = ({
     sessionStorage.clear();
   }, [theme]);
 
+  useEffect(() => {
+    sessionStorage.setItem('isExpandHeader', 'false');
+  }, []);
+
   return (
     <UiLoader page={page} isMobile={isMobile}>
       <Transition

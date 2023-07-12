@@ -249,7 +249,7 @@ const InfiniteScroll: FC<OwnProps> = ({
           /**
            * TL - Custom infinite scroll, set auto scroll although is not enough items.
            */
-          style={buildStyle('position: relative', IS_ANDROID && `height: ${maxHeight}px`, 'min-height: 720px')}
+          style={buildStyle('position: relative', IS_ANDROID && `height: ${maxHeight}px`, 'min-height: 100vh')}
         >
           {children}
         </div>

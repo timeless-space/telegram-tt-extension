@@ -14,7 +14,8 @@
 html {
   --header-translate: -100%;
   --tab-folder-translate: 0px;
-  --fi-show-header-opacity: 0;
+  --show-header-opacity: 0;
+  --disable-tab-click: auto
 }
 
 html,
@@ -324,7 +325,7 @@ body:not(.is-ios) {
 }
 
 .fix-issue {
-  opacity: var(--fi-show-header-opacity);
+  opacity: var(--show-header-opacity);
   transform: translateY(var(--header-translate));
   transition: all 0.1s ease-out;
   max-height: 56px;
