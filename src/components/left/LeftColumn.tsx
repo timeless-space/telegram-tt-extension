@@ -116,16 +116,16 @@ function LeftColumn({
         (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_archivedScreen');
         break;
       case 5:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigationNewChannelStep1Screen');
+        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_newChannelStep1Screen');
         break;
       case 6:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigationNewChannelStep2Screen');
+        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_newChannelStep2Screen');
         break;
       case 7:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigationNewGroupStep1Screen');
+        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_newGroupStep1Screen');
         break;
       case 8:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigationNewGroupStep2Screen');
+        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_newGroupStep2Screen');
         break;
       default:
         break;
