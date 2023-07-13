@@ -216,10 +216,11 @@ const ChatList: FC<OwnProps> = ({
       Math.round((scrollTop / HEIGHT_HEADER_FIXED) * 100),
     );
     const opacity = 1 - scrollPercentRounded * 0.01;
-    const opacityOffset = scrollTop >= HEIGHT_HEADER_FIXED + 10 || scrollPercentRounded == 100
+    const opacityOffset = scrollTop >= HEIGHT_HEADER_FIXED + 10 || scrollPercentRounded === 100
       ? 0
       : opacity;
 
+    // eslint-disable-next-line eqeqeq
     const translatePixel = scrollTop >= HEIGHT_HEADER_FIXED || scrollPercentRounded == 100 ? 0 : Math.min(
       HEIGHT_HEADER_FIXED,
       ((100 - scrollPercentRounded) * HEIGHT_HEADER_FIXED) / 100,
@@ -246,6 +247,7 @@ const ChatList: FC<OwnProps> = ({
 
   return (
     <InfiniteScroll
+      id="custom-id-chat-list-inf-scroll"
       className={buildClassName('chat-list custom-scroll', isForumPanelOpen && 'forum-panel-open')}
       ref={containerRef}
       items={viewportIds}
@@ -255,6 +257,7 @@ const ChatList: FC<OwnProps> = ({
       maxHeight={chatsHeight + archiveHeight + HEIGHT_HEADER_FIXED}
       onLoadMore={getMore}
       onDragLeave={handleDragLeave}
+      // eslint-disable-next-line react/jsx-no-bind
       onScroll={handleScroll}
     >
       {shouldDisplayArchive && (
