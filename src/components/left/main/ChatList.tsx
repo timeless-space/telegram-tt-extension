@@ -254,6 +254,7 @@ const ChatList: FC<OwnProps> = ({
 
   return (
     <InfiniteScroll
+      id="custom-id-chat-list-inf-scroll"
       className={buildClassName('chat-list custom-scroll', isForumPanelOpen && 'forum-panel-open')}
       ref={containerRef}
       items={viewportIds}
@@ -263,6 +264,7 @@ const ChatList: FC<OwnProps> = ({
       maxHeight={chatsHeight + archiveHeight + HEIGHT_HEADER_FIXED}
       onLoadMore={getMore}
       onDragLeave={handleDragLeave}
+      // eslint-disable-next-line react/jsx-no-bind
       onScroll={handleScroll}
     >
       {shouldDisplayArchive && (
