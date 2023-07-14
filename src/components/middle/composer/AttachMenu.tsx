@@ -172,12 +172,12 @@ const AttachMenu: FC<OwnProps> = ({
                   : (canSendPhotos ? 'InputAttach.Popover.Photo' : 'InputAttach.Popover.Video'))}
               </MenuItem>
             )}
-            {(canSendDocuments || canSendAudios)
+            {/* {(canSendDocuments || canSendAudios)
               && (
                 <MenuItem icon="document" onClick={handleDocumentSelect}>
                   {lang(!canSendDocuments && canSendAudios ? 'InputAttach.Popover.Music' : 'AttachDocument')}
                 </MenuItem>
-              )}
+              )} */}
           </>
         )}
         {canAttachPolls && (
@@ -189,7 +189,7 @@ const AttachMenu: FC<OwnProps> = ({
            * Description: Only chat 1-1 (except with bot and self) or group has this button
            */
         }
-        {!isChatWithBot && (
+        {!isChatWithBot && Number(chatId) >= 0 && (
           <MenuItem
             icon="lock"
             className="margin-left-1px"

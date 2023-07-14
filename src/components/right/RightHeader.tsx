@@ -468,7 +468,7 @@ const RightHeader: FC<OwnProps & StateProps> = ({
                 /**
                  * TL - Custom send crypto button
                  */
-                !isBot && (
+                !isBot && Number(chatId) >= 0 && (
                   <Button
                     round
                     color="translucent"
