@@ -10,3 +10,17 @@ export function changePaddingTopMobile(padding = 0) {
   element1.style.paddingTop = `${padding}px`;
   element2.style.paddingTop = `${padding}px`;
 }
+
+/**
+ * TL - Custom a sendMessage function to send a message
+ */
+export function handleSendMessage({ chatId, threadId = 0, text }: Message) {
+  getActions().sendMessage({
+    text,
+    messageList: {
+      chatId,
+      threadId,
+      type: 'thread',
+    },
+  });
+}

@@ -1260,6 +1260,16 @@ const Composer: FC<OwnProps & StateProps> = ({
   const withBotCommands = isChatWithBot && botMenuButton?.type === 'commands' && !editingMessage
     && botCommands !== false && !activeVoiceRecording;
 
+  /**
+   * TL - Send a post message to Timeless Wallet
+   * Description: The data is an object with 2 properties: chatId and threadId
+   */
+  const handleSendCrypto = () => {
+    (window as any).webkit?.messageHandlers?.sendCrypto.postMessage({
+      chatId,
+    });
+  };
+
   return (
     <div className={className}>
       {canAttachMedia && isReady && (
@@ -1487,6 +1497,8 @@ const Composer: FC<OwnProps & StateProps> = ({
             isScheduled={shouldSchedule}
             attachBots={attachBots}
             peerType={attachMenuPeerType}
+            isChatWithBot={isChatWithBot || isChatWithSelf}
+            handleSendCrypto={handleSendCrypto}
             theme={theme}
           />
           {Boolean(botKeyboardMessageId) && (
