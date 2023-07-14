@@ -2,6 +2,8 @@
  * TL - Add padding top
  * Description: Add padding top when called this function, all elements have 'tl-custom-padding' className will be change styles.
  */
+import { getActions } from "../global";
+import { Message } from "../global/types";
 
 export function changePaddingTopMobile(padding = 0) {
   const element1: any = document.getElementById('fix-issue-mobile');
