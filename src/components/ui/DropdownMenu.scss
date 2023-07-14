@@ -7,13 +7,18 @@
  */
 
 .custom-dropdown-visible {
-  width: 0px;
+  width: 0;
   transition: width 0.25s ease-out;
 }
 
 .custom-dropdown-invisible {
   width: 3rem;
   transition: width 0.25s ease-out;
+}
+
+.custom-dropdown-visible-no-animation {
+  width: 0;
+  transition: width 0s ease-out;
 }
 
 .custom-style {

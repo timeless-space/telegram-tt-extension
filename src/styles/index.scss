@@ -296,15 +296,6 @@ body:not(.is-ios) {
   }
 }
 
-
-@media (max-width: 600px) {
-  .tl-custom-padding {
-    /* stylelint-disable-next-line plugin/no-low-performance-animation-properties */
-    transition-property: all !important;
-    transition-duration: 0.5s !important;
-  }
-}
-
 .fix-issue {
   opacity: var(--show-header-opacity);
   transform: translateY(var(--header-translate));

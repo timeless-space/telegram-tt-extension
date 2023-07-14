@@ -1,6 +1,6 @@
 import type { FC } from '../../../lib/teact/teact';
 import React, {
-  memo, useEffect, useMemo, useRef,
+  memo, useEffect, useMemo, useRef, useState,
 } from '../../../lib/teact/teact';
 import { getActions, withGlobal } from '../../../global';
 
@@ -147,6 +147,8 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
       : undefined;
   }, [searchDate]);
 
+  const [isTouchBack, setIsTouchBack] = useState<boolean>(false);
+
   const archivedUnreadChatsCount = useFolderManagerForUnreadCounters()[ARCHIVED_FOLDER_ID]?.chatsCount || 0;
 
   const { connectionStatus, connectionStatusText, connectionStatusPosition } = useConnectionStatus(
@@ -172,6 +174,10 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
 
   // const withOtherVersions = window.location.hostname === PRODUCTION_HOSTNAME || IS_TEST;
 
+  const handleClickMainButton = useLastCallback(() => {
+    setIsTouchBack(true);
+  });
+
   const MainButton: FC<{ onTrigger: () => void; isOpen?: boolean }> = useMemo(() => {
     return ({ onTrigger, isOpen }) => (
       <Button
@@ -180,6 +186,8 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
         size="smaller"
         color="translucent"
         className={isOpen ? 'active' : ''}
+        // eslint-disable-next-line react/jsx-no-bind
+        onMouseUp={handleClickMainButton}
         // eslint-disable-next-line react/jsx-no-bind
         onClick={hasMenu ? onTrigger : () => onReset()}
         ariaLabel={hasMenu ? lang('AccDescrOpenMenu2') : 'Return to chat list'}
@@ -258,6 +266,16 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
     || content === LeftColumnContent.GlobalSearch
     || content === LeftColumnContent.Contacts
   );
+
+  const handleHideDropdownButton = useLastCallback(() => {
+    setIsTouchBack(false);
+  });
+
+  useEffect(() => {
+    if (!isSearchFocused) {
+      setIsTouchBack(false);
+    }
+  }, [isSearchFocused]);
 
   useEffect(() => (isSearchFocused ? captureEscKeyListener(() => onReset()) : undefined), [isSearchFocused, onReset]);
 
@@ -391,11 +409,15 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
             /**
              * TL - Trigger hide hamburger menu when search input focused in
              */
-            isSearchFocused ? 'custom-dropdown-invisible' : 'custom-dropdown-visible',
+            isSearchFocused
+              ? 'custom-dropdown-invisible'
+              : isTouchBack ? 'custom-dropdown-visible'
+                : 'custom-dropdown-visible-no-animation',
           )}
           positionX={shouldHideSearch && lang.isRtl ? 'right' : 'left'}
           transformOriginX={IS_ELECTRON && !isFullscreen ? 90 : undefined}
           onTransitionEnd={lang.isRtl ? handleDropdownMenuTransitionEnd : undefined}
+          onClose={handleHideDropdownButton}
         >
           {menuItems}
         </DropdownMenu>
