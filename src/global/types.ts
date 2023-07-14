@@ -2510,3 +2510,10 @@ export type TabArgs<T> = T extends RequiredGlobalState ? [
 ] : [
   tabId?: number | undefined,
 ];
+
+/**
+ * TL - Custom message interface for createGroupGlobal function
+ */
+export interface Group {
+  title: string;
+}

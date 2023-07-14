@@ -311,3 +311,5 @@ export const DEFAULT_LIMITS: Record<ApiLimitType, readonly [number, number]> = {
   chatlistInvites: [3, 100],
   chatlistJoined: [2, 20],
 };
+
+export const BOT_ID: string = '5945359068';

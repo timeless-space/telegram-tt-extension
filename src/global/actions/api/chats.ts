@@ -579,6 +579,8 @@ addActionHandler('createGroupChat', async (global, actions, payload): Promise<vo
       tabId,
     });
 
+    localStorage.setItem('chatIdOneTimeUse', chatId);
+
     if (chatId && photo) {
       await callApi('editChatPhoto', {
         chatId,
