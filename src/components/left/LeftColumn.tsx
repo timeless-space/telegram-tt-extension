@@ -98,6 +98,40 @@ function LeftColumn({
   // Used to reset child components in background.
   const [lastResetTime, setLastResetTime] = useState<number>(0);
 
+  useEffect(() => {
+    switch (content) {
+      case 0:
+        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_chatListScreen');
+        break;
+      case 1:
+        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_globalSearchScreen');
+        break;
+      case 2:
+        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_settingsScreen');
+        break;
+      case 3:
+        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_contactsScreen');
+        break;
+      case 4:
+        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_archivedScreen');
+        break;
+      case 5:
+        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_newChannelStep1Screen');
+        break;
+      case 6:
+        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_newChannelStep2Screen');
+        break;
+      case 7:
+        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_newGroupStep1Screen');
+        break;
+      case 8:
+        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_newGroupStep2Screen');
+        break;
+      default:
+        break;
+    }
+  }, [content]);
+
   let contentType: ContentType = ContentType.Main;
   switch (content) {
     case LeftColumnContent.Archived:

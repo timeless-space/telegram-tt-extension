@@ -1,4 +1,4 @@
-import React from '../../lib/teact/teact';
+import React, { useEffect } from '../../lib/teact/teact';
 import { getActions, getGlobal, withGlobal } from '../../global';
 
 import { ApiMediaFormat } from '../../api/types';
@@ -110,6 +110,26 @@ const UiLoader: FC<OwnProps & StateProps> = ({
   const {
     shouldRender: shouldRenderMask, transitionClassNames,
   } = useShowTransition(!isReady, undefined, true);
+
+  useEffect(() => {
+    switch (page) {
+      case 'authPhoneNumber':
+        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_authPhoneNumberScreen');
+        break;
+      case 'authCode':
+        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_authCodeScreen');
+        break;
+      case 'authPassword':
+        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_authPasswordScreen');
+        break;
+      case 'authQrCode':
+        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_authQrCodeScreen');
+        break;
+      default:
+        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_lockScreen');
+        break;
+    }
+  }, [page]);
 
   useEffectOnce(() => {
     let timeout: number | undefined;
