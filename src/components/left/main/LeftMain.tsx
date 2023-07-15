@@ -166,7 +166,7 @@ const LeftMain: FC<OwnProps> = ({
          * TL - Fix header issue when ChatList screen is rendered
          */
       }
-      <div id="fix-issue-mobile" className={`${content === LeftColumnContent.ChatList ? 'fix-issue' : ''}`}>
+      <div id="fix-issue-mobile" className="fix-issue">
         <LeftMainHeader
           shouldHideSearch={isForumPanelVisible}
           content={content}
