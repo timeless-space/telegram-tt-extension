@@ -100,9 +100,6 @@ function LeftColumn({
 
   useEffect(() => {
     switch (content) {
-      case 0:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_chatListScreen');
-        break;
       case 1:
         (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_globalSearchScreen');
         break;

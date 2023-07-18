@@ -126,7 +126,6 @@ const UiLoader: FC<OwnProps & StateProps> = ({
         (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_authQrCodeScreen');
         break;
       default:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_lockScreen');
         break;
     }
   }, [page]);
