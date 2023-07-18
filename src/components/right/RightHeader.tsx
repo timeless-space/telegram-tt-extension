@@ -476,7 +476,7 @@ const RightHeader: FC<OwnProps & StateProps> = ({
                     ariaLabel={lang('Send Crypto')}
                     onClick={handleSendCrypto}
                   >
-                    <img src="/wallet_24px.svg" alt="" />
+                    <img src="./wallet_24px.svg" alt="" />
                   </Button>
                 )
               }

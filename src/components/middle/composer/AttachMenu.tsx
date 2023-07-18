@@ -194,7 +194,7 @@ const AttachMenu: FC<OwnProps> = ({
             icon="lock"
             className="margin-left-1px"
             customIcon={(
-              <img className="icon" src="/wallet_20px.svg" alt="" />
+              <img className="icon" src="./wallet_20px.svg" alt="" />
             )}
             onClick={handleSendCrypto}
           >
