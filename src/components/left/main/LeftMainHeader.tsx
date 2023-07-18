@@ -146,7 +146,7 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
       ? formatDateToString(new Date(searchDate * 1000))
       : undefined;
   }, [searchDate]);
-  const isFistLoad = useRef<boolean>(true);
+  const isFirstLoad = useRef<boolean>(true);
 
   const archivedUnreadChatsCount = useFolderManagerForUnreadCounters()[ARCHIVED_FOLDER_ID]?.chatsCount || 0;
 
@@ -263,13 +263,13 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
   useEffect(() => (isSearchFocused ? captureEscKeyListener(() => onReset()) : undefined), [isSearchFocused, onReset]);
 
   useEffect(() => {
-    if (!isSearchFocused && !isFistLoad.current) {
+    if (!isSearchFocused && !isFirstLoad.current) {
       (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_mainScreen');
     }
   }, [isSearchFocused]);
 
   useEffect(() => {
-    isFistLoad.current = false;
+    isFirstLoad.current = false;
   }, []);
 
   const searchInputPlaceholder = content === LeftColumnContent.Contacts
