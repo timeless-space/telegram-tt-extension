@@ -29,6 +29,7 @@ import telegramLogoPath from '../../assets/telegram-logo.svg';
 import lockPreviewPath from '../../assets/lock.png';
 import monkeyPath from '../../assets/monkey.svg';
 import spoilerMaskPath from '../../assets/spoilers/mask.svg';
+import { setScreenName } from '../../util/tlCustomFunction';
 
 export type UiLoaderPage =
   'main'
@@ -114,16 +115,16 @@ const UiLoader: FC<OwnProps & StateProps> = ({
   useEffect(() => {
     switch (page) {
       case 'authPhoneNumber':
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_authPhoneNumberScreen');
+        setScreenName('tl_navigation_authPhoneNumberScreen');
         break;
       case 'authCode':
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_authCodeScreen');
+        setScreenName('tl_navigation_authCodeScreen');
         break;
       case 'authPassword':
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_authPasswordScreen');
+        setScreenName('tl_navigation_authPasswordScreen');
         break;
       case 'authQrCode':
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_authQrCodeScreen');
+        setScreenName('tl_navigation_authQrCodeScreen');
         break;
       default:
         break;

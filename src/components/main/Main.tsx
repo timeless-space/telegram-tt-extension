@@ -96,6 +96,7 @@ import ReactionPicker from '../middle/message/ReactionPicker.async';
 import ChatlistModal from '../modals/chatlist/ChatlistModal.async';
 
 import './Main.scss';
+import { setScreenName } from '../../util/tlCustomFunction';
 
 export interface OwnProps {
   isMobile?: boolean;
@@ -278,13 +279,13 @@ const Main: FC<OwnProps & StateProps> = ({
   useEffect(() => {
     if (isMobile) {
       if (isLeftColumnOpen) {
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_mainScreen');
+        setScreenName('tl_navigation_mainScreen');
       }
       if (!isLeftColumnOpen && !isRightColumnOpen) {
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_chatScreen');
+        setScreenName('tl_navigation_chatScreen');
       }
       if (isRightColumnOpen) {
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_profileScreen');
+        setScreenName('tl_navigation_profileScreen');
       }
     }
   }, [isMobile, isLeftColumnOpen, isMiddleColumnOpen, isRightColumnOpen]);

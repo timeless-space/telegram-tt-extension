@@ -25,6 +25,7 @@ import NewChat from './newChat/NewChat.async';
 import ArchivedChats from './ArchivedChats.async';
 
 import './LeftColumn.scss';
+import { setScreenName } from '../../util/tlCustomFunction';
 
 interface OwnProps {
   ref: RefObject<HTMLDivElement>;
@@ -101,28 +102,28 @@ function LeftColumn({
   useEffect(() => {
     switch (content) {
       case 1:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_globalSearchScreen');
+        setScreenName('tl_navigation_globalSearchScreen');
         break;
       case 2:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_settingsScreen');
+        setScreenName('tl_navigation_settingsScreen');
         break;
       case 3:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_contactsScreen');
+        setScreenName('tl_navigation_contactsScreen');
         break;
       case 4:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_archivedScreen');
+        setScreenName('tl_navigation_archivedScreen');
         break;
       case 5:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_newChannelStep1Screen');
+        setScreenName('tl_navigation_newChannelStep1Screen');
         break;
       case 6:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_newChannelStep2Screen');
+        setScreenName('tl_navigation_newChannelStep2Screen');
         break;
       case 7:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_newGroupStep1Screen');
+        setScreenName('tl_navigation_newGroupStep1Screen');
         break;
       case 8:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_newGroupStep2Screen');
+        setScreenName('tl_navigation_newGroupStep2Screen');
         break;
       default:
         break;

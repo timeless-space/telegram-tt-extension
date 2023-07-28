@@ -59,6 +59,7 @@ import StatusButton from './StatusButton';
 // import Toggle from '../../ui/Toggle';
 
 import './LeftMainHeader.scss';
+import { setScreenName } from '../../../util/tlCustomFunction';
 
 type OwnProps = {
   shouldHideSearch?: boolean;
@@ -264,7 +265,7 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
 
   useEffect(() => {
     if (!isSearchFocused && !isFirstLoad.current) {
-      (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_mainScreen');
+      setScreenName('tl_navigation_mainScreen');
     }
   }, [isSearchFocused]);
 

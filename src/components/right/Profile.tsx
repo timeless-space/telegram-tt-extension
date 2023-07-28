@@ -68,6 +68,7 @@ import DeleteMemberModal from './DeleteMemberModal';
 import GroupChatInfo from '../common/GroupChatInfo';
 
 import './Profile.scss';
+import { setScreenName } from '../../util/tlCustomFunction';
 
 type OwnProps = {
   chatId: string;
@@ -166,22 +167,22 @@ const Profile: FC<OwnProps & StateProps> = ({
   useEffect(() => {
     switch (activeTab) {
       case 0:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_mediaTab');
+        setScreenName('tl_navigation_mediaTab');
         break;
       case 1:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_filesTab');
+        setScreenName('tl_navigation_filesTab');
         break;
       case 2:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_linksTab');
+        setScreenName('tl_navigation_linksTab');
         break;
       case 3:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_musicTab');
+        setScreenName('tl_navigation_musicTab');
         break;
       case 4:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_voiceTab');
+        setScreenName('tl_navigation_voiceTab');
         break;
       case 5:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_groupsTab');
+        setScreenName('tl_navigation_groupsTab');
         break;
       default:
         break;

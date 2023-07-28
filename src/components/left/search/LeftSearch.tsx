@@ -22,6 +22,7 @@ import FileResults from './FileResults';
 import AudioResults from './AudioResults';
 
 import './LeftSearch.scss';
+import { setScreenName } from '../../../util/tlCustomFunction';
 
 export type OwnProps = {
   searchQuery?: string;
@@ -71,25 +72,25 @@ const LeftSearch: FC<OwnProps & StateProps> = ({
   useEffect(() => {
     switch (activeTab) {
       case 0:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_chatsTab');
+        setScreenName('tl_navigation_chatsTab');
         break;
       case 1:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_mediaTab');
+        setScreenName('tl_navigation_mediaTab');
         break;
       case 2:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_linksTab');
+        setScreenName('tl_navigation_linksTab');
         break;
       case 3:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_filesTab');
+        setScreenName('tl_navigation_filesTab');
         break;
       case 4:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_musicTab');
+        setScreenName('tl_navigation_musicTab');
         break;
       case 5:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_voiceTab');
+        setScreenName('tl_navigation_voiceTab');
         break;
       default:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_noTab');
+        setScreenName('tl_navigation_noTab');
         break;
     }
   }, [activeTab]);
