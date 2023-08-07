@@ -257,8 +257,6 @@ export const INITIAL_GLOBAL_STATE: GlobalState = {
     isMinimized: false,
     isHidden: false,
   },
-
-  screenName: '',
 };
 
 export const INITIAL_TAB_STATE: TabState = {

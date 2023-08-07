@@ -22,7 +22,6 @@ import FileResults from './FileResults';
 import AudioResults from './AudioResults';
 
 import './LeftSearch.scss';
-import { setScreenName } from '../../../util/tlCustomFunction';
 
 export type OwnProps = {
   searchQuery?: string;
@@ -68,32 +67,6 @@ const LeftSearch: FC<OwnProps & StateProps> = ({
   const lang = useLang();
   const [activeTab, setActiveTab] = useState(currentContent);
   const dateSearchQuery = useMemo(() => parseDateString(searchQuery), [searchQuery]);
-
-  useEffect(() => {
-    switch (activeTab) {
-      case 0:
-        setScreenName('tl_navigation_chatsTab');
-        break;
-      case 1:
-        setScreenName('tl_navigation_mediaTab');
-        break;
-      case 2:
-        setScreenName('tl_navigation_linksTab');
-        break;
-      case 3:
-        setScreenName('tl_navigation_filesTab');
-        break;
-      case 4:
-        setScreenName('tl_navigation_musicTab');
-        break;
-      case 5:
-        setScreenName('tl_navigation_voiceTab');
-        break;
-      default:
-        setScreenName('tl_navigation_noTab');
-        break;
-    }
-  }, [activeTab]);
 
   const handleSwitchTab = useCallback((index: number) => {
     const tab = TABS[index];

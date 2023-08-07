@@ -68,7 +68,7 @@ import DeleteMemberModal from './DeleteMemberModal';
 import GroupChatInfo from '../common/GroupChatInfo';
 
 import './Profile.scss';
-import { setScreenName } from '../../util/tlCustomFunction';
+import { sendScreenName } from '../../util/tlCustomFunction';
 
 type OwnProps = {
   chatId: string;
@@ -167,22 +167,22 @@ const Profile: FC<OwnProps & StateProps> = ({
   useEffect(() => {
     switch (activeTab) {
       case 0:
-        setScreenName('tl_navigation_mediaTab');
+        sendScreenName('tl_navigation_mediaTab');
         break;
       case 1:
-        setScreenName('tl_navigation_filesTab');
+        sendScreenName('tl_navigation_filesTab');
         break;
       case 2:
-        setScreenName('tl_navigation_linksTab');
+        sendScreenName('tl_navigation_linksTab');
         break;
       case 3:
-        setScreenName('tl_navigation_musicTab');
+        sendScreenName('tl_navigation_musicTab');
         break;
       case 4:
-        setScreenName('tl_navigation_voiceTab');
+        sendScreenName('tl_navigation_voiceTab');
         break;
       case 5:
-        setScreenName('tl_navigation_groupsTab');
+        sendScreenName('tl_navigation_groupsTab');
         break;
       default:
         break;

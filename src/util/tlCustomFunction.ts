@@ -16,13 +16,6 @@ export function changePaddingTopMobile(padding = '0px') {
 /**
  * TL - Set session screen name
  */
-export function setScreenName(name: string) {
-  getGlobal().screenName = name;
-}
-
-/**
- * TL - Add function get current screen name
- */
-export function getCurrentScreen() {
-  (window as any).webkit?.messageHandlers.jsHandler.postMessage(getGlobal().screenName);
+export function sendScreenName(name: string) {
+  (window as any).webkit?.messageHandlers.onScreenChanged.postMessage({ screenName: name });
 }
