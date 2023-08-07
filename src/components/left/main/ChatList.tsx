@@ -46,12 +46,14 @@ type OwnProps = {
   onSettingsScreenSelect: (screen: SettingsScreens) => void;
   onLeftColumnContentChange: (content: LeftColumnContent) => void;
   activeChatFolder?: number;
+  allowAbsoluteHeader?: boolean;
 };
 
 const INTERSECTION_THROTTLE = 200;
 const DRAG_ENTER_DEBOUNCE = 500;
 const RESERVED_HOTKEYS = new Set(['9', '0']);
 const HEIGHT_HEADER_FIXED = 56;
+let isScrolling: any;
 
 const ChatList: FC<OwnProps> = ({
   folderType,
@@ -63,7 +65,7 @@ const ChatList: FC<OwnProps> = ({
   foldersDispatch,
   onSettingsScreenSelect,
   onLeftColumnContentChange,
-  activeChatFolder,
+  allowAbsoluteHeader = false,
 }) => {
   const { openChat, openNextChat, closeForumPanel } = getActions();
   // eslint-disable-next-line no-null/no-null
@@ -84,8 +86,18 @@ const ChatList: FC<OwnProps> = ({
     ? archiveSettings.isMinimized ? ARCHIVE_MINIMIZED_HEIGHT : CHAT_HEIGHT_PX : 0;
 
   const { orderDiffById, getAnimationType } = useOrderDiff(orderedIds);
+  const isExpandHeader = sessionStorage.getItem('isExpandHeader');
 
   const [viewportIds, getMore] = useInfiniteScroll(undefined, orderedIds, undefined, CHAT_LIST_SLICE);
+
+  useEffect(() => {
+    // eslint-disable-next-line no-null/no-null
+    if (containerRef.current) {
+      setTimeout(() => {
+        containerRef.current?.scrollTo({ top: isExpandHeader === 'true' ? 0 : HEIGHT_HEADER_FIXED });
+      }, 0);
+    }
+  }, [containerRef, isExpandHeader]);
 
   // Support <Alt>+<Up/Down> to navigate between chats
   useHotkeys(isActive && orderedIds?.length ? {
@@ -175,7 +187,7 @@ const ChatList: FC<OwnProps> = ({
      * TL - This function scroll the header whenever the chatList render.
      */
     setTimeout(() => {
-      if (containerRef.current && firstScroll.current) {
+      if (containerRef.current && firstScroll.current && allowAbsoluteHeader) {
         containerRef.current.scrollTo({ top: HEIGHT_HEADER_FIXED });
         setTimeout(() => {
           firstScroll.current = false;
@@ -184,7 +196,8 @@ const ChatList: FC<OwnProps> = ({
     }, 0);
     return viewportIds!.map((id, i) => {
       const isPinned = viewportOffset + i < pinnedCount;
-      const offsetTop = archiveHeight + (viewportOffset + i) * CHAT_HEIGHT_PX + HEIGHT_HEADER_FIXED;
+      const offsetTop = archiveHeight + (viewportOffset + i) * CHAT_HEIGHT_PX
+        + (allowAbsoluteHeader ? HEIGHT_HEADER_FIXED : 0);
 
       return (
         <Chat
@@ -209,6 +222,7 @@ const ChatList: FC<OwnProps> = ({
    */
   function handleScroll(event: React.UIEvent<HTMLDivElement, UIEvent>) {
     if (firstScroll.current) return;
+    clearTimeout(isScrolling);
     const doc = document.documentElement;
     const scrollTop = event.currentTarget.scrollTop;
     const scrollPercentRounded = Math.min(
@@ -216,36 +230,31 @@ const ChatList: FC<OwnProps> = ({
       Math.round((scrollTop / HEIGHT_HEADER_FIXED) * 100),
     );
     const opacity = 1 - scrollPercentRounded * 0.01;
-    const opacityOffset = scrollTop >= HEIGHT_HEADER_FIXED + 10 || scrollPercentRounded == 100
+    const opacityOffset = scrollTop >= HEIGHT_HEADER_FIXED + 10 || scrollPercentRounded === 100
       ? 0
       : opacity;
 
-    const translatePixel = scrollTop >= HEIGHT_HEADER_FIXED || scrollPercentRounded == 100 ? 0 : Math.min(
+    const translatePixel = scrollTop >= HEIGHT_HEADER_FIXED || scrollPercentRounded === 100 ? 0 : Math.min(
       HEIGHT_HEADER_FIXED,
       ((100 - scrollPercentRounded) * HEIGHT_HEADER_FIXED) / 100,
     );
     const tabFolderTranslatePixel = translatePixel;
-    const currentPropertyInStorage = sessionStorage.getItem(activeChatFolder);
-    if (currentPropertyInStorage) {
-      sessionStorage.setItem(
-        activeChatFolder,
-        JSON.stringify({
-          scrollPercentRounded,
-          tabFolderTranslatePixel,
-          opacityOffset,
-        }),
-      );
-    }
+    doc.style.setProperty('--disable-tab-click', 'none');
+    isScrolling = setTimeout(() => {
+      doc.style.setProperty('--disable-tab-click', 'auto');
+    }, 150);
+    sessionStorage.setItem('isExpandHeader', opacityOffset === 1 ? 'true' : 'false');
     doc.style.setProperty('--header-translate', `-${scrollPercentRounded}%`);
     doc.style.setProperty(
       '--tab-folder-translate',
       `${tabFolderTranslatePixel}px`,
     );
-    doc.style.setProperty('--fi-show-header-opacity', `${opacityOffset}`);
+    doc.style.setProperty('--show-header-opacity', `${opacityOffset}`);
   }
 
   return (
     <InfiniteScroll
+      id="custom-id-chat-list-inf-scroll"
       className={buildClassName('chat-list custom-scroll', isForumPanelOpen && 'forum-panel-open')}
       ref={containerRef}
       items={viewportIds}
@@ -255,6 +264,7 @@ const ChatList: FC<OwnProps> = ({
       maxHeight={chatsHeight + archiveHeight + HEIGHT_HEADER_FIXED}
       onLoadMore={getMore}
       onDragLeave={handleDragLeave}
+      // eslint-disable-next-line react/jsx-no-bind
       onScroll={handleScroll}
     >
       {shouldDisplayArchive && (

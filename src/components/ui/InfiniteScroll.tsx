@@ -15,6 +15,7 @@ import useLastCallback from '../../hooks/useLastCallback';
 
 type OwnProps = {
   ref?: RefObject<HTMLDivElement>;
+  id?: string;
   style?: string;
   className?: string;
   items?: any[];
@@ -42,6 +43,7 @@ const DEFAULT_SENSITIVE_AREA = 800;
 
 const InfiniteScroll: FC<OwnProps> = ({
   ref,
+  id,
   style,
   className,
   items,
@@ -234,6 +236,7 @@ const InfiniteScroll: FC<OwnProps> = ({
   return (
     <div
       ref={containerRef}
+      id={id}
       className={className}
       onScroll={handleScroll}
       teactFastList={!noFastList && !withAbsolutePositioning}
@@ -249,7 +252,7 @@ const InfiniteScroll: FC<OwnProps> = ({
           /**
            * TL - Custom infinite scroll, set auto scroll although is not enough items.
            */
-          style={buildStyle('position: relative', IS_ANDROID && `height: ${maxHeight}px`, 'min-height: 720px')}
+          style={buildStyle('position: relative', IS_ANDROID && `height: ${maxHeight}px`, 'min-height: 100vh')}
         >
           {children}
         </div>

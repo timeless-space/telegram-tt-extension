@@ -14,7 +14,8 @@
 html {
   --header-translate: -100%;
   --tab-folder-translate: 0px;
-  --fi-show-header-opacity: 0;
+  --show-header-opacity: 0;
+  --disable-tab-click: auto
 }
 
 html,
@@ -144,42 +145,23 @@ body.cursor-ew-resize {
 
 .custom-scroll,
 .custom-scroll-x {
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
-  transition: scrollbar-color 0.3s ease;
+  scrollbar-width: none;
 
-  -webkit-overflow-scrolling: touch;
-  // Fix scroll lock on iOS
-  pointer-events: auto;
-
-  &::-webkit-scrollbar-thumb {
-    background-color: transparent;
-    border-radius: 0.375rem;
-    // `box-shadow` prevents repaint on macOS when hovering out of scrollable container
-    box-shadow: 0 0 1px rgba(255, 255, 255, 0.01);
-  }
-
-  &:hover,
-  &:focus,
-  &:focus-within {
-    scrollbar-color: var(--color-scrollbar) transparent;
-
-    &::-webkit-scrollbar-thumb {
-      background-color: var(--color-scrollbar);
-    }
+  &::-webkit-scrollbar {
+    display: none;
   }
 }
 
 body:not(.is-ios) {
   .custom-scroll {
     &::-webkit-scrollbar {
-      width: 0.375rem;
+      display: none;
     }
   }
 
   .custom-scroll-x {
     &::-webkit-scrollbar {
-      height: 0.375rem;
+      display: none;
     }
   }
 }
@@ -324,7 +306,7 @@ body:not(.is-ios) {
 }
 
 .fix-issue {
-  opacity: var(--fi-show-header-opacity);
+  opacity: var(--show-header-opacity);
   transform: translateY(var(--header-translate));
   transition: all 0.1s ease-out;
   max-height: 56px;
