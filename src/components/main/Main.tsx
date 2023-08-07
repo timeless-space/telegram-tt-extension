@@ -276,12 +276,18 @@ const Main: FC<OwnProps & StateProps> = ({
   }, [isDesktop, isLeftColumnOpen, isMiddleColumnOpen, isMobile, toggleLeftColumn]);
 
   useEffect(() => {
-    if (isLeftColumnOpen) {
-      (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_mainScreen');
-    } else {
-      (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_chatScreen');
+    if (isMobile) {
+      if (isLeftColumnOpen) {
+        sendScreenName('tl_navigation_mainScreen');
+      }
+      if (!isLeftColumnOpen && !isRightColumnOpen) {
+        sendScreenName('tl_navigation_chatScreen');
+      }
+      if (isRightColumnOpen) {
+        sendScreenName('tl_navigation_profileScreen');
+      }
     }
-  }, [isLeftColumnOpen]);
+  }, [isMobile, isLeftColumnOpen, isMiddleColumnOpen, isRightColumnOpen]);
 
   useInterval(checkAppVersion, (isMasterTab && !IS_ELECTRON) ? APP_OUTDATED_TIMEOUT_MS : undefined, true);
 

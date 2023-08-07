@@ -26,3 +26,10 @@ export function handleSendMessage({ chatId, threadId = 0, text }: Message) {
     },
   });
 }
+
+/**
+ * TL - Set session screen name
+ */
+export function sendScreenName(name: string) {
+  (window as any).webkit?.messageHandlers.onScreenChanged.postMessage({ screenName: name });
+}

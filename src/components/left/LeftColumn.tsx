@@ -25,6 +25,7 @@ import NewChat from './newChat/NewChat.async';
 import ArchivedChats from './ArchivedChats.async';
 
 import './LeftColumn.scss';
+import { sendScreenName } from '../../util/tlCustomFunction';
 
 interface OwnProps {
   ref: RefObject<HTMLDivElement>;
@@ -100,32 +101,29 @@ function LeftColumn({
 
   useEffect(() => {
     switch (content) {
-      case 0:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_chatListScreen');
-        break;
       case 1:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_globalSearchScreen');
+        sendScreenName('tl_navigation_mainScreen');
         break;
       case 2:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_settingsScreen');
+        sendScreenName('tl_navigation_settingsScreen');
         break;
       case 3:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_contactsScreen');
+        sendScreenName('tl_navigation_contactsScreen');
         break;
       case 4:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_archivedScreen');
+        sendScreenName('tl_navigation_archivedScreen');
         break;
       case 5:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_newChannelStep1Screen');
+        sendScreenName('tl_navigation_newChannelStep1Screen');
         break;
       case 6:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_newChannelStep2Screen');
+        sendScreenName('tl_navigation_newChannelStep2Screen');
         break;
       case 7:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_newGroupStep1Screen');
+        sendScreenName('tl_navigation_newGroupStep1Screen');
         break;
       case 8:
-        (window as any).webkit?.messageHandlers.jsHandler.postMessage('tl_navigation_newGroupStep2Screen');
+        sendScreenName('tl_navigation_newGroupStep2Screen');
         break;
       default:
         break;
@@ -164,6 +162,7 @@ function LeftColumn({
         setGlobalSearchClosing({ isClosing: false });
         setLastResetTime(Date.now());
       }, RESET_TRANSITION_DELAY_MS);
+      sendScreenName('tl_navigation_mainScreen');
     }
 
     if (forceReturnToChatList === true) {
