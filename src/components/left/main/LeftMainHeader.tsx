@@ -59,7 +59,6 @@ import StatusButton from './StatusButton';
 // import Toggle from '../../ui/Toggle';
 
 import './LeftMainHeader.scss';
-import { sendScreenName } from '../../../util/tlCustomFunction';
 
 type OwnProps = {
   shouldHideSearch?: boolean;
@@ -147,7 +146,6 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
       ? formatDateToString(new Date(searchDate * 1000))
       : undefined;
   }, [searchDate]);
-  const isFirstLoad = useRef<boolean>(true);
 
   const archivedUnreadChatsCount = useFolderManagerForUnreadCounters()[ARCHIVED_FOLDER_ID]?.chatsCount || 0;
 
@@ -262,10 +260,6 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
   );
 
   useEffect(() => (isSearchFocused ? captureEscKeyListener(() => onReset()) : undefined), [isSearchFocused, onReset]);
-
-  useEffect(() => {
-    isFirstLoad.current = false;
-  }, []);
 
   const searchInputPlaceholder = content === LeftColumnContent.Contacts
     ? lang('SearchFriends')

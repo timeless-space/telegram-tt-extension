@@ -68,7 +68,6 @@ import DeleteMemberModal from './DeleteMemberModal';
 import GroupChatInfo from '../common/GroupChatInfo';
 
 import './Profile.scss';
-import { sendScreenName } from '../../util/tlCustomFunction';
 
 type OwnProps = {
   chatId: string;
@@ -163,31 +162,6 @@ const Profile: FC<OwnProps & StateProps> = ({
   const lang = useLang();
   const [activeTab, setActiveTab] = useState(0);
   const [deletingUserId, setDeletingUserId] = useState<string | undefined>();
-
-  useEffect(() => {
-    switch (activeTab) {
-      case 0:
-        sendScreenName('tl_navigation_mediaTab');
-        break;
-      case 1:
-        sendScreenName('tl_navigation_filesTab');
-        break;
-      case 2:
-        sendScreenName('tl_navigation_linksTab');
-        break;
-      case 3:
-        sendScreenName('tl_navigation_musicTab');
-        break;
-      case 4:
-        sendScreenName('tl_navigation_voiceTab');
-        break;
-      case 5:
-        sendScreenName('tl_navigation_groupsTab');
-        break;
-      default:
-        break;
-    }
-  }, [activeTab]);
 
   const tabs = useMemo(() => ([
     ...(hasMembersTab ? [{
