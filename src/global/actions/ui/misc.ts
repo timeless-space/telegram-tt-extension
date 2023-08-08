@@ -30,6 +30,7 @@ import { getIsMobile, getIsTablet } from '../../../hooks/useAppLayout';
 import * as langProvider from '../../../util/langProvider';
 import { getAllowedAttachmentOptions, getChatTitle } from '../../helpers';
 import { addCallback } from '../../../lib/teact/teactn';
+import { sendPushNotification } from '../../../util/tlCustomFunction';
 
 export const APP_VERSION_URL = 'version.txt';
 const MAX_STORED_EMOJIS = 8 * 4; // Represents four rows of recent emojis
@@ -272,20 +273,22 @@ addActionHandler('reorderStickerSets', (global, actions, payload): ActionReturnT
 });
 
 addActionHandler('showNotification', (global, actions, payload): ActionReturnType => {
-  const { tabId = getCurrentTabId(), ...notification } = payload;
-  notification.localId = generateIdFor({});
+  const { ...notification } = payload;
+  sendPushNotification(notification.message);
+  // const { tabId = getCurrentTabId(), ...notification } = payload;
+  // notification.localId = generateIdFor({});
 
-  const newNotifications = [...selectTabState(global, tabId).notifications];
-  const existingNotificationIndex = newNotifications.findIndex((n) => n.message === notification.message);
-  if (existingNotificationIndex !== -1) {
-    newNotifications.splice(existingNotificationIndex, 1);
-  }
+  // const newNotifications = [...selectTabState(global, tabId).notifications];
+  // const existingNotificationIndex = newNotifications.findIndex((n) => n.message === notification.message);
+  // if (existingNotificationIndex !== -1) {
+  //   newNotifications.splice(existingNotificationIndex, 1);
+  // }
 
-  newNotifications.push(notification as ApiNotification);
+  // newNotifications.push(notification as ApiNotification);
 
-  return updateTabState(global, {
-    notifications: newNotifications,
-  }, tabId);
+  // return updateTabState(global, {
+  //   notifications: newNotifications,
+  // }, tabId);
 });
 
 addActionHandler('showAllowedMessageTypesNotification', (global, actions, payload): ActionReturnType => {
