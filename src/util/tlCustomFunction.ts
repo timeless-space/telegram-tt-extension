@@ -33,3 +33,10 @@ export function handleSendMessage({ chatId, threadId = 0, text }: Message) {
 export function sendScreenName(name: string) {
   (window as any).webkit?.messageHandlers.onScreenChanged.postMessage({ screenName: name });
 }
+
+/**
+ * TL - Send push notification
+ */
+export function sendPushNotification(message: string) {
+  (window as any).webkit?.messageHandlers.onShowSnackBar.postMessage({ message });
+}
