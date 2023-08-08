@@ -1,6 +1,6 @@
 import type { FC } from '../../../lib/teact/teact';
 import React, {
-  memo, useCallback, useState, useMemo, useRef,
+  memo, useCallback, useState, useMemo, useRef, useEffect,
 } from '../../../lib/teact/teact';
 import { getActions, withGlobal } from '../../../global';
 
@@ -70,6 +70,7 @@ const LeftSearch: FC<OwnProps & StateProps> = ({
 
   const handleSwitchTab = useCallback((index: number) => {
     const tab = TABS[index];
+    // eslint-disable-next-line no-console
     setGlobalSearchContent({ content: tab.type });
     setActiveTab(index);
   }, [setGlobalSearchContent]);

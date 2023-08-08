@@ -25,6 +25,7 @@ import NewChat from './newChat/NewChat.async';
 import ArchivedChats from './ArchivedChats.async';
 
 import './LeftColumn.scss';
+import { sendScreenName } from '../../util/tlCustomFunction';
 
 interface OwnProps {
   ref: RefObject<HTMLDivElement>;
@@ -98,6 +99,37 @@ function LeftColumn({
   // Used to reset child components in background.
   const [lastResetTime, setLastResetTime] = useState<number>(0);
 
+  useEffect(() => {
+    switch (content) {
+      case 1:
+        sendScreenName('tl_navigation_mainScreen');
+        break;
+      case 2:
+        sendScreenName('tl_navigation_settingsScreen');
+        break;
+      case 3:
+        sendScreenName('tl_navigation_contactsScreen');
+        break;
+      case 4:
+        sendScreenName('tl_navigation_archivedScreen');
+        break;
+      case 5:
+        sendScreenName('tl_navigation_newChannelStep1Screen');
+        break;
+      case 6:
+        sendScreenName('tl_navigation_newChannelStep2Screen');
+        break;
+      case 7:
+        sendScreenName('tl_navigation_newGroupStep1Screen');
+        break;
+      case 8:
+        sendScreenName('tl_navigation_newGroupStep2Screen');
+        break;
+      default:
+        break;
+    }
+  }, [content]);
+
   let contentType: ContentType = ContentType.Main;
   switch (content) {
     case LeftColumnContent.Archived:
@@ -130,6 +162,7 @@ function LeftColumn({
         setGlobalSearchClosing({ isClosing: false });
         setLastResetTime(Date.now());
       }, RESET_TRANSITION_DELAY_MS);
+      sendScreenName('tl_navigation_mainScreen');
     }
 
     if (forceReturnToChatList === true) {

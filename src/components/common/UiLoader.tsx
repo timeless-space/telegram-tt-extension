@@ -1,4 +1,4 @@
-import React from '../../lib/teact/teact';
+import React, { useEffect } from '../../lib/teact/teact';
 import { getActions, getGlobal, withGlobal } from '../../global';
 
 import { ApiMediaFormat } from '../../api/types';
@@ -29,6 +29,7 @@ import telegramLogoPath from '../../assets/telegram-logo.svg';
 import lockPreviewPath from '../../assets/lock.png';
 import monkeyPath from '../../assets/monkey.svg';
 import spoilerMaskPath from '../../assets/spoilers/mask.svg';
+import { sendScreenName } from '../../util/tlCustomFunction';
 
 export type UiLoaderPage =
   'main'
@@ -110,6 +111,25 @@ const UiLoader: FC<OwnProps & StateProps> = ({
   const {
     shouldRender: shouldRenderMask, transitionClassNames,
   } = useShowTransition(!isReady, undefined, true);
+
+  useEffect(() => {
+    switch (page) {
+      case 'authPhoneNumber':
+        sendScreenName('tl_navigation_authPhoneNumberScreen');
+        break;
+      case 'authCode':
+        sendScreenName('tl_navigation_authCodeScreen');
+        break;
+      case 'authPassword':
+        sendScreenName('tl_navigation_authPasswordScreen');
+        break;
+      case 'authQrCode':
+        sendScreenName('tl_navigation_authQrCodeScreen');
+        break;
+      default:
+        break;
+    }
+  }, [page]);
 
   useEffectOnce(() => {
     let timeout: number | undefined;
