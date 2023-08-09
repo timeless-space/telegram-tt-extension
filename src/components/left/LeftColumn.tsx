@@ -162,7 +162,6 @@ function LeftColumn({
         setGlobalSearchClosing({ isClosing: false });
         setLastResetTime(Date.now());
       }, RESET_TRANSITION_DELAY_MS);
-      sendScreenName('tl_navigation_mainScreen');
     }
 
     if (forceReturnToChatList === true) {
