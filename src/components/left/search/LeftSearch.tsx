@@ -89,7 +89,7 @@ const LeftSearch: FC<OwnProps & StateProps> = ({
   const handleKeyDown = useKeyboardListNavigation(containerRef, isActive, undefined, '.ListItem-button', true);
 
   return (
-    <div className="LeftSearch" ref={containerRef} onKeyDown={handleKeyDown}>
+    <div className="LeftSearch" id="tl-left-search" ref={containerRef} onKeyDown={handleKeyDown}>
       <TabList activeTab={activeTab} tabs={chatId ? CHAT_TABS : TABS} onSwitchTab={handleSwitchTab} />
       <Transition
         name={lang.isRtl ? 'slideOptimizedRtl' : 'slideOptimized'}

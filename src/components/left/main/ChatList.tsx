@@ -190,7 +190,11 @@ const ChatList: FC<OwnProps> = ({
      */
     setTimeout(() => {
       if (containerRef.current && firstScroll.current && allowAbsoluteHeader) {
-        document.getElementById('custom-id-chat-list-inf-scroll').style.paddingTop = `${window.tlPaddingTop}px`;
+        if (document.getElementById('tl-chat-folders')) {
+          document.getElementById('tl-chat-folders').style.paddingTop = `${window.tlPaddingTop}px`;
+        } else {
+          document.getElementById('custom-id-chat-list-inf-scroll').style.paddingTop = `${window.tlPaddingTop}px`;
+        }
         document.getElementById('left-main-header').style.paddingTop = `${window.tlPaddingTop}px`;
         setTimeout(() => {
           containerRef.current.scrollTo({ top: HEIGHT_HEADER_FIXED });
