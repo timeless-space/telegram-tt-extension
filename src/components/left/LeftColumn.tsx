@@ -2,7 +2,7 @@ import type { RefObject } from 'react';
 import React, {
   memo, useEffect, useState,
 } from '../../lib/teact/teact';
-import { getActions, withGlobal } from '../../global';
+import { getActions, getGlobal, withGlobal } from '../../global';
 
 import type { GlobalState } from '../../global/types';
 import { LeftColumnContent, SettingsScreens } from '../../types';
@@ -381,7 +381,7 @@ function LeftColumn({
       // 1. When we are in archived chats and no chat or forum is open.
       // 2. When we are in any other screen except chat list and archived chat list.
       // 3. When we are in chat list and first chat folder is active and no chat or forum is open.
-      if (!isArchived && noChatOrForumOpen && isChatList && isFirstChatFolderActive) {
+      if ((!isArchived && noChatOrForumOpen && isChatList && isFirstChatFolderActive) || (!isArchived && noChatOrForumOpen && !isChatList && isFirstChatFolderActive)) {
         sendScreenName('tl_navigation_mainScreen');
       } else {
         sendScreenName('tl_navigation_otherScreen');
