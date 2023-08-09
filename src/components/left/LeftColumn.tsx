@@ -101,17 +101,11 @@ function LeftColumn({
 
   useEffect(() => {
     switch (content) {
-      case 1:
-        sendScreenName('tl_navigation_mainScreen');
-        break;
       case 2:
         sendScreenName('tl_navigation_settingsScreen');
         break;
       case 3:
         sendScreenName('tl_navigation_contactsScreen');
-        break;
-      case 4:
-        sendScreenName('tl_navigation_archivedScreen');
         break;
       case 5:
         sendScreenName('tl_navigation_newChannelStep1Screen');
@@ -387,6 +381,11 @@ function LeftColumn({
       // 1. When we are in archived chats and no chat or forum is open.
       // 2. When we are in any other screen except chat list and archived chat list.
       // 3. When we are in chat list and first chat folder is active and no chat or forum is open.
+      if (!isArchived && noChatOrForumOpen && isChatList && isFirstChatFolderActive) {
+        sendScreenName('tl_navigation_mainScreen');
+      } else {
+        sendScreenName('tl_navigation_otherScreen');
+      }
       if ((isArchived && noChatOrForumOpen) || (!isChatList && !isArchived)
         || (isFirstChatFolderActive && noChatOrForumOpen)) {
         return captureEscKeyListener(() => {

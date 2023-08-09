@@ -94,10 +94,12 @@ const ChatList: FC<OwnProps> = ({
     // eslint-disable-next-line no-null/no-null
     if (containerRef.current) {
       setTimeout(() => {
-        containerRef.current?.scrollTo({ top: isExpandHeader === 'true' ? 0 : HEIGHT_HEADER_FIXED });
-      }, 0);
+        if (folderType === 'archived') {
+          containerRef.current?.scrollTo({ top: 0 });
+        }
+      }, 500);
     }
-  }, [containerRef, isExpandHeader]);
+  }, [containerRef, isExpandHeader, folderType]);
 
   // Support <Alt>+<Up/Down> to navigate between chats
   useHotkeys(isActive && orderedIds?.length ? {
