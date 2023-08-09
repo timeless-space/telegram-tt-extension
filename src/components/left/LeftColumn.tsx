@@ -383,7 +383,7 @@ function LeftColumn({
       // 3. When we are in chat list and first chat folder is active and no chat or forum is open.
       if (!isArchived && noChatOrForumOpen && isChatList && isFirstChatFolderActive) {
         sendScreenName('tl_navigation_mainScreen');
-      } else if (isArchived && noChatOrForumOpen && !isChatList && isFirstChatFolderActive) {
+      } else {
         sendScreenName('tl_navigation_otherScreen');
       }
       if ((isArchived && noChatOrForumOpen) || (!isChatList && !isArchived)
