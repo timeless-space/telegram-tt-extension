@@ -278,9 +278,6 @@ const Main: FC<OwnProps & StateProps> = ({
 
   useEffect(() => {
     if (isMobile) {
-      if (isLeftColumnOpen) {
-        sendScreenName('tl_navigation_mainScreen');
-      }
       if (!isLeftColumnOpen && !isRightColumnOpen) {
         sendScreenName('tl_navigation_chatScreen');
       }
