@@ -384,7 +384,7 @@ function LeftColumn({
       if (!isArchived && noChatOrForumOpen && isChatList && isFirstChatFolderActive) {
         sendScreenName('tl_navigation_mainScreen');
       } else if (isArchived && noChatOrForumOpen && !isChatList && isFirstChatFolderActive) {
-        sendScreenName('tl_navigation_archivedScreen');
+        sendScreenName('tl_navigation_otherScreen');
       }
       if ((isArchived && noChatOrForumOpen) || (!isChatList && !isArchived)
         || (isFirstChatFolderActive && noChatOrForumOpen)) {
