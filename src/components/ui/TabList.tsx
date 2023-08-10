@@ -76,6 +76,7 @@ const TabList: FC<OwnProps> = ({
   return (
     <div
       className={`TabList no-selection no-scrollbar ${big ? 'big' : ''}`}
+      id="tl-chat-folders"
       ref={containerRef}
       dir={lang.isRtl ? 'rtl' : undefined}
     >

@@ -43,3 +43,10 @@ export function handleScrollUnactiveTab() {
     }
   }
 }
+
+/**
+ * TL - Send push notification
+ */
+export function sendPushNotification(message: string) {
+  (window as any).webkit?.messageHandlers.onShowSnackBar.postMessage({ message });
+}
