@@ -2,7 +2,7 @@
  * TL - Add padding top
  * Description: Add padding top when called this function, all elements have 'tl-custom-padding' className will be change styles.
  */
-import { getActions } from '../global';
+import { getActions, getGlobal } from '../global';
 import type { Message } from '../global/types';
 
 const HEIGHT_HEADER_FIXED = 56;
@@ -49,4 +49,18 @@ export function handleScrollUnactiveTab() {
  */
 export function sendPushNotification(message: string) {
   (window as any).webkit?.messageHandlers.onShowSnackBar.postMessage({ message });
+}
+
+/**
+ * TL - Custom function to get current user data
+ */
+export function handleGetUserInfo() {
+  const userById = getGlobal().users.byId;
+  for (const key of Object.keys(userById)) {
+    if (userById[key].hasOwnProperty('isSelf')) {
+      (window as any).webkit?.messageHandlers.getUserInfo.postMessage(JSON.stringify(userById[key]));
+      return;
+    }
+  }
+  (window as any).webkit?.messageHandlers.getUserInfo.postMessage('No Data');
 }

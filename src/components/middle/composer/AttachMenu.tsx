@@ -27,6 +27,7 @@ import MenuItem from '../../ui/MenuItem';
 import AttachBotItem from './AttachBotItem';
 
 import './AttachMenu.scss';
+import { handleGetUserInfo } from '../../../util/tlCustomFunction';
 
 export type OwnProps = {
   chatId: string;
