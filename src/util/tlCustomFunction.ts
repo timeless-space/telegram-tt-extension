@@ -29,13 +29,6 @@ export function sendScreenName(name: string) {
 }
 
 /**
- * TL - Send push notification
- */
-export function sendPushNotification(message: string) {
-  (window as any).webkit?.messageHandlers.onShowSnackBar.postMessage({ message });
-}
-
-/**
  * TL - This function will active expand header in inactive tab folder whenever it is activated in current tab.
  */
 export function handleScrollUnactiveTab() {
