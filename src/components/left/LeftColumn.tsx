@@ -102,24 +102,12 @@ function LeftColumn({
   useEffect(() => {
     switch (content) {
       case 2:
-        sendScreenName('tl_navigation_settingsScreen');
-        break;
       case 3:
-        sendScreenName('tl_navigation_contactsScreen');
-        break;
       case 5:
-        sendScreenName('tl_navigation_newChannelStep1Screen');
-        break;
       case 6:
-        sendScreenName('tl_navigation_newChannelStep2Screen');
-        break;
       case 7:
-        sendScreenName('tl_navigation_newGroupStep1Screen');
-        break;
       case 8:
-        sendScreenName('tl_navigation_newGroupStep2Screen');
-        break;
-      default:
+        sendScreenName('tl_navigation_otherScreen');
         break;
     }
   }, [content]);
@@ -381,7 +369,8 @@ function LeftColumn({
       // 1. When we are in archived chats and no chat or forum is open.
       // 2. When we are in any other screen except chat list and archived chat list.
       // 3. When we are in chat list and first chat folder is active and no chat or forum is open.
-      if ((!isArchived && noChatOrForumOpen && isChatList && isFirstChatFolderActive) || (!isArchived && noChatOrForumOpen && !isChatList && isFirstChatFolderActive)) {
+      if ((!isArchived && noChatOrForumOpen && isChatList)
+        || (!isArchived && noChatOrForumOpen && !isChatList)) {
         sendScreenName('tl_navigation_mainScreen');
       } else {
         sendScreenName('tl_navigation_otherScreen');

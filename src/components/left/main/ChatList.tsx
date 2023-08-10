@@ -33,6 +33,7 @@ import Loading from '../../ui/Loading';
 import Chat from './Chat';
 import EmptyFolder from './EmptyFolder';
 import Archive from './Archive';
+import { handleScrollUnactiveTab } from '../../../util/tlCustomFunction';
 
 type OwnProps = {
   folderType: 'all' | 'archived' | 'folder';
@@ -190,12 +191,21 @@ const ChatList: FC<OwnProps> = ({
      */
     setTimeout(() => {
       if (containerRef.current && firstScroll.current && allowAbsoluteHeader) {
-        if (document.getElementById('tl-chat-folders')) {
-          document.getElementById('tl-chat-folders').style.paddingTop = `${window.tlPaddingTop}px`;
+        const tlChatFolderEl = document.getElementById('tl-chat-folders');
+        if (tlChatFolderEl) {
+          tlChatFolderEl.style.paddingTop = `${(window as any).tlPaddingTop}px`;
         } else {
-          document.getElementById('custom-id-chat-list-inf-scroll').style.paddingTop = `${window.tlPaddingTop}px`;
+          // eslint-disable-next-line max-len
+          const chatListActiveEl: any = document.querySelector('#custom-id-chat-list-inf-scroll.Transition_slide-active')
+            ?? document.getElementById('custom-id-chat-list-inf-scroll');
+          if (chatListActiveEl) {
+            chatListActiveEl.style.paddingTop = `${(window as any).tlPaddingTop}px`;
+          }
         }
-        document.getElementById('left-main-header').style.paddingTop = `${window.tlPaddingTop}px`;
+        const leftMainHeaderEl = document.getElementById('left-main-header');
+        if (leftMainHeaderEl) {
+          leftMainHeaderEl.style.paddingTop = `${(window as any).tlPaddingTop}px`;
+        }
         setTimeout(() => {
           containerRef.current.scrollTo({ top: HEIGHT_HEADER_FIXED });
           setTimeout(() => {
@@ -231,7 +241,13 @@ const ChatList: FC<OwnProps> = ({
    * Description: This function is used to trigger the header show or hide with an animation
    */
   function handleScroll(event: React.UIEvent<HTMLDivElement, UIEvent>) {
-    if (firstScroll.current) return;
+    /**
+     * This condition is used to expand the header of inactived tab folder. When we interact with first tab.
+     */
+    if (firstScroll.current) {
+      handleScrollUnactiveTab();
+      return;
+    }
     clearTimeout(isScrolling);
     const doc = document.documentElement;
     const scrollTop = event.currentTarget.scrollTop;

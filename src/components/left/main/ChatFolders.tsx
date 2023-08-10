@@ -28,6 +28,7 @@ import { useFolderManagerForUnreadCounters } from '../../../hooks/useFolderManag
 import Transition from '../../ui/Transition';
 import TabList from '../../ui/TabList';
 import ChatList from './ChatList';
+import { handleScrollUnactiveTab } from '../../../util/tlCustomFunction';
 
 type OwnProps = {
   onSettingsScreenSelect: (screen: SettingsScreens) => void;
@@ -184,6 +185,7 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
 
   const handleSwitchTab = useLastCallback((index: number) => {
     setActiveChatFolder({ activeChatFolder: index }, { forceOnHeavyAnimation: true });
+    handleScrollUnactiveTab();
   });
 
   // Prevent `activeTab` pointing at non-existing folder after update

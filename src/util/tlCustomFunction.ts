@@ -5,6 +5,8 @@
 import { getActions } from '../global';
 import type { Message } from '../global/types';
 
+const HEIGHT_HEADER_FIXED = 56;
+
 /**
  * TL - Custom a sendMessage function to send a message
  */
@@ -24,6 +26,22 @@ export function handleSendMessage({ chatId, threadId = 0, text }: Message) {
  */
 export function sendScreenName(name: string) {
   (window as any).webkit?.messageHandlers.onScreenChanged.postMessage({ screenName: name });
+}
+
+/**
+ * TL - This function will active expand header in inactive tab folder whenever it is activated in current tab.
+ */
+export function handleScrollUnactiveTab() {
+  // eslint-disable-next-line max-len
+  const elements = document.querySelectorAll('#custom-id-chat-list-inf-scroll.chat-list.custom-scroll.Transition_slide');
+  const isExpandHeader = sessionStorage.getItem('isExpandHeader');
+  if (elements) {
+    if (elements.length > 0) {
+      elements.forEach((item) => {
+        item.scrollTo({ top: isExpandHeader === 'true' ? 0 : HEIGHT_HEADER_FIXED });
+      });
+    }
+  }
 }
 
 /**
