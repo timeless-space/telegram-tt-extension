@@ -1,7 +1,7 @@
 import React, {
   memo, useEffect, useRef,
 } from '../../../lib/teact/teact';
-import { getActions } from '../../../global';
+import { getActions, getGlobal } from '../../../global';
 
 import type { FC } from '../../../lib/teact/teact';
 import type { FolderEditDispatch } from '../../../hooks/reducers/useFoldersReducer';
@@ -154,6 +154,7 @@ const ChatList: FC<OwnProps> = ({
   });
 
   const handleArchivedClick = useLastCallback(() => {
+    getGlobal().isArchivePrevious = true;
     onLeftColumnContentChange(LeftColumnContent.Archived);
     closeForumPanel();
   });

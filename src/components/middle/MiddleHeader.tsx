@@ -3,7 +3,7 @@ import React, {
   memo, useEffect, useLayoutEffect, useRef,
 } from '../../lib/teact/teact';
 import { requestMutation } from '../../lib/fasterdom/fasterdom';
-import { getActions, withGlobal } from '../../global';
+import { getActions, getGlobal, withGlobal } from '../../global';
 
 import type { GlobalState, MessageListType } from '../../global/types';
 import type { Signal } from '../../util/signals';
@@ -71,6 +71,7 @@ import GroupCallTopPane from '../calls/group/GroupCallTopPane';
 import ChatReportPanel from './ChatReportPanel';
 
 import './MiddleHeader.scss';
+import { sendScreenName } from '../../util/tlCustomFunction';
 
 const ANIMATION_DURATION = 350;
 const BACK_BUTTON_INACTIVE_TIME = 450;
@@ -213,6 +214,9 @@ const MiddleHeader: FC<OwnProps & StateProps> = ({
   });
 
   const handleBackClick = useLastCallback((e: React.MouseEvent<HTMLElement, MouseEvent>) => {
+    if (!getGlobal().isArchivePrevious) {
+      sendScreenName('tl_navigation_mainScreen');
+    }
     if (!isBackButtonActive.current) return;
 
     // Workaround for missing UI when quickly clicking the Back button

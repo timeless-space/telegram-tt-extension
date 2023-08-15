@@ -1,5 +1,5 @@
 import React, { memo, useEffect, useRef } from '../../lib/teact/teact';
-import { getActions } from '../../global';
+import { getActions, getGlobal } from '../../global';
 
 import type { FC } from '../../lib/teact/teact';
 import type { LeftColumnContent, SettingsScreens } from '../../types';
@@ -75,6 +75,7 @@ const ArchivedChats: FC<OwnProps> = ({
 
   const backHandler = () => {
     sendScreenName('tl_navigation_mainScreen');
+    getGlobal().isArchivePrevious = false;
     onReset();
   };
 

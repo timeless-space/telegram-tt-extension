@@ -59,6 +59,7 @@ import StatusButton from './StatusButton';
 // import Toggle from '../../ui/Toggle';
 
 import './LeftMainHeader.scss';
+import { sendScreenName } from '../../../util/tlCustomFunction';
 
 type OwnProps = {
   shouldHideSearch?: boolean;
@@ -260,6 +261,12 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
   );
 
   useEffect(() => (isSearchFocused ? captureEscKeyListener(() => onReset()) : undefined), [isSearchFocused, onReset]);
+
+  useEffect(() => {
+    if (isSearchFocused) {
+      sendScreenName('tl_navigation_mainScreen');
+    }
+  }, [isSearchFocused]);
 
   const searchInputPlaceholder = content === LeftColumnContent.Contacts
     ? lang('SearchFriends')
