@@ -97,6 +97,7 @@ import ChatlistModal from '../modals/chatlist/ChatlistModal.async';
 
 import './Main.scss';
 import { sendScreenName } from '../../util/tlCustomFunction';
+import TLContactListLoader from '../modules/TLContactListLoader';
 
 export interface OwnProps {
   isMobile?: boolean;
@@ -526,6 +527,7 @@ const Main: FC<OwnProps & StateProps> = ({
 
   return (
     <div ref={containerRef} id="Main" className={className}>
+      <TLContactListLoader />
       <LeftColumn ref={leftColumnRef} />
       <MiddleColumn leftColumnRef={leftColumnRef} isMobile={isMobile} />
       <RightColumn isMobile={isMobile} />

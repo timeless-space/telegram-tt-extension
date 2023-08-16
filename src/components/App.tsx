@@ -31,7 +31,7 @@ import UiLoader from './common/UiLoader';
 import styles from './App.module.scss';
 import { setupBeforeInstallPrompt } from '../util/installPrompt';
 import { mobileSubscribe, mobileUnsubscribe } from '../util/notifications';
-import { handleGetUserInfo, handleSendMessage } from '../util/tlCustomFunction';
+import { handleGetContacts, handleGetUserInfo, handleSendMessage } from '../util/tlCustomFunction';
 
 type StateProps = {
   authState: GlobalState['authState'];
@@ -205,6 +205,7 @@ const App: FC<StateProps> = ({
     (window as any).signOutGlobal = signOut;
     (window as any).handleSendMessageGlobal = handleSendMessage;
     (window as any).handleGetUserInfoGlobal = handleGetUserInfo;
+    (window as any).handleGetContactsGlobal = handleGetContacts;
     document.body.classList.add(styles.bg);
     (window as any).mobileSubscribeGlobal = mobileSubscribe;
     (window as any).mobileUnsubscribeGlobal = mobileUnsubscribe;
