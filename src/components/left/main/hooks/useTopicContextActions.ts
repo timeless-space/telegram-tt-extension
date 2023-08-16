@@ -45,13 +45,13 @@ export default function useTopicContextActions({
     const canToggleClosed = getCanManageTopic(chat, topic);
     const canTogglePinned = chat.isCreator || getHasAdminRight(chat, 'manageTopics');
 
-    const actionOpenInNewTab = IS_OPEN_IN_NEW_TAB_SUPPORTED && {
-      title: 'Open in new tab',
-      icon: 'open-in-new-tab',
-      handler: () => {
-        openChatInNewTab({ chatId: chat.id, threadId: topicId });
-      },
-    };
+    // const actionOpenInNewTab = IS_OPEN_IN_NEW_TAB_SUPPORTED && {
+    //   title: 'Open in new tab',
+    //   icon: 'open-in-new-tab',
+    //   handler: () => {
+    //     openChatInNewTab({ chatId: chat.id, threadId: topicId });
+    //   },
+    // };
 
     const actionUnreadMark = topic.unreadCount || !wasOpened
       ? {
@@ -107,7 +107,7 @@ export default function useTopicContextActions({
     } : undefined;
 
     return compact([
-      actionOpenInNewTab,
+      // actionOpenInNewTab,
       actionPin,
       actionUnreadMark,
       actionMute,
