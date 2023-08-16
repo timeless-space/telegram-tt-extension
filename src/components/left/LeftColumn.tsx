@@ -99,6 +99,14 @@ function LeftColumn({
   // Used to reset child components in background.
   const [lastResetTime, setLastResetTime] = useState<number>(0);
 
+  useEffect(() => {
+    if (settingsScreen === SettingsScreens.Main) {
+      sendScreenName('tl_navigation_mainScreen');
+    } else {
+      sendScreenName('tl_navigation_otherScreen');
+    }
+  }, [settingsScreen]);
+
   let contentType: ContentType = ContentType.Main;
   switch (content) {
     case LeftColumnContent.Archived:
@@ -106,7 +114,6 @@ function LeftColumn({
       contentType = ContentType.Archived;
       break;
     case LeftColumnContent.Settings:
-      sendScreenName('tl_navigation_otherScreen');
       contentType = ContentType.Settings;
       break;
     case LeftColumnContent.NewChannelStep1:
