@@ -1162,6 +1162,7 @@ const Composer: FC<OwnProps & StateProps> = ({
         void handleSend();
         break;
       case MainButtonState.Record: {
+        inputRef.current?.blur();
         if (areVoiceMessagesNotAllowed) {
           if (!canSendVoiceByPrivacy) {
             showNotification({
