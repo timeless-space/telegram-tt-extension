@@ -11,6 +11,7 @@ import {
 import buildClassName from '../../util/buildClassName';
 import { ensureProtocol } from '../../util/ensureProtocol';
 import useLastCallback from '../../hooks/useLastCallback';
+import { handleSendLink } from '../../util/tlCustomFunction';
 
 type OwnProps = {
   url?: string;
@@ -37,6 +38,15 @@ const SafeLink: FC<OwnProps> = ({
 
     e.preventDefault();
     openUrl({ url, shouldSkipModal: isSafe });
+
+    if (isSafe) {
+      const urlDomain = getDomain(url);
+      if (!url.includes('http') && urlDomain) {
+        handleSendLink(urlDomain);
+      } else {
+        handleSendLink(url);
+      }
+    }
 
     return false;
   });

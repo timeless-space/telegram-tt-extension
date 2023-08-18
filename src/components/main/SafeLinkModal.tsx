@@ -8,6 +8,7 @@ import useLang from '../../hooks/useLang';
 import useCurrentOrPrev from '../../hooks/useCurrentOrPrev';
 
 import ConfirmDialog from '../ui/ConfirmDialog';
+import { handleSendLink } from '../../util/tlCustomFunction';
 
 export type OwnProps = {
   url?: string;
@@ -21,6 +22,9 @@ const SafeLinkModal: FC<OwnProps> = ({ url }) => {
   const handleOpen = useCallback(() => {
     window.open(ensureProtocol(url), '_blank', 'noopener');
     toggleSafeLinkModal({ url: undefined });
+    if (url) {
+      handleSendLink(url);
+    }
   }, [toggleSafeLinkModal, url]);
 
   const handleDismiss = useCallback(() => {
