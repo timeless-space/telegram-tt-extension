@@ -53,13 +53,13 @@ const useChatContextActions = ({
       openChatInNewTab,
     } = getActions();
 
-    const actionOpenInNewTab = IS_OPEN_IN_NEW_TAB_SUPPORTED && {
-      title: IS_ELECTRON ? 'Open in new window' : 'Open in new tab',
-      icon: 'open-in-new-tab',
-      handler: () => {
-        openChatInNewTab({ chatId: chat.id });
-      },
-    };
+    // const actionOpenInNewTab = IS_OPEN_IN_NEW_TAB_SUPPORTED && {
+    //   title: IS_ELECTRON ? 'Open in new window' : 'Open in new tab',
+    //   icon: 'open-in-new-tab',
+    //   handler: () => {
+    //     openChatInNewTab({ chatId: chat.id });
+    //   },
+    // };
 
     const actionAddToFolder = canChangeFolder ? {
       title: lang('ChatList.Filter.AddToFolder'),
@@ -88,7 +88,7 @@ const useChatContextActions = ({
       };
 
     if (isInSearch) {
-      return compact([actionOpenInNewTab, actionPin, actionAddToFolder, actionMute]);
+      return compact([actionPin, actionAddToFolder, actionMute]);
     }
 
     const actionMaskAsRead = (chat.unreadCount || chat.hasUnreadMark)
@@ -121,7 +121,7 @@ const useChatContextActions = ({
     const isInFolder = folderId !== undefined;
 
     return compact([
-      actionOpenInNewTab,
+      // actionOpenInNewTab,
       actionAddToFolder,
       actionMaskAsRead,
       actionMarkAsUnread,
