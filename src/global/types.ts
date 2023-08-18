@@ -854,6 +854,8 @@ export type GlobalState = {
   translations: {
     byChatId: Record<string, ChatTranslatedMessages>;
   };
+
+  isArchivePrevious: boolean;
 };
 
 export type CallSound = (

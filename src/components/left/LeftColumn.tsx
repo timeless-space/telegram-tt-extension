@@ -100,21 +100,17 @@ function LeftColumn({
   const [lastResetTime, setLastResetTime] = useState<number>(0);
 
   useEffect(() => {
-    switch (content) {
-      case 2:
-      case 3:
-      case 5:
-      case 6:
-      case 7:
-      case 8:
-        sendScreenName('tl_navigation_otherScreen');
-        break;
+    if (settingsScreen === SettingsScreens.Main) {
+      sendScreenName('tl_navigation_mainScreen');
+    } else {
+      sendScreenName('tl_navigation_otherScreen');
     }
-  }, [content]);
+  }, [settingsScreen]);
 
   let contentType: ContentType = ContentType.Main;
   switch (content) {
     case LeftColumnContent.Archived:
+      sendScreenName('tl_navigation_otherScreen');
       contentType = ContentType.Archived;
       break;
     case LeftColumnContent.Settings:
@@ -122,10 +118,12 @@ function LeftColumn({
       break;
     case LeftColumnContent.NewChannelStep1:
     case LeftColumnContent.NewChannelStep2:
+      sendScreenName('tl_navigation_otherScreen');
       contentType = ContentType.NewChannel;
       break;
     case LeftColumnContent.NewGroupStep1:
     case LeftColumnContent.NewGroupStep2:
+      sendScreenName('tl_navigation_otherScreen');
       contentType = ContentType.NewGroup;
       break;
   }
@@ -133,6 +131,9 @@ function LeftColumn({
   const handleReset = useLastCallback((forceReturnToChatList?: true | Event) => {
     function fullReset() {
       setContent(LeftColumnContent.ChatList);
+      if (content === LeftColumnContent.NewGroupStep1 || content === LeftColumnContent.NewChannelStep1) {
+        sendScreenName('tl_navigation_mainScreen');
+      }
       setSettingsScreen(SettingsScreens.Main);
       setContactsFilter('');
       setGlobalSearchClosing({ isClosing: true });
@@ -369,12 +370,6 @@ function LeftColumn({
       // 1. When we are in archived chats and no chat or forum is open.
       // 2. When we are in any other screen except chat list and archived chat list.
       // 3. When we are in chat list and first chat folder is active and no chat or forum is open.
-      if ((!isArchived && noChatOrForumOpen && isChatList)
-        || (!isArchived && noChatOrForumOpen && !isChatList)) {
-        sendScreenName('tl_navigation_mainScreen');
-      } else {
-        sendScreenName('tl_navigation_otherScreen');
-      }
       if ((isArchived && noChatOrForumOpen) || (!isChatList && !isArchived)
         || (isFirstChatFolderActive && noChatOrForumOpen)) {
         return captureEscKeyListener(() => {
