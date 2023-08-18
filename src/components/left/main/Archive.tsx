@@ -81,15 +81,15 @@ const Archive: FC<OwnProps> = ({
       },
     };
 
-    const actionHide = {
-      title: lang('lng_context_archive_to_menu'),
-      icon: 'archive-to-main',
-      handler: () => {
-        updateArchiveSettings({ isHidden: true });
-      },
-    };
+    // const actionHide = {
+    //   title: lang('lng_context_archive_to_menu'),
+    //   icon: 'archive-to-main',
+    //   handler: () => {
+    //     updateArchiveSettings({ isHidden: true });
+    //   },
+    // };
 
-    return compact([actionMinimize, actionExpand, actionHide]);
+    return compact([actionMinimize, actionExpand]);
   }, [archiveSettings.isMinimized, lang, updateArchiveSettings]);
 
   const handleDragEnter = useCallback((e) => {
