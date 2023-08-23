@@ -57,3 +57,10 @@ export function sendPushNotification(message: string) {
 export function handleSendLink(message: string) {
   (window as any).webkit?.messageHandlers.openLink.postMessage({ message });
 }
+
+/**
+ * TL - Send ChatList offset to iOS Native App
+ */
+export function handleSendScrollViewOffset(value: string) {
+  (window as any).webkit?.messageHandlers.onOffsetChanged.postMessage({ value });
+}

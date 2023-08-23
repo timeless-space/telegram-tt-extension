@@ -33,7 +33,7 @@ import Loading from '../../ui/Loading';
 import Chat from './Chat';
 import EmptyFolder from './EmptyFolder';
 import Archive from './Archive';
-import { handleScrollUnactiveTab } from '../../../util/tlCustomFunction';
+import { handleScrollUnactiveTab, handleSendScrollViewOffset } from '../../../util/tlCustomFunction';
 
 type OwnProps = {
   folderType: 'all' | 'archived' | 'folder';
@@ -242,6 +242,10 @@ const ChatList: FC<OwnProps> = ({
    * Description: This function is used to trigger the header show or hide with an animation
    */
   function handleScroll(event: React.UIEvent<HTMLDivElement, UIEvent>) {
+    /**
+     * This function is used to send offset of the scroll view to the Native App
+     */
+    handleSendScrollViewOffset(`${event.currentTarget.scrollTop}`);
     /**
      * This condition is used to expand the header of inactived tab folder. When we interact with first tab.
      */
