@@ -44,7 +44,6 @@ type StateProps = {
   chat?: ApiChat;
   privateChatUser?: ApiUser;
   lastMessageOutgoingStatus?: ApiMessageOutgoingStatus;
-  lastSyncTime?: number;
 };
 
 const ChatMessage: FC<OwnProps & StateProps> = ({
@@ -53,7 +52,6 @@ const ChatMessage: FC<OwnProps & StateProps> = ({
   chatId,
   chat,
   privateChatUser,
-  lastSyncTime,
 }) => {
   const { focusMessage } = getActions();
 
@@ -74,6 +72,8 @@ const ChatMessage: FC<OwnProps & StateProps> = ({
     return undefined;
   }
 
+  const peer = privateChatUser || chat;
+
   return (
     <ListItem
       className="ChatMessage chat-item-clickable"
@@ -82,15 +82,13 @@ const ChatMessage: FC<OwnProps & StateProps> = ({
       buttonRef={buttonRef}
     >
       <Avatar
-        chat={chat}
-        user={privateChatUser}
+        peer={peer}
         isSavedMessages={privateChatUser?.isSelf}
-        lastSyncTime={lastSyncTime}
       />
       <div className="info">
         <div className="info-row">
           <FullNameTitle
-            peer={privateChatUser || chat}
+            peer={peer}
             withEmojiStatus
             isSavedMessages={chatId === privateChatUser?.id && privateChatUser?.isSelf}
           />
@@ -147,7 +145,6 @@ export default memo(withGlobal<OwnProps>(
 
     return {
       chat,
-      lastSyncTime: global.lastSyncTime,
       ...(privateChatUserId && { privateChatUser }),
     };
   },

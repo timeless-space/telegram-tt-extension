@@ -1,12 +1,10 @@
-import type { MouseEvent as ReactMouseEvent } from 'react';
-import type { FC } from '../../lib/teact/teact';
 import React, { useEffect, memo, useMemo } from '../../lib/teact/teact';
 import { getActions, withGlobal } from '../../global';
 
+import type { FC } from '../../lib/teact/teact';
 import type {
   ApiChat, ApiTopic, ApiThreadInfo, ApiTypingStatus,
 } from '../../api/types';
-import type { GlobalState } from '../../global/types';
 import type { LangFn } from '../../hooks/useLang';
 import { MediaViewerOrigin } from '../../types';
 
@@ -41,7 +39,7 @@ type OwnProps = {
   threadId?: number;
   className?: string;
   typingStatus?: ApiTypingStatus;
-  avatarSize?: 'small' | 'medium' | 'large' | 'jumbo';
+  avatarSize?: 'tiny' | 'small' | 'medium' | 'large' | 'jumbo';
   status?: string;
   withDots?: boolean;
   withMediaViewer?: boolean;
@@ -51,6 +49,7 @@ type OwnProps = {
   withChatType?: boolean;
   noRtl?: boolean;
   noAvatar?: boolean;
+  noStatusOrTyping?: boolean;
   onClick?: VoidFunction;
 };
 
@@ -62,8 +61,7 @@ type StateProps =
     onlineCount?: number;
     areMessagesLoaded: boolean;
     messagesCount?: number;
-  }
-  & Pick<GlobalState, 'lastSyncTime'>;
+  };
 
 const GroupChatInfo: FC<OwnProps & StateProps> = ({
   typingStatus,
@@ -82,9 +80,9 @@ const GroupChatInfo: FC<OwnProps & StateProps> = ({
   chat,
   onlineCount,
   areMessagesLoaded,
-  lastSyncTime,
   topic,
   messagesCount,
+  noStatusOrTyping,
   onClick,
 }) => {
   const {
@@ -93,19 +91,21 @@ const GroupChatInfo: FC<OwnProps & StateProps> = ({
     loadProfilePhotos,
   } = getActions();
 
+  const lang = useLang();
+
   const isSuperGroup = chat && isChatSuperGroup(chat);
   const isTopic = Boolean(chat?.isForum && threadInfo && topic);
   const { id: chatId, isMin, isRestricted } = chat || {};
 
   useEffect(() => {
-    if (chatId && !isMin && lastSyncTime) {
+    if (chatId && !isMin) {
       if (withFullInfo) loadFullChat({ chatId });
       if (withMediaViewer) loadProfilePhotos({ profileId: chatId });
     }
-  }, [chatId, isMin, lastSyncTime, withFullInfo, loadFullChat, loadProfilePhotos, isSuperGroup, withMediaViewer]);
+  }, [chatId, isMin, withFullInfo, loadFullChat, loadProfilePhotos, isSuperGroup, withMediaViewer]);
 
   const handleAvatarViewerOpen = useLastCallback(
-    (e: ReactMouseEvent<HTMLDivElement, MouseEvent>, hasMedia: boolean) => {
+    (e: React.MouseEvent<HTMLDivElement, MouseEvent>, hasMedia: boolean) => {
       if (chat && hasMedia) {
         e.stopPropagation();
         openMediaViewer({
@@ -117,7 +117,6 @@ const GroupChatInfo: FC<OwnProps & StateProps> = ({
     },
   );
 
-  const lang = useLang();
   const mainUsername = useMemo(() => chat && withUsername && getMainUsername(chat), [chat, withUsername]);
 
   if (!chat) {
@@ -185,7 +184,7 @@ const GroupChatInfo: FC<OwnProps & StateProps> = ({
         <Avatar
           key={chat.id}
           size={avatarSize}
-          chat={chat}
+          peer={chat}
           onClick={withMediaViewer ? handleAvatarViewerOpen : undefined}
         />
       )}
@@ -200,7 +199,7 @@ const GroupChatInfo: FC<OwnProps & StateProps> = ({
         {topic
           ? <h3 dir="auto" className="fullName">{renderText(topic.title)}</h3>
           : <FullNameTitle peer={chat} />}
-        {renderStatusOrTyping()}
+        {!noStatusOrTyping && renderStatusOrTyping()}
       </div>
     </div>
   );
@@ -225,7 +224,6 @@ function getGroupStatus(lang: LangFn, chat: ApiChat) {
 
 export default memo(withGlobal<OwnProps>(
   (global, { chatId, threadId }): StateProps => {
-    const { lastSyncTime } = global;
     const chat = selectChat(global, chatId);
     const threadInfo = threadId ? selectThreadInfo(global, chatId, threadId) : undefined;
     const onlineCount = chat ? selectChatOnlineCount(global, chat) : undefined;
@@ -234,7 +232,6 @@ export default memo(withGlobal<OwnProps>(
     const messagesCount = topic && selectThreadMessagesCount(global, chatId, threadId!);
 
     return {
-      lastSyncTime,
       chat,
       threadInfo,
       onlineCount,

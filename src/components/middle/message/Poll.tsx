@@ -1,23 +1,24 @@
-import type { FC } from '../../../lib/teact/teact';
 import React, {
   useEffect,
+  useLayoutEffect,
   useState,
   memo,
   useMemo,
   useRef,
 } from '../../../lib/teact/teact';
-import { getActions, withGlobal } from '../../../global';
+import { getActions, getGlobal, withGlobal } from '../../../global';
 
+import type { FC } from '../../../lib/teact/teact';
+import type { LangFn } from '../../../hooks/useLang';
 import type {
-  ApiMessage, ApiPoll, ApiUser, ApiPollAnswer,
+  ApiMessage, ApiPoll, ApiPollAnswer, ApiChat, ApiUser,
 } from '../../../api/types';
 
 import renderText from '../../common/helpers/renderText';
 import { renderTextWithEntities } from '../../common/helpers/renderTextWithEntities';
 import { formatMediaDuration } from '../../../util/dateFormat';
-import type { LangFn } from '../../../hooks/useLang';
 import useLang from '../../../hooks/useLang';
-import { getServerTimeOffset } from '../../../util/serverTime';
+import { getServerTime } from '../../../util/serverTime';
 
 import useLastCallback from '../../../hooks/useLastCallback';
 
@@ -38,18 +39,19 @@ type OwnProps = {
 
 type StateProps = {
   recentVoterIds?: number[];
-  usersById: Record<string, ApiUser>;
 };
 
 const SOLUTION_CONTAINER_ID = '#middle-column-portals';
 const SOLUTION_DURATION = 5000;
+const TIMER_RADIUS = 6;
+const TIMER_CIRCUMFERENCE = TIMER_RADIUS * 2 * Math.PI;
+const TIMER_UPDATE_INTERVAL = 1000;
 const NBSP = '\u00A0';
 
 const Poll: FC<OwnProps & StateProps> = ({
   message,
   poll,
   recentVoterIds,
-  usersById,
   onSendVote,
 }) => {
   const { loadMessage, openPollResults, requestConfetti } = getActions();
@@ -62,29 +64,27 @@ const Poll: FC<OwnProps & StateProps> = ({
   const [wasSubmitted, setWasSubmitted] = useState<boolean>(false);
   const [closePeriod, setClosePeriod] = useState<number>(
     !summary.closed && summary.closeDate && summary.closeDate > 0
-      ? Math.min(summary.closeDate - Math.floor(Date.now() / 1000) + getServerTimeOffset(), summary.closePeriod!)
+      ? Math.min(summary.closeDate - getServerTime(), summary.closePeriod!)
       : 0,
   );
   // eslint-disable-next-line no-null/no-null
   const countdownRef = useRef<HTMLDivElement>(null);
+  // eslint-disable-next-line no-null/no-null
+  const timerCircleRef = useRef<SVGCircleElement>(null);
   const { results: voteResults, totalVoters } = results;
   const hasVoted = voteResults && voteResults.some((r) => r.isChosen);
   const canVote = !summary.closed && !hasVoted;
   const canViewResult = !canVote && summary.isPublic && Number(results.totalVoters) > 0;
   const isMultiple = canVote && summary.multipleChoice;
   const maxVotersCount = voteResults ? Math.max(...voteResults.map((r) => r.votersCount)) : totalVoters;
-  const correctResults = voteResults ? voteResults.reduce((answers: string[], r) => {
-    if (r.isCorrect) {
-      answers.push(r.option);
-    }
-
-    return answers;
-  }, []) : [];
-  const answers = summary.answers.map((a) => ({
+  const correctResults = useMemo(() => {
+    return voteResults?.filter((r) => r.isCorrect).map((r) => r.option) || [];
+  }, [voteResults]);
+  const answers = useMemo(() => summary.answers.map((a) => ({
     label: a.text,
     value: a.option,
     hidden: Boolean(summary.quiz && summary.closePeriod && closePeriod <= 0),
-  }));
+  })), [closePeriod, summary]);
 
   useEffect(() => {
     const chosen = poll.results.results?.find((result) => result.isChosen);
@@ -96,36 +96,18 @@ const Poll: FC<OwnProps & StateProps> = ({
     }
   }, [isSubmitting, poll.results.results, requestConfetti]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (closePeriod > 0) {
-      setTimeout(() => setClosePeriod(closePeriod - 1), 1000);
+      setTimeout(() => setClosePeriod(closePeriod - 1), TIMER_UPDATE_INTERVAL);
+    }
+    if (!timerCircleRef.current) return;
+
+    if (closePeriod <= 5) {
+      countdownRef.current!.classList.add('hurry-up');
     }
 
-    const countdownEl = countdownRef.current;
-
-    if (countdownEl) {
-      const circumference = 6 * 2 * Math.PI;
-      const svgEl = countdownEl.lastElementChild;
-      const timerEl = countdownEl.firstElementChild;
-      if (closePeriod <= 5) {
-        countdownEl.classList.add('hurry-up');
-      }
-
-      if (!svgEl || !timerEl) {
-        countdownEl.innerHTML = `
-        <span>${formatMediaDuration(closePeriod)}</span>
-        <svg width="16px" height="16px">
-          <circle cx="8" cy="8" r="6" class="poll-countdown-progress" transform="rotate(-90, 8, 8)"
-            stroke-dasharray="${circumference} ${circumference}"
-            stroke-dashoffset="0"
-          />
-        </svg>`;
-      } else {
-        const strokeDashOffset = ((summary.closePeriod! - closePeriod) / summary.closePeriod!) * circumference;
-        timerEl.textContent = formatMediaDuration(closePeriod);
-        (svgEl.firstElementChild as SVGElement).setAttribute('stroke-dashoffset', `-${strokeDashOffset}`);
-      }
-    }
+    const strokeDashOffset = ((summary.closePeriod! - closePeriod) / summary.closePeriod!) * TIMER_CIRCUMFERENCE;
+    timerCircleRef.current.setAttribute('stroke-dashoffset', `-${strokeDashOffset}`);
   }, [closePeriod, summary.closePeriod]);
 
   useEffect(() => {
@@ -152,15 +134,21 @@ const Poll: FC<OwnProps & StateProps> = ({
   }, [canVote, chatId, loadMessage, messageId, summary.closePeriod, summary.closed, summary.quiz]);
 
   const recentVoters = useMemo(() => {
-    return recentVoterIds ? recentVoterIds.reduce((result: ApiUser[], id) => {
+    // No need for expensive global updates on chats or users, so we avoid them
+    const chatsById = getGlobal().chats.byId;
+    const usersById = getGlobal().users.byId;
+    return recentVoterIds ? recentVoterIds.reduce((result: (ApiChat | ApiUser)[], id) => {
+      const chat = chatsById[id];
       const user = usersById[id];
       if (user) {
         result.push(user);
+      } else if (chat) {
+        result.push(chat);
       }
 
       return result;
     }, []) : [];
-  }, [usersById, recentVoterIds]);
+  }, [recentVoterIds]);
 
   const handleRadioChange = useLastCallback((option: string) => {
     setChosenOptions([option]);
@@ -222,11 +210,11 @@ const Poll: FC<OwnProps & StateProps> = ({
     return (
       recentVoters.length > 0 && (
         <div className="poll-recent-voters">
-          {recentVoters.map((user) => (
+          {recentVoters.map((peer) => (
             <Avatar
-              key={user.id}
+              key={peer.id}
               size="micro"
-              user={user}
+              peer={peer}
             />
           ))}
         </div>
@@ -254,7 +242,23 @@ const Poll: FC<OwnProps & StateProps> = ({
       <div className="poll-type">
         {lang(getPollTypeString(summary))}
         {renderRecentVoters()}
-        {closePeriod > 0 && canVote && <div ref={countdownRef} className="poll-countdown" />}
+        {closePeriod > 0 && canVote && (
+          <div ref={countdownRef} className="poll-countdown">
+            <span>{formatMediaDuration(closePeriod)}</span>
+            <svg width="16px" height="16px">
+              <circle
+                ref={timerCircleRef}
+                cx="8"
+                cy="8"
+                r={TIMER_RADIUS}
+                className="poll-countdown-progress"
+                transform="rotate(-90, 8, 8)"
+                stroke-dasharray={TIMER_CIRCUMFERENCE}
+                stroke-dashoffset="0"
+              />
+            </svg>
+          </div>
+        )}
         {summary.quiz && poll.results.solution && !canVote && (
           <Button
             round

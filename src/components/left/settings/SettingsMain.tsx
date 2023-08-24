@@ -1,11 +1,10 @@
-import type { FC } from '../../../lib/teact/teact';
 import React, { memo, useEffect } from '../../../lib/teact/teact';
 import { getActions, withGlobal } from '../../../global';
 
+import type { FC } from '../../../lib/teact/teact';
 import { SettingsScreens } from '../../../types';
-import type { ApiUser } from '../../../api/types';
 
-import { selectIsPremiumPurchaseBlocked, selectUser } from '../../../global/selectors';
+import { selectIsPremiumPurchaseBlocked } from '../../../global/selectors';
 import useLang from '../../../hooks/useLang';
 import useHistoryBack from '../../../hooks/useHistoryBack';
 
@@ -22,8 +21,7 @@ type OwnProps = {
 
 type StateProps = {
   sessionCount: number;
-  currentUser?: ApiUser;
-  lastSyncTime?: number;
+  currentUserId?: string;
   canBuyPremium?: boolean;
 };
 
@@ -31,9 +29,8 @@ const SettingsMain: FC<OwnProps & StateProps> = ({
   isActive,
   onScreenSelect,
   onReset,
-  currentUser,
+  currentUserId,
   sessionCount,
-  lastSyncTime,
   canBuyPremium,
 }) => {
   const {
@@ -43,13 +40,12 @@ const SettingsMain: FC<OwnProps & StateProps> = ({
   } = getActions();
 
   const lang = useLang();
-  const profileId = currentUser?.id;
 
   useEffect(() => {
-    if (profileId && lastSyncTime) {
-      loadProfilePhotos({ profileId });
+    if (currentUserId) {
+      loadProfilePhotos({ profileId: currentUserId });
     }
-  }, [lastSyncTime, profileId, loadProfilePhotos]);
+  }, [currentUserId, loadProfilePhotos]);
 
   useHistoryBack({
     isActive,
@@ -57,24 +53,22 @@ const SettingsMain: FC<OwnProps & StateProps> = ({
   });
 
   useEffect(() => {
-    if (lastSyncTime) {
-      loadAuthorizations();
-    }
-  }, [lastSyncTime, loadAuthorizations]);
+    loadAuthorizations();
+  }, []);
 
   return (
     <div className="settings-content custom-scroll">
       <div className="settings-main-menu">
-        {currentUser && (
+        {currentUserId && (
           <ProfileInfo
-            userId={currentUser.id}
+            userId={currentUserId}
             canPlayVideo={Boolean(isActive)}
             forceShowSelf
           />
         )}
-        {currentUser && (
+        {currentUserId && (
           <ChatExtra
-            chatOrUserId={currentUser.id}
+            chatOrUserId={currentUserId}
             forceShowSelf
           />
         )}
@@ -160,12 +154,11 @@ const SettingsMain: FC<OwnProps & StateProps> = ({
 
 export default memo(withGlobal<OwnProps>(
   (global): StateProps => {
-    const { currentUserId, lastSyncTime } = global;
+    const { currentUserId } = global;
 
     return {
       sessionCount: global.activeSessions.orderedHashes.length,
-      currentUser: currentUserId ? selectUser(global, currentUserId) : undefined,
-      lastSyncTime,
+      currentUserId,
       canBuyPremium: !selectIsPremiumPurchaseBlocked(global),
     };
   },

@@ -32,19 +32,28 @@ const HANG_UP_UI_DELAY = 500;
 addActionHandler('leaveGroupCall', async (global, actions, payload): Promise<void> => {
   const {
     isFromLibrary, shouldDiscard, shouldRemove, rejoin,
-    tabId = getCurrentTabId(),
+    isPageUnload, tabId = getCurrentTabId(),
   } = payload || {};
+
   const groupCall = selectActiveGroupCall(global);
   if (!groupCall) {
     return;
   }
 
   global = updateActiveGroupCall(global, { connectionState: 'disconnected' }, groupCall.participantsCount - 1);
+  global = {
+    ...global,
+    groupCalls: {
+      ...global.groupCalls,
+      activeGroupCallId: undefined,
+    },
+  };
   setGlobal(global);
 
   await callApi('leaveGroupCall', {
-    call: groupCall,
+    call: groupCall, isPageUnload,
   });
+  await callApi('abortRequestGroup', 'call');
 
   if (shouldDiscard) {
     await callApi('discardGroupCall', {
@@ -59,13 +68,6 @@ addActionHandler('leaveGroupCall', async (global, actions, payload): Promise<voi
 
   removeGroupCallAudioElement();
 
-  global = {
-    ...global,
-    groupCalls: {
-      ...global.groupCalls,
-      activeGroupCallId: undefined,
-    },
-  };
   setGlobal(global);
 
   actions.toggleGroupCallPanel({ force: undefined, tabId });
@@ -221,7 +223,15 @@ addActionHandler('connectToActiveGroupCall', async (global, actions, payload): P
 
   global = getGlobal();
 
-  if (!result) return;
+  if (!result) {
+    actions.showNotification({
+      // TODO[lang] Localize error message
+      message: 'Failed to join voice chat',
+      tabId,
+    });
+    actions.leaveGroupCall({ tabId });
+    return;
+  }
 
   actions.loadMoreGroupCallParticipants();
 
@@ -321,7 +331,7 @@ addActionHandler('setCallRating', (global, actions, payload): ActionReturnType =
 });
 
 addActionHandler('hangUp', (global, actions, payload): ActionReturnType => {
-  const { tabId = getCurrentTabId() } = payload || {};
+  const { isPageUnload, tabId = getCurrentTabId() } = payload || {};
   const { phoneCall } = global;
 
   if (!phoneCall) return undefined;
@@ -344,7 +354,7 @@ addActionHandler('hangUp', (global, actions, payload): ActionReturnType => {
 
   callApi('destroyPhoneCallState');
   stopPhoneCall();
-  callApi('discardCall', { call: phoneCall });
+  callApi('discardCall', { call: phoneCall, isPageUnload });
 
   if (phoneCall.state === 'requesting') {
     global = {

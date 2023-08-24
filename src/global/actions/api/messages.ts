@@ -44,6 +44,7 @@ import {
   removeOutlyingList,
   removeRequestedMessageTranslation,
   replaceScheduledMessages,
+  replaceSettings,
   replaceThreadParam,
   safeReplacePinnedIds,
   safeReplaceViewportIds,
@@ -63,6 +64,7 @@ import {
 import {
   selectChat,
   selectChatMessage,
+  selectTranslationLanguage,
   selectCurrentChat,
   selectCurrentMessageList,
   selectDraft,
@@ -96,8 +98,8 @@ import {
 import { debounce, onTickEnd, rafPromise } from '../../../util/schedulers';
 import {
   getMessageOriginalId,
-  getUserFullName,
-  isDeletedUser,
+  getUserFullName, isChatChannel,
+  isDeletedUser, isMessageLocal,
   isServiceNotificationMessage,
   isUserBot,
 } from '../../helpers';
@@ -105,6 +107,7 @@ import { translate } from '../../../util/langProvider';
 import { ensureProtocol } from '../../../util/ensureProtocol';
 import { updateTabState } from '../../reducers/tabs';
 import { getCurrentTabId } from '../../../util/establishMultitabRole';
+import { deleteMessages } from '../apiUpdaters/messages';
 
 const AUTOLOGIN_TOKEN_KEY = 'autologin_token';
 
@@ -484,8 +487,18 @@ addActionHandler('deleteMessages', (global, actions, payload): ActionReturnType 
   }
   const { chatId, threadId } = currentMessageList;
   const chat = selectChat(global, chatId)!;
+  const messageIdsToDelete = messageIds.filter((id) => {
+    const message = selectChatMessage(global, chatId, id);
+    return message && !isMessageLocal(message);
+  });
 
-  void callApi('deleteMessages', { chat, messageIds, shouldDeleteForAll });
+  // Only local messages
+  if (!messageIdsToDelete.length && messageIds.length) {
+    deleteMessages(global, isChatChannel(chat) ? chatId : undefined, messageIds, actions);
+    return;
+  }
+
+  void callApi('deleteMessages', { chat, messageIds: messageIdsToDelete, shouldDeleteForAll });
 
   const editingId = selectEditingId(global, chatId, threadId);
   if (editingId && messageIds.includes(editingId)) {
@@ -573,6 +586,7 @@ addActionHandler('reportMessages', async (global, actions, payload): Promise<voi
 
 addActionHandler('sendMessageAction', async (global, actions, payload): Promise<void> => {
   const { action, chatId, threadId } = payload!;
+  if (global.connectionState !== 'connectionStateReady') return;
   if (chatId === global.currentUserId) return; // Message actions are disabled in Saved Messages
 
   const chat = selectChat(global, chatId)!;
@@ -729,6 +743,7 @@ addActionHandler('loadPollOptionResults', async (global, actions, payload): Prom
   global = getGlobal();
 
   global = addUsers(global, buildCollectionByKey(result.users, 'id'));
+  global = addChats(global, buildCollectionByKey(result.chats, 'id'));
 
   const tabState = selectTabState(global, tabId);
   const { pollResults } = tabState;
@@ -740,8 +755,8 @@ addActionHandler('loadPollOptionResults', async (global, actions, payload): Prom
       voters: {
         ...voters,
         [option]: unique([
-          ...(!shouldResetVoters && voters && voters[option] ? voters[option] : []),
-          ...(result && result.users.map((user) => user.id)),
+          ...(!shouldResetVoters && voters?.[option] ? voters[option] : []),
+          ...result.votes.map((vote) => vote.peerId),
         ]),
       },
       offsets: {
@@ -786,19 +801,22 @@ addActionHandler('forwardMessages', (global, actions, payload): ActionReturnType
 
   const realMessages = messages.filter((m) => !isServiceNotificationMessage(m));
   if (realMessages.length) {
-    void callApi('forwardMessages', {
-      fromChat,
-      toChat,
-      toThreadId,
-      messages: realMessages,
-      isSilent,
-      scheduledAt,
-      sendAs,
-      withMyScore,
-      noAuthors,
-      noCaptions,
-      isCurrentUserPremium,
-    });
+    (async () => {
+      await rafPromise(); // Wait one frame for any previous `sendMessage` to be processed
+      callApi('forwardMessages', {
+        fromChat,
+        toChat,
+        toThreadId,
+        messages: realMessages,
+        isSilent,
+        scheduledAt,
+        sendAs,
+        withMyScore,
+        noAuthors,
+        noCaptions,
+        isCurrentUserPremium,
+      });
+    })();
   }
 
   messages
@@ -1036,7 +1054,7 @@ async function loadViewportMessages<T extends GlobalState>(
 
   global = addUsers(global, buildCollectionByKey(users, 'id'));
   global = addChats(global, buildCollectionByKey(chats, 'id'));
-  global = updateThreadInfos(global, chatId, repliesThreadInfos);
+  global = updateThreadInfos(global, repliesThreadInfos);
 
   let listedIds = selectListedIds(global, chatId, threadId);
   const outlyingList = offsetId ? selectOutlyingListByMessageId(global, chatId, threadId, offsetId) : undefined;
@@ -1473,10 +1491,13 @@ addActionHandler('forwardToSavedMessages', (global, actions, payload): ActionRet
 
 addActionHandler('requestMessageTranslation', (global, actions, payload): ActionReturnType => {
   const {
-    chatId, id, toLanguageCode = selectLanguageCode(global), tabId = getCurrentTabId(),
+    chatId, id, toLanguageCode = selectTranslationLanguage(global), tabId = getCurrentTabId(),
   } = payload;
 
   global = updateRequestedMessageTranslation(global, chatId, id, toLanguageCode, tabId);
+  global = replaceSettings(global, {
+    translationLanguage: toLanguageCode,
+  });
 
   return global;
 });
@@ -1491,6 +1512,20 @@ addActionHandler('showOriginalMessage', (global, actions, payload): ActionReturn
   return global;
 });
 
+addActionHandler('markMessagesTranslationPending', (global, actions, payload): ActionReturnType => {
+  const {
+    chatId, messageIds, toLanguageCode = selectLanguageCode(global),
+  } = payload;
+
+  messageIds.forEach((id) => {
+    global = updateMessageTranslation(global, chatId, id, toLanguageCode, {
+      isPending: true,
+    });
+  });
+
+  return global;
+});
+
 addActionHandler('translateMessages', (global, actions, payload): ActionReturnType => {
   const {
     chatId, messageIds, toLanguageCode = selectLanguageCode(global),
@@ -1499,11 +1534,7 @@ addActionHandler('translateMessages', (global, actions, payload): ActionReturnTy
   const chat = selectChat(global, chatId);
   if (!chat) return undefined;
 
-  messageIds.forEach((id) => {
-    global = updateMessageTranslation(global, chatId, id, toLanguageCode, {
-      isPending: true,
-    });
-  });
+  actions.markMessagesTranslationPending({ chatId, messageIds, toLanguageCode });
 
   callApi('translateText', {
     chat,

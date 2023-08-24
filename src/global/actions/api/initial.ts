@@ -2,7 +2,9 @@ import {
   addActionHandler, getGlobal, setGlobal,
 } from '../../index';
 
-import { initApi, callApi, callApiLocal } from '../../../api/gramjs';
+import {
+  initApi, callApi, callApiLocal, setShouldEnableDebugLog,
+} from '../../../api/gramjs';
 
 import {
   LANG_CACHE_NAME,
@@ -54,7 +56,12 @@ addActionHandler('initApi', async (global, actions): Promise<void> => {
     webAuthToken: initialLocationHash?.tgWebAuthToken,
     dcId: initialLocationHash?.tgWebAuthDcId ? Number(initialLocationHash?.tgWebAuthDcId) : undefined,
     mockScenario: initialLocationHash?.mockScenario,
+    shouldAllowHttpTransport: global.settings.byKey.shouldAllowHttpTransport,
+    shouldForceHttpTransport: global.settings.byKey.shouldForceHttpTransport,
+    shouldDebugExportedSenders: global.settings.byKey.shouldDebugExportedSenders,
   });
+
+  void setShouldEnableDebugLog(Boolean(global.settings.byKey.shouldCollectDebugLogs));
 });
 
 addActionHandler('setAuthPhoneNumber', (global, actions, payload): ActionReturnType => {
@@ -171,6 +178,12 @@ addActionHandler('signOut', async (global, actions, payload): Promise<void> => {
   if (payload?.forceInitApi) {
     actions.initApi();
   }
+});
+
+addActionHandler('requestChannelDifference', (global, actions, payload): ActionReturnType => {
+  const { chatId } = payload;
+
+  void callApi('requestChannelDifference', chatId);
 });
 
 addActionHandler('reset', (global, actions): ActionReturnType => {

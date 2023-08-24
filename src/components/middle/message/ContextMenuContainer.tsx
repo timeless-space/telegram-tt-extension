@@ -22,10 +22,12 @@ import {
   selectIsMessageProtected,
   selectIsPremiumPurchaseBlocked,
   selectIsReactionPickerOpen,
+  selectCanTranslateMessage,
   selectMessageCustomEmojiSets,
   selectMessageTranslations,
-  selectRequestedTranslationLanguage,
+  selectRequestedMessageTranslationLanguage,
   selectStickerSet,
+  selectRequestedChatTranslationLanguage,
 } from '../../../global/selectors';
 import {
   isActionMessage,
@@ -37,10 +39,8 @@ import {
   isMessageLocal,
   getMessageVideo,
   getChatMessageLink,
-  isServiceNotificationMessage,
 } from '../../../global/helpers';
 import { SERVICE_NOTIFICATIONS_USER_ID } from '../../../config';
-import { IS_TRANSLATION_SUPPORTED } from '../../../util/windowEnvironment';
 import buildClassName from '../../../util/buildClassName';
 import { copyTextToClipboard } from '../../../util/clipboard';
 
@@ -193,7 +193,7 @@ const ContextMenuContainer: FC<OwnProps & StateProps> = ({
     toggleReaction,
     requestMessageTranslation,
     showOriginalMessage,
-    openMessageLanguageModal,
+    openChatLanguageModal,
     openReactionPicker,
   } = getActions();
 
@@ -236,12 +236,14 @@ const ContextMenuContainer: FC<OwnProps & StateProps> = ({
     }
   }, [hasFullInfo, isOpen, isPrivate, loadFullChat, message.chatId]);
 
-  const seenByRecentUsers = useMemo(() => {
+  const seenByRecentPeers = useMemo(() => {
+    // No need for expensive global updates on chats or users, so we avoid them
+    const chatsById = getGlobal().chats.byId;
+    const usersById = getGlobal().users.byId;
     if (message.reactions?.recentReactions?.length) {
-      // No need for expensive global updates on users, so we avoid them
-      const usersById = getGlobal().users.byId;
-
-      const uniqueReactors = new Set(message.reactions?.recentReactions?.map(({ userId }) => usersById[userId]));
+      const uniqueReactors = new Set(message.reactions?.recentReactions?.map(
+        ({ peerId }) => usersById[peerId] || chatsById[peerId],
+      ));
 
       return Array.from(uniqueReactors).filter(Boolean).slice(0, 3);
     }
@@ -250,9 +252,7 @@ const ContextMenuContainer: FC<OwnProps & StateProps> = ({
       return undefined;
     }
 
-    // No need for expensive global updates on users, so we avoid them
-    const usersById = getGlobal().users.byId;
-    return Object.keys(message.seenByDates).slice(0, 3).map((id) => usersById[id]).filter(Boolean);
+    return Object.keys(message.seenByDates).slice(0, 3).map((id) => usersById[id] || chatsById[id]).filter(Boolean);
   }, [message.reactions?.recentReactions, message.seenByDates]);
 
   const isDownloading = useMemo(() => {
@@ -455,9 +455,9 @@ const ContextMenuContainer: FC<OwnProps & StateProps> = ({
   });
 
   const handleSelectLanguage = useLastCallback(() => {
-    openMessageLanguageModal({
+    openChatLanguageModal({
       chatId: message.chatId,
-      id: message.id,
+      messageId: message.id,
     });
     closeMenu();
   });
@@ -517,7 +517,7 @@ const ContextMenuContainer: FC<OwnProps & StateProps> = ({
         hasCustomEmoji={hasCustomEmoji}
         customEmojiSets={customEmojiSets}
         isDownloading={isDownloading}
-        seenByRecentUsers={seenByRecentUsers}
+        seenByRecentPeers={seenByRecentPeers}
         noReplies={noReplies}
         onOpenThread={handleOpenThread}
         onReply={handleReply}
@@ -610,8 +610,8 @@ export default memo(withGlobal<OwnProps>(
     const isScheduled = messageListType === 'scheduled';
     const isChannel = chat && isChatChannel(chat);
     const isLocal = isMessageLocal(message);
-    const isServiceNotification = isServiceNotificationMessage(message);
-    const canShowSeenBy = Boolean(chat
+    const canShowSeenBy = Boolean(!isLocal
+      && chat
       && seenByMaxChatMembers
       && seenByExpiresAt
       && isChatGroup(chat)
@@ -633,17 +633,12 @@ export default memo(withGlobal<OwnProps>(
     const customEmojiSets = customEmojiSetsNotFiltered?.every<ApiStickerSet>(Boolean)
       ? customEmojiSetsNotFiltered : undefined;
 
-    const translationRequestLanguage = selectRequestedTranslationLanguage(global, message.chatId, message.id);
+    const translationRequestLanguage = selectRequestedMessageTranslationLanguage(global, message.chatId, message.id);
     const hasTranslation = translationRequestLanguage
       ? Boolean(selectMessageTranslations(global, message.chatId, translationRequestLanguage)[message.id]?.text)
       : undefined;
-
-    const { canTranslate: isTranslationEnabled, doNotTranslate } = global.settings.byKey;
-
-    const canTranslateLanguage = !detectedLanguage || !doNotTranslate.includes(detectedLanguage);
-    const canTranslate = IS_TRANSLATION_SUPPORTED && isTranslationEnabled && message.content.text
-      && canTranslateLanguage && !isLocal && !isServiceNotification && !isScheduled && !isAction && !hasTranslation
-      && !message.emojiOnlyCount;
+    const canTranslate = !hasTranslation && selectCanTranslateMessage(global, message, detectedLanguage);
+    const isChatTranslated = selectRequestedChatTranslationLanguage(global, message.chatId);
 
     return {
       availableReactions: global.availableReactions,
@@ -682,8 +677,8 @@ export default memo(withGlobal<OwnProps>(
       canScheduleUntilOnline: selectCanScheduleUntilOnline(global, message.chatId),
       threadId,
       canTranslate,
-      canShowOriginal: hasTranslation,
-      canSelectLanguage: hasTranslation,
+      canShowOriginal: hasTranslation && !isChatTranslated,
+      canSelectLanguage: hasTranslation && !isChatTranslated,
       canPlayAnimatedEmojis: selectCanPlayAnimatedEmojis(global),
       isReactionPickerOpen: selectIsReactionPickerOpen(global),
     };

@@ -1,6 +1,6 @@
 import React, { memo } from '../../lib/teact/teact';
 
-import type { ApiMessage } from '../../api/types';
+import type { ApiFormattedText, ApiMessage } from '../../api/types';
 import type { ObserveFn } from '../../hooks/useIntersectionObserver';
 import type { LangFn } from '../../hooks/useLang';
 
@@ -20,6 +20,7 @@ import MessageText from './MessageText';
 interface OwnProps {
   lang: LangFn;
   message: ApiMessage;
+  translatedText?: ApiFormattedText;
   noEmoji?: boolean;
   highlight?: string;
   truncateLength?: number;
@@ -27,11 +28,13 @@ interface OwnProps {
   observeIntersectionForPlaying?: ObserveFn;
   withTranslucentThumbs?: boolean;
   inChatList?: boolean;
+  emojiSize?: number;
 }
 
 function MessageSummary({
   lang,
   message,
+  translatedText,
   noEmoji = false,
   highlight,
   truncateLength = TRUNCATED_SUMMARY_LENGTH,
@@ -39,13 +42,15 @@ function MessageSummary({
   observeIntersectionForPlaying,
   withTranslucentThumbs = false,
   inChatList = false,
+  emojiSize,
 }: OwnProps) {
   const { text, entities } = extractMessageText(message, inChatList) || {};
   const hasSpoilers = entities?.some((e) => e.type === ApiMessageEntityTypes.Spoiler);
   const hasCustomEmoji = entities?.some((e) => e.type === ApiMessageEntityTypes.CustomEmoji);
 
   if (!text || (!hasSpoilers && !hasCustomEmoji)) {
-    const trimmedText = trimText(getMessageSummaryText(lang, message, noEmoji), truncateLength);
+    const summaryText = translatedText?.text || getMessageSummaryText(lang, message, noEmoji);
+    const trimmedText = trimText(summaryText, truncateLength);
 
     return (
       <span>
@@ -62,6 +67,7 @@ function MessageSummary({
     return (
       <MessageText
         message={message}
+        translatedText={translatedText}
         highlight={highlight}
         isSimple
         observeIntersectionForLoading={observeIntersectionForLoading}
@@ -69,6 +75,7 @@ function MessageSummary({
         withTranslucentThumbs={withTranslucentThumbs}
         truncateLength={truncateLength}
         inChatList={inChatList}
+        emojiSize={emojiSize}
       />
     );
   }

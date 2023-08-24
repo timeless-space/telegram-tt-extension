@@ -269,7 +269,7 @@ export type ApiUpdateMessagePoll = {
 export type ApiUpdateMessagePollVote = {
   '@type': 'updateMessagePollVote';
   pollId: string;
-  userId: string;
+  peerId: string;
   options: string[];
 };
 
@@ -615,8 +615,17 @@ export type ApiUpdateMessageTranslations = {
   toLanguageCode: string;
 };
 
-export type ApiRequestInitApi = {
-  '@type': 'requestInitApi';
+export type ApiUpdateFetchingDifference = {
+  '@type': 'updateFetchingDifference';
+  isFetching: boolean;
+};
+
+export type ApiRequestReconnectApi = {
+  '@type': 'requestReconnectApi';
+};
+
+export type ApiRequestSync = {
+  '@type': 'requestSync';
 };
 
 export type ApiUpdate = (
@@ -645,7 +654,7 @@ export type ApiUpdate = (
   ApiUpdatePhoneCallConnectionState | ApiUpdateBotMenuButton | ApiUpdateTranscribedAudio | ApiUpdateUserEmojiStatus |
   ApiUpdateMessageExtendedMedia | ApiUpdateConfig | ApiUpdateTopicNotifyExceptions | ApiUpdatePinnedTopic |
   ApiUpdatePinnedTopicsOrder | ApiUpdateTopic | ApiUpdateTopics | ApiUpdateRecentEmojiStatuses |
-  ApiUpdateRecentReactions | ApiRequestInitApi
+  ApiUpdateRecentReactions | ApiRequestReconnectApi | ApiRequestSync | ApiUpdateFetchingDifference
 );
 
 export type OnApiUpdate = (update: ApiUpdate) => void;

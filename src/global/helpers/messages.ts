@@ -14,6 +14,7 @@ import { IS_OPUS_SUPPORTED, isWebpSupported } from '../../util/windowEnvironment
 import { getChatTitle, isUserId } from './chats';
 import { getGlobal } from '../index';
 import { areSortedArraysIntersecting, unique } from '../../util/iteratees';
+import { getServerTime } from '../../util/serverTime';
 
 const RE_LINK = new RegExp(RE_LINK_TEMPLATE, 'i');
 
@@ -76,8 +77,8 @@ export function getMessageCustomShape(message: ApiMessage): boolean {
     return true;
   }
 
-  if (!text || photo || video || audio || voice || document || poll || webPage || contact || action || game || invoice
-    || location) {
+  if (!text || photo || video || audio || voice || document || poll || webPage || contact || action || game
+    || invoice || location) {
     return false;
   }
 
@@ -197,6 +198,10 @@ export function isMessageLocal(message: ApiMessage) {
   return isLocalMessageId(message.id);
 }
 
+export function isMessageFailed(message: ApiMessage) {
+  return message.sendingState === 'messageSendingStateFailed';
+}
+
 export function isLocalMessageId(id: number) {
   return !Number.isInteger(id);
 }
@@ -242,10 +247,21 @@ export function getMessageContentFilename(message: ApiMessage) {
   return baseFilename;
 }
 
-export function isGeoLiveExpired(message: ApiMessage, timestamp = Date.now() / 1000) {
+export function isGeoLiveExpired(message: ApiMessage) {
   const { location } = message.content;
   if (location?.type !== 'geoLive') return false;
-  return (timestamp - (message.date || 0) >= location.period);
+  return getServerTime() - (message.date || 0) >= location.period;
+}
+
+export function isMessageTranslatable(message: ApiMessage, allowOutgoing?: boolean) {
+  const { text, game } = message.content;
+
+  const isLocal = isMessageLocal(message);
+  const isServiceNotification = isServiceNotificationMessage(message);
+  const isAction = isActionMessage(message);
+
+  return Boolean(text?.text.length && !message.emojiOnlyCount && !game && (allowOutgoing || !message.isOutgoing)
+    && !isLocal && !isServiceNotification && !isAction && !message.isScheduled);
 }
 
 export function getMessageSingleInlineButton(message: ApiMessage) {

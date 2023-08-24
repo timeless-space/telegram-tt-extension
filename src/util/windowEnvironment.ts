@@ -9,30 +9,27 @@ import {
 
 export * from './environmentWebp';
 
-export * from './environmentSystemTheme';
-
 export function getPlatform() {
   const { userAgent, platform } = window.navigator;
-  const macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'];
-  const windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'];
+
   const iosPlatforms = ['iPhone', 'iPad', 'iPod'];
-  let os: 'macOS' | 'iOS' | 'Windows' | 'Android' | 'Linux' | undefined;
-
-  if (iosPlatforms.indexOf(platform) !== -1
+  if (
+    iosPlatforms.indexOf(platform) !== -1
     // For new IPads with M1 chip and IPadOS platform returns "MacIntel"
-    || (platform === 'MacIntel' && ('maxTouchPoints' in navigator && navigator.maxTouchPoints > 2))) {
-    os = 'iOS';
-  } else if (macosPlatforms.indexOf(platform) !== -1) {
-    os = 'macOS';
-  } else if (windowsPlatforms.indexOf(platform) !== -1) {
-    os = 'Windows';
-  } else if (/Android/.test(userAgent)) {
-    os = 'Android';
-  } else if (/Linux/.test(platform)) {
-    os = 'Linux';
-  }
+    || (platform === 'MacIntel' && ('maxTouchPoints' in navigator && navigator.maxTouchPoints > 2))
+  ) return 'iOS';
 
-  return os;
+  const macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'];
+  if (macosPlatforms.indexOf(platform) !== -1) return 'macOS';
+
+  const windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'];
+  if (windowsPlatforms.indexOf(platform) !== -1) return 'Windows';
+
+  if (/Android/.test(userAgent)) return 'Android';
+
+  if (/Linux/.test(platform)) return 'Linux';
+
+  return undefined;
 }
 
 export const IS_PRODUCTION_HOST = window.location.host === PRODUCTION_HOSTNAME;
@@ -81,7 +78,6 @@ export const IS_CANVAS_FILTER_SUPPORTED = (
 export const IS_REQUEST_FULLSCREEN_SUPPORTED = 'requestFullscreen' in document.createElement('div');
 export const ARE_CALLS_SUPPORTED = !navigator.userAgent.includes('Firefox');
 export const LAYERS_ANIMATION_NAME = IS_ANDROID ? 'slideFade' : IS_IOS ? 'slideLayers' : 'pushSlide';
-export const IS_VIDEO_PREVIEW_SUPPORTED = !IS_TEST;
 
 const TEST_VIDEO = document.createElement('video');
 // `canPlayType(VIDEO_MOV_TYPE)` returns false negative at least for macOS Chrome and iOS Safari

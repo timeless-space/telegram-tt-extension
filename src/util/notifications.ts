@@ -1,6 +1,6 @@
 import { callApi } from '../api/gramjs';
 import type {
-  ApiChat, ApiMessage, ApiPhoneCall, ApiUser, ApiUserReaction,
+  ApiChat, ApiMessage, ApiPhoneCall, ApiUser, ApiPeerReaction,
 } from '../api/types';
 import { ApiMediaFormat } from '../api/types';
 import { renderActionMessageText } from '../components/common/helpers/renderActionMessageText';
@@ -30,6 +30,7 @@ import {
   selectNotifyExceptions,
   selectNotifySettings,
   selectUser,
+  selectChat,
 } from '../global/selectors';
 import { IS_SERVICE_WORKER_SUPPORTED, IS_TOUCH_ENV } from './windowEnvironment';
 import { translate } from './langProvider';
@@ -327,7 +328,7 @@ function checkIfShouldNotify(chat: ApiChat, message: Partial<ApiMessage>) {
   return !document.hasFocus();
 }
 
-function getNotificationContent(chat: ApiChat, message: ApiMessage, reaction?: ApiUserReaction) {
+function getNotificationContent(chat: ApiChat, message: ApiMessage, reaction?: ApiPeerReaction) {
   const global = getGlobal();
   const {
     replyToMessageId,
@@ -336,11 +337,13 @@ function getNotificationContent(chat: ApiChat, message: ApiMessage, reaction?: A
     senderId,
   } = message;
   const hasReaction = Boolean(reaction);
-  if (hasReaction) senderId = reaction.userId;
+  if (hasReaction) senderId = reaction.peerId;
 
   const { isScreenLocked } = global.passcode;
-  const messageSender = senderId ? selectUser(global, senderId) : undefined;
+  const messageSenderChat = senderId ? selectChat(global, senderId) : undefined;
+  const messageSenderUser = senderId ? selectUser(global, senderId) : undefined;
   const messageAction = getMessageAction(message as ApiMessage);
+
   const actionTargetMessage = messageAction && replyToMessageId
     ? selectChatMessage(global, chat.id, replyToMessageId)
     : undefined;
@@ -363,13 +366,13 @@ function getNotificationContent(chat: ApiChat, message: ApiMessage, reaction?: A
     !isScreenLocked
     && selectShouldShowMessagePreview(chat, selectNotifySettings(global), selectNotifyExceptions(global))
   ) {
-    if (isActionMessage(message)) {
-      const isChat = chat && (isChatChannel(chat) || message.senderId === message.chatId);
+    const isChat = chat && (isChatChannel(chat) || message.senderId === message.chatId);
 
+    if (isActionMessage(message)) {
       body = renderActionMessageText(
         translate,
         message,
-        !isChat ? messageSender : undefined,
+        !isChat ? messageSenderUser : undefined,
         isChat ? chat : undefined,
         actionTargetUsers,
         actionTargetMessage,
@@ -379,7 +382,7 @@ function getNotificationContent(chat: ApiChat, message: ApiMessage, reaction?: A
       ) as string;
     } else {
       // TODO[forums] Support ApiChat
-      const senderName = getMessageSenderName(translate, chat.id, messageSender);
+      const senderName = getMessageSenderName(translate, chat.id, isChat ? messageSenderChat : messageSenderUser);
       let summary = getMessageSummaryText(translate, message, hasReaction, 60);
 
       if (hasReaction) {
@@ -413,7 +416,7 @@ async function getAvatar(chat: ApiChat | ApiUser) {
   return mediaData;
 }
 
-function getReactionEmoji(reaction: ApiUserReaction) {
+function getReactionEmoji(reaction: ApiPeerReaction) {
   let emoji;
   if ('emoticon' in reaction.reaction) {
     emoji = reaction.reaction.emoticon;

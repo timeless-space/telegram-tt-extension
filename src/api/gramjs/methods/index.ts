@@ -1,5 +1,6 @@
 export {
-  destroy, disconnect, downloadMedia, fetchCurrentUser, repairFileReference,
+  destroy, disconnect, downloadMedia, fetchCurrentUser, repairFileReference, abortChatRequests, abortRequestGroup,
+  setForceHttpTransport, setShouldDebugExportedSenders, setAllowHttpTransport, requestChannelDifference,
 } from './client';
 
 export {
@@ -22,7 +23,7 @@ export {
   getChatByPhoneNumber, toggleJoinToSend, toggleJoinRequest, fetchTopics, deleteTopic, togglePinnedTopic,
   editTopic, toggleForum, fetchTopicById, createTopic, toggleParticipantsHidden, checkChatlistInvite,
   joinChatlistInvite, createChalistInvite, editChatlistInvite, deleteChatlistInvite, fetchChatlistInvites,
-  fetchLeaveChatlistSuggestions, leaveChatlist,
+  fetchLeaveChatlistSuggestions, leaveChatlist, togglePeerTranslations,
 } from './chats';
 
 export {
@@ -49,7 +50,7 @@ export {
 } from './symbols';
 
 export {
-  checkChatUsername, setChatUsername, updatePrivateLink,
+  checkChatUsername, setChatUsername, updatePrivateLink, deactivateAllUsernames,
   fetchExportedChatInvites, editExportedChatInvite, exportChatInvite, deleteExportedChatInvite,
   deleteRevokedExportedChatInvites, fetchChatInviteImporters, hideChatJoinRequest, hideAllChatJoinRequests,
   hideChatReportPanel,

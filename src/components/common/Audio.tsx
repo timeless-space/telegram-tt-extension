@@ -50,7 +50,6 @@ type OwnProps = {
   uploadProgress?: number;
   origin: AudioOrigin;
   date?: number;
-  lastSyncTime?: number;
   noAvatars?: boolean;
   className?: string;
   isSelectable?: boolean;
@@ -74,8 +73,6 @@ export const WITH_AVATAR_TINY_SCREEN_WIDTH_MQL = window.matchMedia('(max-width: 
 const AVG_VOICE_DURATION = 10;
 // This is needed for browsers requiring user interaction before playing.
 const PRELOAD = true;
-// eslint-disable-next-line max-len
-const TRANSCRIBE_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 24" class="loading-svg"><rect class="loading-rect" fill="transparent" width="32" height="24" stroke-width="3" stroke-linejoin="round" rx="6" ry="6" stroke="var(--accent-color)" stroke-dashoffset="1" stroke-dasharray="32,68"></rect></svg>';
 
 const Audio: FC<OwnProps> = ({
   theme,
@@ -84,7 +81,6 @@ const Audio: FC<OwnProps> = ({
   uploadProgress,
   origin,
   date,
-  lastSyncTime,
   noAvatars,
   className,
   isSelectable,
@@ -114,7 +110,7 @@ const Audio: FC<OwnProps> = ({
 
   const { isMobile } = useAppLayout();
   const [isActivated, setIsActivated] = useState(false);
-  const shouldLoad = (isActivated || PRELOAD) && lastSyncTime;
+  const shouldLoad = isActivated || PRELOAD;
   const coverHash = getMessageMediaHash(message, 'pictogram');
   const coverBlobUrl = useMedia(coverHash, false, ApiMediaFormat.BlobUrl);
 
@@ -254,10 +250,6 @@ const Audio: FC<OwnProps> = ({
     });
   }, [withSeekline, handleStartSeek, handleSeek, handleStopSeek]);
 
-  const transcribeSvgMemo = useMemo(() => (
-    <div dangerouslySetInnerHTML={{ __html: TRANSCRIBE_SVG }} />
-  ), []);
-
   function renderFirstLine() {
     if (isVoice) {
       return senderTitle || 'Voice';
@@ -293,6 +285,7 @@ const Audio: FC<OwnProps> = ({
   const fullClassName = buildClassName(
     'Audio',
     className,
+    origin === AudioOrigin.Inline && 'inline',
     isOwn && origin === AudioOrigin.Inline && 'own',
     (origin === AudioOrigin.Search || origin === AudioOrigin.SharedMedia) && 'bigger',
     isSelected && 'audio-is-selected',
@@ -407,7 +400,6 @@ const Audio: FC<OwnProps> = ({
           isTranscriptionHidden,
           isTranscribed,
           isTranscriptionError,
-          transcribeSvgMemo,
           canTranscribe ? handleTranscribe : undefined,
           onHideTranscription,
         )
@@ -495,7 +487,6 @@ function renderVoice(
   isTranscriptionHidden?: boolean,
   isTranscribed?: boolean,
   isTranscriptionError?: boolean,
-  svgMemo?: React.ReactNode,
   onClickTranscribe?: VoidFunction,
   onHideTranscription?: (isHidden: boolean) => void,
 ) {
@@ -526,7 +517,23 @@ function renderVoice(
               (isTranscribed || isTranscriptionError) && !isTranscriptionHidden && 'transcribe-shown',
             )}
             />
-            {isTranscribing && svgMemo}
+            {isTranscribing && (
+              <svg viewBox="0 0 32 24" className="loading-svg">
+                <rect
+                  className="loading-rect"
+                  fill="transparent"
+                  width="32"
+                  height="24"
+                  stroke-width="3"
+                  stroke-linejoin="round"
+                  rx="6"
+                  ry="6"
+                  stroke="var(--accent-color)"
+                  stroke-dashoffset="1"
+                  stroke-dasharray="32,68"
+                />
+              </svg>
+            )}
           </Button>
         )}
       </div>
@@ -598,7 +605,7 @@ function renderSeekline(
 ) {
   return (
     <div
-      className="seekline no-selection"
+      className="seekline"
       ref={seekerRef as React.Ref<HTMLDivElement>}
     >
       {bufferedRanges.map(({ start, end }) => (

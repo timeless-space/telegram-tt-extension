@@ -5,12 +5,14 @@ import { requestMeasure } from '../../lib/fasterdom/fasterdom';
 import { ensureRLottie, getRLottie } from '../../lib/rlottie/RLottie.async';
 
 import React, {
-  useEffect, useRef, memo, useState, useMemo,
+  useEffect, useRef, memo, useState,
 } from '../../lib/teact/teact';
+
+import { IS_ELECTRON } from '../../config';
 
 import buildClassName from '../../util/buildClassName';
 import buildStyle from '../../util/buildStyle';
-import generateIdFor from '../../util/generateIdFor';
+import generateUniqueId from '../../util/generateUniqueId';
 import { hexToRgb } from '../../util/switchTheme';
 
 import useLastCallback from '../../hooks/useLastCallback';
@@ -23,6 +25,7 @@ import useSharedIntersectionObserver from '../../hooks/useSharedIntersectionObse
 import useThrottledCallback from '../../hooks/useThrottledCallback';
 import useColorFilter from '../../hooks/stickers/useColorFilter';
 import useSyncEffect from '../../hooks/useSyncEffect';
+import useUniqueId from '../../hooks/useUniqueId';
 
 export type OwnProps = {
   ref?: RefObject<HTMLDivElement>;
@@ -49,7 +52,6 @@ export type OwnProps = {
 };
 
 const THROTTLE_MS = 150;
-const ID_STORE = {};
 
 const AnimatedSticker: FC<OwnProps> = ({
   ref,
@@ -80,7 +82,7 @@ const AnimatedSticker: FC<OwnProps> = ({
     containerRef = ref;
   }
 
-  const viewId = useMemo(() => generateIdFor(ID_STORE, true), []);
+  const viewId = useUniqueId();
 
   const [animation, setAnimation] = useState<RLottieInstance>();
   const animationRef = useRef<RLottieInstance>();
@@ -129,7 +131,7 @@ const AnimatedSticker: FC<OwnProps> = ({
     const newAnimation = getRLottie().init(
       tgsUrl,
       container,
-      renderId || generateIdFor(ID_STORE, true),
+      renderId || generateUniqueId(),
       {
         size,
         noLoop,
@@ -255,7 +257,7 @@ const AnimatedSticker: FC<OwnProps> = ({
       className={buildClassName('AnimatedSticker', className)}
       style={buildStyle(
         size !== undefined && `width: ${size}px; height: ${size}px;`,
-        onClick && 'cursor: pointer',
+        onClick && !IS_ELECTRON && 'cursor: pointer',
         colorFilter,
         style,
       )}

@@ -44,9 +44,9 @@ type StateProps = {
   orderedFolderIds?: number[];
   activeChatFolder: number;
   currentUserId?: string;
-  lastSyncTime?: number;
   shouldSkipHistoryAnimations?: boolean;
   maxFolders: number;
+  maxChatLists: number;
   maxFolderInvites: number;
   hasArchivedChats?: boolean;
   archiveSettings: GlobalState['archiveSettings'];
@@ -64,9 +64,9 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
   activeChatFolder,
   currentUserId,
   isForumPanelOpen,
-  lastSyncTime,
   shouldSkipHistoryAnimations,
   maxFolders,
+  maxChatLists,
   shouldHideFolderTabs,
   folderInvitesById,
   maxFolderInvites,
@@ -89,10 +89,8 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
   const lang = useLang();
 
   useEffect(() => {
-    if (lastSyncTime) {
-      loadChatFolders();
-    }
-  }, [lastSyncTime, loadChatFolders]);
+    loadChatFolders();
+  }, []);
 
   const allChatsFolder: ApiChatFolder = useMemo(() => {
     return {
@@ -125,13 +123,10 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
       return undefined;
     }
 
-    const global = getGlobal();
-
     return displayedFolders.map((folder, i) => {
       const { id, title } = folder;
       const isBlocked = id !== ALL_FOLDER_ID && i > maxFolders - 1;
-      const canShareFolder = selectCanShareFolder(global, id);
-
+      const canShareFolder = selectCanShareFolder(getGlobal(), id);
       const contextActions = [];
 
       if (canShareFolder) {
@@ -139,16 +134,25 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
           title: lang('ChatList.ContextMenuShare'),
           icon: 'link',
           handler: () => {
+            const chatListCount = Object.values(chatFoldersById).reduce((acc, el) => acc + (el.isChatList ? 1 : 0), 0);
+            if (chatListCount >= maxChatLists && !folder.isChatList) {
+              openLimitReachedModal({
+                limit: 'chatlistJoined',
+              });
+              return;
+            }
+
             // Greater amount can be after premium downgrade
             if (folderInvitesById[id]?.length >= maxFolderInvites) {
               openLimitReachedModal({
                 limit: 'chatlistInvites',
               });
-            } else {
-              openShareChatFolderModal({
-                folderId: id,
-              });
+              return;
             }
+
+            openShareChatFolderModal({
+              folderId: id,
+            });
           },
         });
       }
@@ -181,7 +185,10 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
         contextActions: contextActions?.length ? contextActions : undefined,
       } satisfies TabWithProperties;
     });
-  }, [displayedFolders, folderCountersById, lang, maxFolders, folderInvitesById, maxFolderInvites]);
+  }, [
+    displayedFolders, maxFolders, folderCountersById, lang, chatFoldersById, maxChatLists, folderInvitesById,
+    maxFolderInvites,
+  ]);
 
   const handleSwitchTab = useLastCallback((index: number) => {
     setActiveChatFolder({ activeChatFolder: index }, { forceOnHeavyAnimation: true });
@@ -277,7 +284,6 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
         folderId={isFolder ? activeFolder.id : undefined}
         isActive={isActive}
         isForumPanelOpen={isForumPanelOpen}
-        lastSyncTime={lastSyncTime}
         foldersDispatch={foldersDispatch}
         onSettingsScreenSelect={onSettingsScreenSelect}
         onLeftColumnContentChange={onLeftColumnContentChange}
@@ -334,7 +340,6 @@ export default memo(withGlobal<OwnProps>(
         },
       },
       currentUserId,
-      lastSyncTime,
       archiveSettings,
     } = global;
     const { shouldSkipHistoryAnimations, activeChatFolder } = selectTabState(global);
@@ -345,11 +350,11 @@ export default memo(withGlobal<OwnProps>(
       orderedFolderIds,
       activeChatFolder,
       currentUserId,
-      lastSyncTime,
       shouldSkipHistoryAnimations,
       hasArchivedChats: Boolean(archived?.length),
       maxFolders: selectCurrentLimit(global, 'dialogFilters'),
       maxFolderInvites: selectCurrentLimit(global, 'chatlistInvites'),
+      maxChatLists: selectCurrentLimit(global, 'chatlistJoined'),
       archiveSettings,
     };
   },

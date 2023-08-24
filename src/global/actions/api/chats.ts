@@ -56,6 +56,7 @@ import {
   updateListedTopicIds,
   updateChatFullInfo,
   replaceChatFullInfo,
+  updateUserFullInfo,
 } from '../../reducers';
 import {
   selectChat, selectUser, selectChatListType, selectIsChatPinned,
@@ -73,6 +74,7 @@ import {
   isChatChannel,
   isChatSuperGroup,
   isUserBot,
+  isUserId,
 } from '../../helpers';
 import { formatShareText, parseChooseParameter, processDeepLink } from '../../../util/deeplink';
 import { updateGroupCall } from '../../reducers/calls';
@@ -129,8 +131,34 @@ addActionHandler('preloadTopChatMessages', async (global, actions): Promise<void
 
 addActionHandler('openChat', (global, actions, payload): ActionReturnType => {
   const {
-    id, threadId = MAIN_THREAD_ID, noRequestThreadInfoUpdate,
+    id, threadId = MAIN_THREAD_ID, noRequestThreadInfoUpdate, tabId = getCurrentTabId(),
   } = payload;
+
+  const currentMessageList = selectCurrentMessageList(global, tabId);
+  const currentChatId = currentMessageList?.chatId;
+  const currentThreadId = currentMessageList?.threadId;
+
+  if (currentChatId && (currentChatId !== id || currentThreadId !== threadId)) {
+    const [isChatOpened, isThreadOpened] = Object.values(global.byTabId)
+      .reduce(([accHasChatOpened, accHasThreadOpened], { id: otherTabId }) => {
+        if (otherTabId === tabId || (accHasChatOpened && accHasThreadOpened)) {
+          return [accHasChatOpened, accHasThreadOpened];
+        }
+
+        const otherMessageList = selectCurrentMessageList(global, otherTabId);
+        const isSameChat = otherMessageList?.chatId === currentChatId;
+        const isSameThread = isSameChat && otherMessageList?.threadId === currentThreadId;
+
+        return [accHasChatOpened || isSameChat, accHasThreadOpened || isSameThread];
+      }, [currentChatId === id, false]);
+
+    const shouldAbortChatRequests = !isChatOpened || !isThreadOpened;
+
+    if (shouldAbortChatRequests) {
+      callApi('abortChatRequests', { chatId: currentChatId, threadId: isChatOpened ? currentThreadId : undefined });
+    }
+  }
+
   if (!id) {
     return;
   }
@@ -296,12 +324,13 @@ addActionHandler('loadAllChats', async (global, actions, payload): Promise<void>
         .sort((chat1, chat2) => getOrderDate(chat1)! - getOrderDate(chat2)!)[0]
       : undefined;
 
-    await loadChats(global,
+    await loadChats(
       listType,
       oldestChat?.id,
       oldestChat ? getOrderDate(oldestChat) : undefined,
       shouldReplace,
-      true);
+      true,
+    );
 
     if (shouldReplace) {
       onReplace?.();
@@ -326,10 +355,10 @@ addActionHandler('loadFullChat', (global, actions, payload): ActionReturnType =>
   }
 });
 
-addActionHandler('loadTopChats', (global): ActionReturnType => {
+addActionHandler('loadTopChats', (): ActionReturnType => {
   runThrottledForLoadTopChats(() => {
-    loadChats(global, 'active');
-    loadChats(global, 'archived');
+    loadChats('active');
+    loadChats('archived');
   });
 });
 
@@ -2131,15 +2160,48 @@ addActionHandler('openDeleteChatFolderModal', async (global, actions, payload): 
   setGlobal(global);
 });
 
-async function loadChats<T extends GlobalState>(
-  global: T,
+addActionHandler('updateChatDetectedLanguage', (global, actions, payload): ActionReturnType => {
+  const { chatId, detectedLanguage } = payload;
+
+  global = getGlobal();
+  global = updateChat(global, chatId, {
+    detectedLanguage,
+  });
+
+  return global;
+});
+
+addActionHandler('togglePeerTranslations', async (global, actions, payload): Promise<void> => {
+  const { chatId, isEnabled } = payload;
+  const chat = selectChat(global, chatId);
+  if (!chat) return;
+
+  const result = await callApi('togglePeerTranslations', { chat, isEnabled });
+
+  if (result === undefined) return;
+
+  global = getGlobal();
+  if (isUserId(chatId)) {
+    global = updateUserFullInfo(global, chatId, {
+      isTranslationDisabled: isEnabled ? undefined : true,
+    });
+  } else {
+    global = updateChatFullInfo(global, chatId, {
+      isTranslationDisabled: isEnabled ? undefined : true,
+    });
+  }
+  setGlobal(global);
+});
+
+async function loadChats(
   listType: 'active' | 'archived',
   offsetId?: string,
   offsetDate?: number,
   shouldReplace = false,
   isFullDraftSync?: boolean,
 ) {
-  global = getGlobal();
+  // eslint-disable-next-line eslint-multitab-tt/no-immediate-global
+  let global = getGlobal();
   let lastLocalServiceMessage = selectLastServiceNotification(global)?.message;
   const result = await callApi('fetchChats', {
     limit: CHAT_LIST_LOAD_SLICE,
@@ -2295,7 +2357,7 @@ export async function loadFullChat<T extends GlobalState>(
     global = updateGroupCall(
       global,
       groupCall.id!,
-      omit(groupCall, ['connectionState']),
+      omit(groupCall, ['connectionState', 'isLoaded']),
       undefined,
       existingGroupCall ? undefined : groupCall.participantsCount,
     );

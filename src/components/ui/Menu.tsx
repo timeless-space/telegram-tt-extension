@@ -23,6 +23,7 @@ type OwnProps = {
   ref?: RefObject<HTMLDivElement>;
   containerRef?: RefObject<HTMLElement>;
   isOpen: boolean;
+  shouldCloseFast?: boolean;
   id?: string;
   className?: string;
   bubbleClassName?: string;
@@ -54,6 +55,7 @@ const ANIMATION_DURATION = 200;
 const Menu: FC<OwnProps> = ({
   ref,
   containerRef,
+  shouldCloseFast,
   isOpen,
   id,
   className,
@@ -131,6 +133,7 @@ const Menu: FC<OwnProps> = ({
     footer && 'with-footer',
     transitionClassNames,
     bubbleClassName,
+    shouldCloseFast && 'close-fast',
   );
 
   const transformOriginYStyle = transformOriginY !== undefined ? `${transformOriginY}px` : undefined;
@@ -140,7 +143,7 @@ const Menu: FC<OwnProps> = ({
     <div
       id={id}
       className={buildClassName(
-        'Menu no-selection',
+        'Menu',
         !noCompact && !isTouchScreen && 'compact',
         !IS_BACKDROP_BLUR_SUPPORTED && 'no-blur',
         className,

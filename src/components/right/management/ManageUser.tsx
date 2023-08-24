@@ -188,7 +188,8 @@ const ManageUser: FC<OwnProps & StateProps> = ({
           <PrivateChatInfo
             userId={user.id}
             avatarSize="jumbo"
-            status="original name"
+            noStatusOrTyping
+            noEmojiStatus
             withFullInfo
           />
           <InputText
@@ -204,7 +205,7 @@ const ManageUser: FC<OwnProps & StateProps> = ({
             onChange={handleLastNameChange}
             value={lastName}
           />
-          <div className="ListItem no-selection narrow">
+          <div className="ListItem narrow">
             <Checkbox
               checked={isNotificationsEnabled}
               label={lang('Notifications')}
@@ -229,7 +230,7 @@ const ManageUser: FC<OwnProps & StateProps> = ({
                   <Avatar
                     photo={notPersonalPhoto}
                     noPersonalPhoto
-                    user={user}
+                    peer={user}
                     size="mini"
                     className="personal-photo"
                   />

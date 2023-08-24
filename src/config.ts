@@ -14,10 +14,11 @@ export const IS_ELECTRON = process.env.IS_ELECTRON;
 
 export const DEBUG = process.env.APP_ENV !== 'production';
 export const DEBUG_MORE = false;
+export const DEBUG_LOG_FILENAME = 'tt-log.json';
 export const STRICTERDOM_ENABLED = DEBUG && !IS_ELECTRON;
 
 export const BETA_CHANGELOG_URL = 'https://telegra.ph/WebA-Beta-03-20';
-export const ELECTRON_HOST_URL = 'https://telegram-a-host';
+export const ELECTRON_HOST_URL = process.env.ELECTRON_HOST_URL!;
 
 export const DEBUG_ALERT_MSG = 'Shoot!\nSomething went wrong, please see the error details in Dev Tools Console.';
 export const DEBUG_GRAMJS = false;

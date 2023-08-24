@@ -2,6 +2,7 @@
   .title {
     color: var(--accent-color);
     font-weight: 500;
+    margin-bottom: 0;
   }
 
   .description {
@@ -13,9 +14,14 @@
         margin: 0.5rem -0.5rem -0.375rem;
       }
 
+      .message-content.has-reactions & {
+        margin-bottom: 0;
+      }
+
       .invoice-image {
         position: relative;
         width: 100%;
+        max-width: 100%;
         max-height: 30rem;
         object-fit: cover;
         border-bottom-left-radius: var(--border-bottom-left-radius);

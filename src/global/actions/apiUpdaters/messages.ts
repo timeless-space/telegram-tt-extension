@@ -2,8 +2,7 @@ import type { RequiredGlobalActions } from '../../index';
 import { addActionHandler, getGlobal, setGlobal } from '../../index';
 
 import type {
-  ApiChat,
-  ApiMessage, ApiPollResult, ApiReactions, ApiThreadInfo,
+  ApiChat, ApiMessage, ApiPollResult, ApiReactions, ApiThreadInfo,
 } from '../../../api/types';
 import type {
   ActiveEmojiInteraction, ActionReturnType, GlobalState, RequiredGlobalState,
@@ -11,7 +10,7 @@ import type {
 import { MAIN_THREAD_ID } from '../../../api/types';
 
 import { SERVICE_NOTIFICATIONS_USER_ID } from '../../../config';
-import { pickTruthy, unique } from '../../../util/iteratees';
+import { omit, pickTruthy, unique } from '../../../util/iteratees';
 import { areDeepEqual } from '../../../util/areDeepEqual';
 import { notifyAboutMessage } from '../../../util/notifications';
 import {
@@ -54,6 +53,7 @@ import {
   selectThreadIdFromMessage,
   selectTopicFromMessage,
   selectTabState,
+  selectSendAs,
 } from '../../selectors';
 import {
   getMessageContent, isUserId, isMessageLocal, getMessageText, checkIfHasUnreadReactions, isActionMessage,
@@ -265,6 +265,13 @@ addActionHandler('apiUpdate', (global, actions, update): ActionReturnType => {
         previousLocalId: localId,
       });
 
+      global = {
+        ...global,
+        fileUploads: {
+          byMessageLocalId: omit(global.fileUploads.byMessageLocalId, [localId.toString()]),
+        },
+      };
+
       const newMessage = selectChatMessage(global, chatId, message.id)!;
       global = updateChatLastMessage(global, chatId, newMessage);
 
@@ -286,6 +293,10 @@ addActionHandler('apiUpdate', (global, actions, update): ActionReturnType => {
           lastReadInboxMessageId: message.id,
         });
       }
+
+      global = updateChat(global, chatId, {
+        lastReadInboxMessageId: message.id,
+      });
 
       setGlobal(global);
 
@@ -393,9 +404,11 @@ addActionHandler('apiUpdate', (global, actions, update): ActionReturnType => {
       const messagesById = selectChatMessages(global, chatId);
 
       if (messagesById && !isUserId(chatId)) {
+        const tabId = getCurrentTabId();
         global = deleteChatMessages(global, chatId, Object.keys(messagesById).map(Number));
         setGlobal(global);
-        actions.loadFullChat({ chatId, force: true, tabId: getCurrentTabId() });
+        actions.loadFullChat({ chatId, force: true, tabId });
+        actions.loadViewportMessages({ chatId, threadId: MAIN_THREAD_ID, tabId });
       }
 
       break;
@@ -512,7 +525,7 @@ addActionHandler('apiUpdate', (global, actions, update): ActionReturnType => {
     }
 
     case 'updateMessagePollVote': {
-      const { pollId, userId, options } = update;
+      const { pollId, peerId, options } = update;
       const message = selectChatMessageByPollId(global, pollId);
       if (!message || !message.content.poll || !message.content.poll.results) {
         break;
@@ -520,12 +533,14 @@ addActionHandler('apiUpdate', (global, actions, update): ActionReturnType => {
 
       const { poll } = message.content;
 
+      const currentSendAs = selectSendAs(global, message.chatId);
+
       const { recentVoterIds, totalVoters, results } = poll.results;
       const newRecentVoterIds = recentVoterIds ? [...recentVoterIds] : [];
       const newTotalVoters = totalVoters ? totalVoters + 1 : 1;
       const newResults = results ? [...results] : [];
 
-      newRecentVoterIds.push(userId);
+      newRecentVoterIds.push(peerId);
 
       options.forEach((option) => {
         const targetOptionIndex = newResults.findIndex((result) => result.option === option);
@@ -533,7 +548,7 @@ addActionHandler('apiUpdate', (global, actions, update): ActionReturnType => {
         const updatedOption: ApiPollResult = targetOption ? { ...targetOption } : { option, votersCount: 0 };
 
         updatedOption.votersCount += 1;
-        if (userId === global.currentUserId) {
+        if (currentSendAs?.id === peerId || peerId === global.currentUserId) {
           updatedOption.isChosen = true;
         }
 
@@ -890,7 +905,7 @@ function findLastMessage<T extends GlobalState>(global: T, chatId: string) {
   return undefined;
 }
 
-function deleteMessages<T extends GlobalState>(
+export function deleteMessages<T extends GlobalState>(
   global: T, chatId: string | undefined, ids: number[], actions: RequiredGlobalActions,
 ) {
   // Channel update

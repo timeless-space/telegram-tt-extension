@@ -282,7 +282,7 @@ const StickerPicker: FC<OwnProps & StateProps> = ({
           ) : stickerSet.id === FAVORITE_SYMBOL_SET_ID ? (
             <i className="icon icon-favorite" />
           ) : stickerSet.id === CHAT_STICKER_SET_ID ? (
-            <Avatar chat={chat} size="small" />
+            <Avatar peer={chat} size="small" />
           ) : (
             <StickerSetCover
               stickerSet={stickerSet as ApiStickerSet}
@@ -332,7 +332,7 @@ const StickerPicker: FC<OwnProps & StateProps> = ({
 
   const headerClassName = buildClassName(
     styles.header,
-    'no-selection no-scrollbar',
+    'no-scrollbar',
     !shouldHideTopBorder && styles.headerWithBorder,
   );
 
@@ -348,7 +348,7 @@ const StickerPicker: FC<OwnProps & StateProps> = ({
         ref={containerRef}
         onMouseMove={handleMouseMove}
         onScroll={handleContentScroll}
-        className={buildClassName(styles.main, 'no-selection', IS_TOUCH_ENV ? 'no-scrollbar' : 'custom-scroll')}
+        className={buildClassName(styles.main, IS_TOUCH_ENV ? 'no-scrollbar' : 'custom-scroll')}
       >
         {allSets.map((stickerSet, i) => (
           <StickerSet

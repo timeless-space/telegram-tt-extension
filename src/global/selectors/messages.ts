@@ -15,7 +15,7 @@ import {
   GENERAL_TOPIC_ID, REPLIES_USER_ID, SERVICE_NOTIFICATIONS_USER_ID,
 } from '../../config';
 import {
-  selectChat, selectChatFullInfo, selectIsChatWithSelf,
+  selectChat, selectChatFullInfo, selectIsChatWithSelf, selectRequestedChatTranslationLanguage,
 } from './chats';
 import {
   selectBot,
@@ -50,7 +50,7 @@ import {
   isUserRightBanned,
   canSendReaction,
   getAllowedAttachmentOptions,
-  isLocalMessageId,
+  isLocalMessageId, isMessageFailed, isMessageTranslatable,
 } from '../helpers';
 import { findLast } from '../../util/iteratees';
 import { selectIsStickerFavorite } from './symbols';
@@ -58,6 +58,7 @@ import { getServerTime } from '../../util/serverTime';
 import { MEMO_EMPTY_ARRAY } from '../../util/memo';
 import { selectTabState } from './tabs';
 import { getCurrentTabId } from '../../util/establishMultitabRole';
+import { IS_TRANSLATION_SUPPORTED } from '../../util/windowEnvironment';
 
 const MESSAGE_EDIT_ALLOWED_TIME = 172800; // 48 hours
 
@@ -538,8 +539,10 @@ export function selectAllowedMessageActions<T extends GlobalState>(global: T, me
   const isChannel = isChatChannel(chat);
   const isBotChat = Boolean(selectBot(global, chat.id));
   const isLocal = isMessageLocal(message);
+  const isFailed = isMessageFailed(message);
   const isServiceNotification = isServiceNotificationMessage(message);
   const isOwn = isOwnMessage(message);
+  const isForwarded = isForwardedMessage(message);
   const isAction = isActionMessage(message);
   const { content } = message;
   const messageTopic = selectTopicFromMessage(global, message);
@@ -555,7 +558,7 @@ export function selectAllowedMessageActions<T extends GlobalState>(global: T, me
       content.sticker || content.contact || content.poll || content.action || content.audio
       || (content.video?.isRound) || content.location || content.invoice
     )
-    && !isForwardedMessage(message)
+    && !isForwarded
     && !message.viaBotId
     && !chat.isForbidden
   );
@@ -582,7 +585,7 @@ export function selectAllowedMessageActions<T extends GlobalState>(global: T, me
     canPin = !canUnpin;
   }
 
-  const canDelete = !isLocal && !isServiceNotification && (
+  const canDelete = (!isLocal || isFailed) && !isServiceNotification && (
     isPrivate
     || isOwn
     || isBasicGroup
@@ -599,10 +602,9 @@ export function selectAllowedMessageActions<T extends GlobalState>(global: T, me
     ))
   );
 
-  const canEdit = !isLocal && !isAction && isMessageEditable && (
-    isOwn
-    || (isChannel && (chat.isCreator || getHasAdminRight(chat, 'editMessages')))
-  );
+  const hasMessageEditRight = isOwn || (isChannel && (chat.isCreator || getHasAdminRight(chat, 'editMessages')));
+
+  const canEdit = !isLocal && !isAction && isMessageEditable && hasMessageEditRight;
 
   const isChatProtected = selectIsChatProtected(global, message.chatId);
   const canForward = (
@@ -614,8 +616,8 @@ export function selectAllowedMessageActions<T extends GlobalState>(global: T, me
   const canFaveSticker = !isAction && hasSticker && !hasFavoriteSticker;
   const canUnfaveSticker = !isAction && hasFavoriteSticker;
   const canCopy = !isAction;
-  const canCopyLink = !isAction && (isChannel || isSuperGroup);
-  const canSelect = !isAction;
+  const canCopyLink = !isLocal && !isAction && (isChannel || isSuperGroup);
+  const canSelect = !isLocal && !isAction;
 
   const canDownload = Boolean(content.webPage?.document || content.webPage?.video || content.webPage?.photo
     || content.audio || content.voice || content.photo || content.video || content.document || content.sticker);
@@ -624,7 +626,7 @@ export function selectAllowedMessageActions<T extends GlobalState>(global: T, me
 
   const poll = content.poll;
   const canRevote = !poll?.summary.closed && !poll?.summary.quiz && poll?.results.results?.some((r) => r.isChosen);
-  const canClosePoll = isOwn && poll && !poll.summary.closed;
+  const canClosePoll = hasMessageEditRight && poll && !poll.summary.closed && !isForwarded;
 
   const noOptions = [
     canReply,
@@ -843,30 +845,6 @@ export function selectFirstUnreadId<T extends GlobalState>(
   }
 
   return undefined;
-}
-
-export function selectIsPollResultsOpen<T extends GlobalState>(
-  global: T,
-  ...[tabId = getCurrentTabId()]: TabArgs<T>
-) {
-  const { pollResults } = selectTabState(global, tabId);
-  return Boolean(pollResults.messageId);
-}
-
-export function selectIsCreateTopicPanelOpen<T extends GlobalState>(
-  global: T,
-  ...[tabId = getCurrentTabId()]: TabArgs<T>
-) {
-  const { createTopicPanel } = selectTabState(global, tabId);
-  return Boolean(createTopicPanel);
-}
-
-export function selectIsEditTopicPanelOpen<T extends GlobalState>(
-  global: T,
-  ...[tabId = getCurrentTabId()]: TabArgs<T>
-) {
-  const { editTopicPanel } = selectTabState(global, tabId);
-  return Boolean(editTopicPanel);
 }
 
 export function selectIsForwardModalOpen<T extends GlobalState>(
@@ -1294,10 +1272,11 @@ export function selectMessageTranslations<T extends GlobalState>(
   return selectChatTranslations(global, chatId)?.byLangCode[toLanguageCode] || {};
 }
 
-export function selectRequestedTranslationLanguage<T extends GlobalState>(
-  global: T, chatId: string, messageId: number, tabId = getCurrentTabId(),
+export function selectRequestedMessageTranslationLanguage<T extends GlobalState>(
+  global: T, chatId: string, messageId: number, ...[tabId = getCurrentTabId()]: TabArgs<T>
 ): string | undefined {
-  return selectTabState(global, tabId).requestedTranslations.byChatId[chatId]?.manualMessages?.[messageId];
+  const requestedInChat = selectTabState(global, tabId).requestedTranslations.byChatId[chatId];
+  return requestedInChat?.toLanguage || requestedInChat?.manualMessages?.[messageId];
 }
 
 export function selectForwardsCanBeSentToChat<T extends GlobalState>(
@@ -1337,4 +1316,20 @@ export function selectForwardsCanBeSentToChat<T extends GlobalState>(
       || (isGif && !canSendGifs)
       || (isPlainText && !canSendPlainText);
   });
+}
+
+export function selectCanTranslateMessage<T extends GlobalState>(
+  global: T, message: ApiMessage, detectedLanguage?: string, ...[tabId = getCurrentTabId()]: TabArgs<T>
+) {
+  const { canTranslate: isTranslationEnabled, doNotTranslate } = global.settings.byKey;
+
+  const canTranslateLanguage = !detectedLanguage || !doNotTranslate.includes(detectedLanguage);
+
+  const isTranslatable = isMessageTranslatable(message);
+
+  // Separate translations are disabled when chat translation enabled
+  const chatRequestedLanguage = selectRequestedChatTranslationLanguage(global, message.chatId, tabId);
+
+  return IS_TRANSLATION_SUPPORTED && isTranslationEnabled && canTranslateLanguage && isTranslatable
+    && !chatRequestedLanguage;
 }

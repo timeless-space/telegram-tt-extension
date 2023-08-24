@@ -1,9 +1,9 @@
 productName: "Telegram A"
-artifactName: "${productName}-${arch}-${version}.${ext}"
+artifactName: "${productName}-${arch}.${ext}"
 appId: "org.telegram.TelegramA"
-afterSign: "electron-builder-notarize"
 extraMetadata:
   main: "./dist/electron.js"
+  productName: "Telegram A"
 files:
   - "dist"
   - "package.json"
@@ -11,7 +11,6 @@ files:
   - "!dist/**/statoscope-report.html"
   - "!dist/**/reference.json"
   - "!dist/img-apple-*"
-  - "!dist/libav-*"
   - "!node_modules"
 directories:
   buildResources: "./public"
@@ -20,15 +19,22 @@ publish:
   provider: "github"
   owner: "Ajaxy"
   repo: "telegram-tt"
+  releaseType: "draft"
 win:
   target: "nsis"
   icon: "public/icon-electron-windows.ico"
+nsis:
+  oneClick: false
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
 mac:
   target:
     target: "default"
     arch: ["x64", "arm64"]
   entitlements: "public/electron-entitlements.mac.plist"
   icon: "public/icon-electron-macos.icns"
+  notarize:
+    teamId: "Y54Z4K69Z9"
 linux:
   category: "Community"
   target: ["AppImage"]

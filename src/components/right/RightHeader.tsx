@@ -1,28 +1,26 @@
 import type { FC } from '../../lib/teact/teact';
-import React, {
-  memo, useEffect, useState, useRef,
-} from '../../lib/teact/teact';
+import React, { useEffect, useRef, useState } from '../../lib/teact/teact';
 import { getActions, withGlobal } from '../../global';
 
 import type { ApiExportedInvite } from '../../api/types';
-import { ManagementScreens, ProfileState } from '../../types';
 import { MAIN_THREAD_ID } from '../../api/types';
+import { ManagementScreens, ProfileState } from '../../types';
 
 import { ANIMATION_END_DELAY } from '../../config';
 import { debounce } from '../../util/schedulers';
 import buildClassName from '../../util/buildClassName';
 import {
+  selectCanManage,
   selectChat,
   selectChatFullInfo,
   selectCurrentGifSearch,
   selectCurrentStickerSearch,
   selectCurrentTextSearch,
-  selectIsChatWithSelf,
   selectTabState,
   selectUser,
 } from '../../global/selectors';
 import {
-  getCanAddContact, getCanManageTopic, isChatAdmin, isChatChannel, isUserBot, isUserId,
+  getCanAddContact, getCanManageTopic, isChatChannel, isUserBot, isUserId,
 } from '../../global/helpers';
 import { getDayStartAt } from '../../util/dateFormat';
 
@@ -491,7 +489,7 @@ const RightHeader: FC<OwnProps & StateProps> = ({
                   <i className="icon icon-add-user" />
                 </Button>
               )}
-              {canManage && !isInsideTopic && !isBot && (
+              {canManage && !isInsideTopic && (
                 <Button
                   round
                   color="translucent"
@@ -571,7 +569,7 @@ const RightHeader: FC<OwnProps & StateProps> = ({
   );
 };
 
-export default memo(withGlobal<OwnProps>(
+export default withGlobal<OwnProps>(
   (global, {
     chatId, isProfile, isManagement, threadId,
   }): StateProps => {
@@ -588,15 +586,8 @@ export default memo(withGlobal<OwnProps>(
     const isBot = user && isUserBot(user);
 
     const canAddContact = user && getCanAddContact(user);
-    const canManage = Boolean(
-      !isManagement
-      && isProfile
-      && !canAddContact
-      && chat
-      && !selectIsChatWithSelf(global, chat.id)
-      // chat.isCreator is for Basic Groups
-      && (isUserId(chat.id) || ((isChatAdmin(chat) || chat.isCreator) && !chat.isNotJoined)),
-    );
+    const canManage = Boolean(!isManagement && isProfile && chatId && selectCanManage(global, chatId));
+
     const isEditingInvite = Boolean(chatId && tabState.management.byChatId[chatId]?.editingInvite);
     const canViewStatistics = !isInsideTopic && chatId
       ? selectChatFullInfo(global, chatId)?.canViewStatistics
@@ -621,4 +612,4 @@ export default memo(withGlobal<OwnProps>(
       shouldSkipHistoryAnimations: tabState.shouldSkipHistoryAnimations,
     };
   },
-)(RightHeader));
+)(RightHeader);

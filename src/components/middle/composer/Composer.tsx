@@ -1,10 +1,10 @@
-import type { FC } from '../../../lib/teact/teact';
 import React, {
-  memo, useEffect, useLayoutEffect, useMemo, useRef, useState,
+  memo, useEffect, useMemo, useRef, useState,
 } from '../../../lib/teact/teact';
 import { requestMeasure, requestNextMutation } from '../../../lib/fasterdom/fasterdom';
 import { getActions, withGlobal } from '../../../global';
 
+import type { FC } from '../../../lib/teact/teact';
 import type {
   TabState, MessageListType, GlobalState, ApiDraft, MessageList,
 } from '../../../global/types';
@@ -179,7 +179,6 @@ type StateProps =
     groupChatMembers?: ApiChatMember[];
     currentUserId?: string;
     recentEmojis: string[];
-    lastSyncTime?: number;
     contentToBeScheduled?: TabState['contentToBeScheduled'];
     shouldSuggestStickers?: boolean;
     shouldSuggestCustomEmoji?: boolean;
@@ -207,8 +206,8 @@ type StateProps =
     attachmentSettings: GlobalState['attachmentSettings'];
     slowMode?: ApiChatFullInfo['slowMode'];
     shouldUpdateStickerSetOrder?: boolean;
-  }
-  & Pick<GlobalState, 'connectionState'>;
+    shouldCollectDebugLogs?: boolean;
+  };
 
 enum MainButtonState {
   Send = 'send',
@@ -230,8 +229,6 @@ const SELECT_MODE_TRANSITION_MS = 200;
 const MESSAGE_MAX_LENGTH = 4096;
 const SENDING_ANIMATION_DURATION = 350;
 const MOUNT_ANIMATION_DURATION = 430;
-// eslint-disable-next-line max-len
-const APPENDIX = '<svg width="9" height="20" xmlns="http://www.w3.org/2000/svg"><defs><filter x="-50%" y="-14.7%" width="200%" height="141.2%" filterUnits="objectBoundingBox" id="a"><feOffset dy="1" in="SourceAlpha" result="shadowOffsetOuter1"/><feGaussianBlur stdDeviation="1" in="shadowOffsetOuter1" result="shadowBlurOuter1"/><feColorMatrix values="0 0 0 0 0.0621962482 0 0 0 0 0.138574144 0 0 0 0 0.185037364 0 0 0 0.15 0" in="shadowBlurOuter1"/></filter></defs><g fill="none" fill-rule="evenodd"><path d="M6 17H0V0c.193 2.84.876 5.767 2.05 8.782.904 2.325 2.446 4.485 4.625 6.48A1 1 0 016 17z" fill="#000" filter="url(#a)"/><path d="M6 17H0V0c.193 2.84.876 5.767 2.05 8.782.904 2.325 2.446 4.485 4.625 6.48A1 1 0 016 17z" fill="#FFF" class="corner"/></g></svg>';
 
 const Composer: FC<OwnProps & StateProps> = ({
   isOnActiveTab,
@@ -251,7 +248,6 @@ const Composer: FC<OwnProps & StateProps> = ({
   isForCurrentMessageList,
   isCurrentUserPremium,
   canSendVoiceByPrivacy,
-  connectionState,
   isChatWithBot,
   isChatWithSelf,
   isChannel,
@@ -269,7 +265,6 @@ const Composer: FC<OwnProps & StateProps> = ({
   topInlineBotIds,
   currentUserId,
   captionLimit,
-  lastSyncTime,
   contentToBeScheduled,
   shouldSuggestStickers,
   shouldSuggestCustomEmoji,
@@ -294,6 +289,7 @@ const Composer: FC<OwnProps & StateProps> = ({
   theme,
   slowMode,
   shouldUpdateStickerSetOrder,
+  shouldCollectDebugLogs,
 }) => {
   const {
     sendMessage,
@@ -316,8 +312,6 @@ const Composer: FC<OwnProps & StateProps> = ({
 
   const lang = useLang();
 
-  // eslint-disable-next-line no-null/no-null
-  const appendixRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line no-null/no-null
   const inputRef = useRef<HTMLDivElement>(null);
 
@@ -349,16 +343,16 @@ const Composer: FC<OwnProps & StateProps> = ({
   }, [chatId]);
 
   useEffect(() => {
-    if (chatId && lastSyncTime && isReady) {
+    if (chatId && isReady) {
       loadScheduledHistory({ chatId });
     }
-  }, [isReady, chatId, loadScheduledHistory, lastSyncTime, threadId]);
+  }, [isReady, chatId, loadScheduledHistory, threadId]);
 
   useEffect(() => {
-    if (chatId && chat && lastSyncTime && !sendAsPeerIds && isReady && isChatSuperGroup(chat)) {
+    if (chatId && chat && !sendAsPeerIds && isReady && isChatSuperGroup(chat)) {
       loadSendAs({ chatId });
     }
-  }, [chat, chatId, isReady, lastSyncTime, loadSendAs, sendAsPeerIds]);
+  }, [chat, chatId, isReady, loadSendAs, sendAsPeerIds]);
 
   const shouldAnimateSendAsButtonRef = useRef(false);
   useSyncEffect(([prevChatId, prevSendAsPeerIds]) => {
@@ -366,14 +360,9 @@ const Composer: FC<OwnProps & StateProps> = ({
     shouldAnimateSendAsButtonRef.current = Boolean(chatId === prevChatId && sendAsPeerIds && !prevSendAsPeerIds);
   }, [chatId, sendAsPeerIds]);
 
-  useLayoutEffect(() => {
-    if (!appendixRef.current) return;
-
-    appendixRef.current.innerHTML = APPENDIX;
-  }, []);
-
   const [attachments, setAttachments] = useState<ApiAttachment[]>([]);
   const hasAttachments = Boolean(attachments.length);
+  const [nextText, setNextText] = useState<ApiFormattedText | undefined>(undefined);
 
   const {
     canSendStickers, canSendGifs, canAttachMedia, canAttachPolls, canAttachEmbedLinks,
@@ -381,6 +370,57 @@ const Composer: FC<OwnProps & StateProps> = ({
   } = useMemo(() => getAllowedAttachmentOptions(chat, isChatWithBot), [chat, isChatWithBot]);
 
   const isComposerBlocked = !canSendPlainText && !editingMessage;
+
+  const insertHtmlAndUpdateCursor = useLastCallback((newHtml: string, inputId: string = EDITABLE_INPUT_ID) => {
+    if (inputId === EDITABLE_INPUT_ID && isComposerBlocked) return;
+    const selection = window.getSelection()!;
+    let messageInput: HTMLDivElement;
+    if (inputId === EDITABLE_INPUT_ID) {
+      messageInput = document.querySelector<HTMLDivElement>(EDITABLE_INPUT_CSS_SELECTOR)!;
+    } else {
+      messageInput = document.getElementById(inputId) as HTMLDivElement;
+    }
+
+    if (selection.rangeCount) {
+      const selectionRange = selection.getRangeAt(0);
+      if (isSelectionInsideInput(selectionRange, inputId)) {
+        insertHtmlInSelection(newHtml);
+        messageInput.dispatchEvent(new Event('input', { bubbles: true }));
+        return;
+      }
+    }
+
+    setHtml(`${getHtml()}${newHtml}`);
+
+    // If selection is outside of input, set cursor at the end of input
+    requestNextMutation(() => {
+      focusEditableElement(messageInput);
+    });
+  });
+
+  const insertTextAndUpdateCursor = useLastCallback((text: string, inputId: string = EDITABLE_INPUT_ID) => {
+    const newHtml = renderText(text, ['escape_html', 'emoji_html', 'br_html'])
+      .join('')
+      .replace(/\u200b+/g, '\u200b');
+    insertHtmlAndUpdateCursor(newHtml, inputId);
+  });
+
+  const insertFormattedTextAndUpdateCursor = useLastCallback((
+    text: ApiFormattedText, inputId: string = EDITABLE_INPUT_ID,
+  ) => {
+    const newHtml = getTextWithEntitiesAsHtml(text);
+    insertHtmlAndUpdateCursor(newHtml, inputId);
+  });
+
+  const insertCustomEmojiAndUpdateCursor = useLastCallback((emoji: ApiSticker, inputId: string = EDITABLE_INPUT_ID) => {
+    insertHtmlAndUpdateCursor(buildCustomEmojiHtml(emoji), inputId);
+  });
+
+  const insertNextText = useLastCallback(() => {
+    if (!nextText) return;
+    insertFormattedTextAndUpdateCursor(nextText, EDITABLE_INPUT_ID);
+    setNextText(undefined);
+  });
 
   const {
     shouldSuggestCompression,
@@ -401,6 +441,7 @@ const Composer: FC<OwnProps & StateProps> = ({
     canSendVideos,
     canSendPhotos,
     canSendDocuments,
+    insertNextText,
   });
 
   const [isBotKeyboardOpen, openBotKeyboard, closeBotKeyboard] = useFlag();
@@ -509,7 +550,7 @@ const Composer: FC<OwnProps & StateProps> = ({
     help: inlineBotHelp,
     loadMore: loadMoreForInlineBot,
   } = useInlineBotTooltip(
-    Boolean(isReady && isForCurrentMessageList && !hasAttachments && lastSyncTime),
+    Boolean(isReady && isForCurrentMessageList && !hasAttachments),
     chatId,
     getHtml,
     inlineBots,
@@ -526,45 +567,7 @@ const Composer: FC<OwnProps & StateProps> = ({
     chatBotCommands,
   );
 
-  const insertHtmlAndUpdateCursor = useLastCallback((newHtml: string, inputId: string = EDITABLE_INPUT_ID) => {
-    if (inputId === EDITABLE_INPUT_ID && isComposerBlocked) return;
-    const selection = window.getSelection()!;
-    let messageInput: HTMLDivElement;
-    if (inputId === EDITABLE_INPUT_ID) {
-      messageInput = document.querySelector<HTMLDivElement>(EDITABLE_INPUT_CSS_SELECTOR)!;
-    } else {
-      messageInput = document.getElementById(inputId) as HTMLDivElement;
-    }
-
-    if (selection.rangeCount) {
-      const selectionRange = selection.getRangeAt(0);
-      if (isSelectionInsideInput(selectionRange, inputId)) {
-        insertHtmlInSelection(newHtml);
-        messageInput.dispatchEvent(new Event('input', { bubbles: true }));
-        return;
-      }
-    }
-
-    setHtml(`${getHtml()}${newHtml}`);
-
-    // If selection is outside of input, set cursor at the end of input
-    requestNextMutation(() => {
-      focusEditableElement(messageInput);
-    });
-  });
-
-  const insertFormattedTextAndUpdateCursor = useLastCallback((
-    text: ApiFormattedText, inputId: string = EDITABLE_INPUT_ID,
-  ) => {
-    const newHtml = getTextWithEntitiesAsHtml(text);
-    insertHtmlAndUpdateCursor(newHtml, inputId);
-  });
-
-  const insertCustomEmojiAndUpdateCursor = useLastCallback((emoji: ApiSticker, inputId: string = EDITABLE_INPUT_ID) => {
-    insertHtmlAndUpdateCursor(buildCustomEmojiHtml(emoji), inputId);
-  });
-
-  useDraft(draft, chatId, threadId, getHtml, setHtml, editingMessage, lastSyncTime);
+  useDraft(draft, chatId, threadId, getHtml, setHtml, editingMessage);
 
   const resetComposer = useLastCallback((shouldPreserveInput = false) => {
     if (!shouldPreserveInput) {
@@ -572,6 +575,7 @@ const Composer: FC<OwnProps & StateProps> = ({
     }
 
     setAttachments(MEMO_EMPTY_ARRAY);
+    setNextText(undefined);
 
     closeEmojiTooltip();
     closeCustomEmojiTooltip();
@@ -666,6 +670,7 @@ const Composer: FC<OwnProps & StateProps> = ({
     isForCurrentMessageList,
     insertFormattedTextAndUpdateCursor,
     handleSetAttachments,
+    setNextText,
     editingMessage,
     !isCurrentUserPremium && !isChatWithSelf,
     showCustomEmojiPremiumNotification,
@@ -742,7 +747,7 @@ const Composer: FC<OwnProps & StateProps> = ({
     isSilent?: boolean;
     scheduledAt?: number;
   }) => {
-    if (connectionState !== 'connectionStateReady' || !currentMessageList) {
+    if (!currentMessageList) {
       return;
     }
 
@@ -790,7 +795,7 @@ const Composer: FC<OwnProps & StateProps> = ({
   });
 
   const handleSend = useLastCallback(async (isSilent = false, scheduledAt?: number) => {
-    if (connectionState !== 'connectionStateReady' || !currentMessageList) {
+    if (!currentMessageList) {
       return;
     }
 
@@ -1008,7 +1013,7 @@ const Composer: FC<OwnProps & StateProps> = ({
   const handleInlineBotSelect = useLastCallback((
     inlineResult: ApiBotInlineResult | ApiBotInlineMediaResult, isSilent?: boolean, isScheduleRequested?: boolean,
   ) => {
-    if (connectionState !== 'connectionStateReady' || !currentMessageList) {
+    if (!currentMessageList) {
       return;
     }
 
@@ -1092,13 +1097,6 @@ const Composer: FC<OwnProps & StateProps> = ({
       closeSymbolMenu();
       openSendAsMenu();
     }, MOBILE_KEYBOARD_HIDE_DELAY_MS);
-  });
-
-  const insertTextAndUpdateCursor = useLastCallback((text: string, inputId: string = EDITABLE_INPUT_ID) => {
-    const newHtml = renderText(text, ['escape_html', 'emoji_html', 'br_html'])
-      .join('')
-      .replace(/\u200b+/g, '\u200b');
-    insertHtmlAndUpdateCursor(newHtml, inputId);
   });
 
   useEffect(() => {
@@ -1342,7 +1340,29 @@ const Composer: FC<OwnProps & StateProps> = ({
         onClose={closeBotCommandTooltip}
       />
       <div id="message-compose">
-        <div className="svg-appendix" ref={appendixRef} />
+        <svg className="svg-appendix" width="9" height="20">
+          <defs>
+            <filter
+              x="-50%"
+              y="-14.7%"
+              width="200%"
+              height="141.2%"
+              filterUnits="objectBoundingBox"
+              id="composerAppendix"
+            >
+              <feOffset dy="1" in="SourceAlpha" result="shadowOffsetOuter1" />
+              <feGaussianBlur stdDeviation="1" in="shadowOffsetOuter1" result="shadowBlurOuter1" />
+              <feColorMatrix
+                values="0 0 0 0 0.0621962482 0 0 0 0 0.138574144 0 0 0 0 0.185037364 0 0 0 0.15 0"
+                in="shadowBlurOuter1"
+              />
+            </filter>
+          </defs>
+          <g fill="none" fill-rule="evenodd">
+            <path d="M6 17H0V0c.193 2.84.876 5.767 2.05 8.782.904 2.325 2.446 4.485 4.625 6.48A1 1 0 016 17z" fill="#000" filter="url(#composerAppendix)" />
+            <path d="M6 17H0V0c.193 2.84.876 5.767 2.05 8.782.904 2.325 2.446 4.485 4.625 6.48A1 1 0 016 17z" fill="#FFF" className="corner" />
+          </g>
+        </svg>
 
         <InlineBotTooltip
           isOpen={isInlineBotTooltipOpen}
@@ -1398,8 +1418,7 @@ const Composer: FC<OwnProps & StateProps> = ({
               className={buildClassName('send-as-button', shouldAnimateSendAsButtonRef.current && 'appear-animation')}
             >
               <Avatar
-                user={sendAsUser}
-                chat={sendAsChat}
+                peer={sendAsUser || sendAsChat}
                 size="tiny"
               />
             </Button>
@@ -1500,6 +1519,7 @@ const Composer: FC<OwnProps & StateProps> = ({
             peerType={attachMenuPeerType}
             isChatWithBot={isChatWithBot || isChatWithSelf}
             handleSendCrypto={handleSendCrypto}
+            shouldCollectDebugLogs={shouldCollectDebugLogs}
             theme={theme}
           />
           {Boolean(botKeyboardMessageId) && (
@@ -1640,7 +1660,6 @@ export default memo(withGlobal<OwnProps>(
     return {
       isOnActiveTab: !tabState.isBlurred,
       editingMessage: selectEditingMessage(global, chatId, threadId, messageListType),
-      connectionState: global.connectionState,
       replyingToId,
       draft: selectDraft(global, chatId, threadId),
       chat,
@@ -1665,7 +1684,6 @@ export default memo(withGlobal<OwnProps>(
       groupChatMembers: chatFullInfo?.members,
       topInlineBotIds: global.topInlineBots?.userIds,
       currentUserId,
-      lastSyncTime: global.lastSyncTime,
       contentToBeScheduled: tabState.contentToBeScheduled,
       shouldSuggestStickers,
       shouldSuggestCustomEmoji,
@@ -1694,6 +1712,7 @@ export default memo(withGlobal<OwnProps>(
       attachmentSettings: global.attachmentSettings,
       slowMode,
       currentMessageList,
+      shouldCollectDebugLogs: global.settings.byKey.shouldCollectDebugLogs,
     };
   },
 )(Composer));

@@ -52,8 +52,13 @@
   }
 }
 
+.loader {
+  position: absolute;
+}
+
 .video {
   width: 100%;
+  height: 100%;
   display: block;
   object-fit: contain;
   border-radius: 0.625rem;
@@ -84,7 +89,7 @@
 }
 
 .flipped {
-  transform: rotateY(180deg);
+  transform: scaleX(-1);
 }
 
 .pinButton {
@@ -136,6 +141,7 @@
     overflow: hidden;
     white-space: nowrap;
     font-size: 1rem;
+    --emoji-size: 1rem;
   }
 }
 

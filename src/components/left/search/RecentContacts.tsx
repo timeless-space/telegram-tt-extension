@@ -9,6 +9,7 @@ import type { ApiUser } from '../../../api/types';
 import { getUserFirstOrLastName } from '../../../global/helpers';
 import renderText from '../../common/helpers/renderText';
 import { throttle } from '../../../util/schedulers';
+import buildClassName from '../../../util/buildClassName';
 import useHorizontalScroll from '../../../hooks/useHorizontalScroll';
 import useLang from '../../../hooks/useLang';
 
@@ -75,7 +76,7 @@ const RecentContacts: FC<OwnProps & StateProps> = ({
     <div className="RecentContacts custom-scroll">
       {topUserIds && (
         <div className="top-peers-section" dir={lang.isRtl ? 'rtl' : undefined}>
-          <div ref={topUsersRef} className="top-peers no-selection">
+          <div ref={topUsersRef} className="top-peers">
             {topUserIds.map((userId) => (
               <div
                 key={userId}
@@ -83,7 +84,7 @@ const RecentContacts: FC<OwnProps & StateProps> = ({
                 onClick={() => handleClick(userId)}
                 dir={lang.isRtl ? 'rtl' : undefined}
               >
-                <Avatar user={usersById[userId]} />
+                <Avatar peer={usersById[userId]} />
                 <div className="top-peer-name">{renderText(getUserFirstOrLastName(usersById[userId]) || NBSP)}</div>
               </div>
             ))}
@@ -92,7 +93,13 @@ const RecentContacts: FC<OwnProps & StateProps> = ({
       )}
       {recentlyFoundChatIds && (
         <div className="search-section pt-1">
-          <h3 className="section-heading mt-0 recent-chats-header" dir={lang.isRtl ? 'rtl' : undefined}>
+          <h3
+            className={buildClassName(
+              'section-heading mt-0 recent-chats-header',
+              !topUserIds && 'without-border',
+            )}
+            dir={lang.isRtl ? 'rtl' : undefined}
+          >
             {lang('Recent')}
 
             <Button

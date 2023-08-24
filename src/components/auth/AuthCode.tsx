@@ -136,10 +136,10 @@ const AuthCode: FC<StateProps> = ({
           </div>
         </h1>
         <p className="note">
-          {langPack.SentAppCode1.value} <br /> {langPack.SentAppCode2.value}
+          {langPack.SentAppCode1 as string} <br /> {langPack.SentAppCode2 as string}
         </p>
         <div className="label">
-          {langPack.EnterCode.value}
+          {langPack.EnterCode as string}
         </div>
         <InputText
           ref={inputRef}

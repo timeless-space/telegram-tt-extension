@@ -8,13 +8,16 @@ import type { VideoLayout, VideoParticipant } from './hooks/useGroupCallVideoLay
 import type { GroupCallParticipant as TypeGroupCallParticipant } from '../../../lib/secret-sauce';
 import type { ApiChat, ApiUser } from '../../../api/types';
 
-import { GROUP_CALL_DEFAULT_VOLUME, GROUP_CALL_VOLUME_MULTIPLIER } from '../../../config';
+import { IS_CANVAS_FILTER_SUPPORTED } from '../../../util/windowEnvironment';
+import { GROUP_CALL_DEFAULT_VOLUME } from '../../../config';
 import { getUserStreams, THRESHOLD } from '../../../lib/secret-sauce';
 import buildClassName from '../../../util/buildClassName';
 import { selectChat, selectUser } from '../../../global/selectors';
 import { animate } from '../../../util/animation';
 import { fastRaf } from '../../../util/schedulers';
 import { requestMutation } from '../../../lib/fasterdom/fasterdom';
+import formatGroupCallVolume from './helpers/formatGroupCallVolume';
+import fastBlur from '../../../lib/fastBlur';
 
 import useLang from '../../../hooks/useLang';
 import useContextMenuHandlers from '../../../hooks/useContextMenuHandlers';
@@ -26,9 +29,12 @@ import Button from '../../ui/Button';
 import OutlinedMicrophoneIcon from './OutlinedMicrophoneIcon';
 import FullNameTitle from '../../common/FullNameTitle';
 import GroupCallParticipantMenu from './GroupCallParticipantMenu';
+import Skeleton from '../../ui/Skeleton';
 
 import styles from './GroupCallParticipantVideo.module.scss';
 
+const BLUR_RADIUS = 2;
+const BLUR_ITERATIONS = 2;
 const VIDEO_FALLBACK_UPDATE_INTERVAL = 1000;
 
 type OwnProps = {
@@ -94,13 +100,12 @@ const GroupCallParticipantVideo: FC<OwnProps & StateProps> = ({
     }
 
     if (participant.volume && participant.volume !== GROUP_CALL_DEFAULT_VOLUME) {
-      return lang('SpeakingWithVolume',
-        (participant.volume / GROUP_CALL_VOLUME_MULTIPLIER).toString())
+      return lang('SpeakingWithVolume', formatGroupCallVolume(participant))
         .replace('%%', '%');
     }
 
     return lang('Speaking');
-  }, [isSpeaking, participant.volume, lang, isSelf, isMutedByMe, isRaiseHand, isMuted]);
+  }, [isSelf, isMutedByMe, isRaiseHand, isMuted, isSpeaking, participant, lang]);
 
   const prevLayoutRef = useRef<VideoLayout>();
   if (!isRemoved) {
@@ -141,6 +146,12 @@ const GroupCallParticipantVideo: FC<OwnProps & StateProps> = ({
     setIsHidden(false);
   }, []);
 
+  const [isLoading, setIsLoading] = useState(true);
+
+  const handleCanPlay = useLastCallback(() => {
+    setIsLoading(false);
+  });
+
   // When video stream is removed, the video element starts showing empty black screen.
   // To avoid that, we hide the video element and show the fallback frame instead, which is constantly updated
   // every VIDEO_FALLBACK_UPDATE_INTERVAL milliseconds.
@@ -177,6 +188,9 @@ const GroupCallParticipantVideo: FC<OwnProps & StateProps> = ({
           return false;
         }
         ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, thumbnail.width, thumbnail.height);
+        if (!IS_CANVAS_FILTER_SUPPORTED) {
+          fastBlur(ctx, 0, 0, thumbnail.width, thumbnail.height, BLUR_RADIUS, BLUR_ITERATIONS);
+        }
         return true;
       };
 
@@ -255,6 +269,9 @@ const GroupCallParticipantVideo: FC<OwnProps & StateProps> = ({
           isSpeaking && styles.speaking,
         )}
       >
+        {isLoading && (
+          <Skeleton className={buildClassName(styles.video, styles.loader)} />
+        )}
         {stream && (
           <video
             className={buildClassName(styles.video, shouldFlipVideo && styles.flipped)}
@@ -263,6 +280,7 @@ const GroupCallParticipantVideo: FC<OwnProps & StateProps> = ({
             playsInline
             srcObject={stream}
             ref={videoRef}
+            onCanPlay={handleCanPlay}
           />
         )}
         <canvas

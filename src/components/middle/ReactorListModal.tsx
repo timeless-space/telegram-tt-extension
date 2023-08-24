@@ -61,7 +61,8 @@ const ReactorListModal: FC<OwnProps & StateProps> = ({
     openChat,
   } = getActions();
 
-  // No need for expensive global updates on users, so we avoid them
+  // No need for expensive global updates on chats or users, so we avoid them
+  const chatsById = getGlobal().chats.byId;
   const usersById = getGlobal().users.byId;
 
   const lang = useLang();
@@ -115,20 +116,20 @@ const ReactorListModal: FC<OwnProps & StateProps> = ({
     return uniqueReactions;
   }, [reactors]);
 
-  const userIds = useMemo(() => {
+  const peerIds = useMemo(() => {
     if (chosenTab) {
       return reactors?.reactions
         .filter(({ reaction }) => isSameReaction(reaction, chosenTab))
-        .map(({ userId }) => userId);
+        .map(({ peerId }) => peerId);
     }
 
     const seenByUserIds = Object.keys(seenByDates || {});
 
-    return unique(reactors?.reactions.map(({ userId }) => userId).concat(seenByUserIds || []) || []);
+    return unique(reactors?.reactions.map(({ peerId }) => peerId).concat(seenByUserIds || []) || []);
   }, [chosenTab, reactors, seenByDates]);
 
   const [viewportIds, getMore] = useInfiniteScroll(
-    handleLoadMore, userIds, reactors && reactors.nextOffset === undefined,
+    handleLoadMore, peerIds, reactors && reactors.nextOffset === undefined,
   );
 
   useEffect(() => {
@@ -187,25 +188,26 @@ const ReactorListModal: FC<OwnProps & StateProps> = ({
             onLoadMore={getMore}
           >
             {viewportIds?.flatMap(
-              (userId) => {
-                const user = usersById[userId];
-                const userReactions = reactors?.reactions.filter((reactor) => reactor.userId === userId);
-                const items: React.ReactNode[] = [];
-                const seenByUser = seenByDates?.[userId];
+              (peerId) => {
+                const peer = usersById[peerId] || chatsById[peerId];
 
-                userReactions?.forEach((r) => {
+                const peerReactions = reactors?.reactions.filter((reactor) => reactor.peerId === peerId);
+                const items: React.ReactNode[] = [];
+                const seenByUser = seenByDates?.[peerId];
+
+                peerReactions?.forEach((r) => {
                   if (chosenTab && !isSameReaction(r.reaction, chosenTab)) return;
 
                   items.push(
                     <ListItem
-                      key={`${userId}-${getReactionUniqueKey(r.reaction)}`}
+                      key={`${peerId}-${getReactionUniqueKey(r.reaction)}`}
                       className="chat-item-clickable reactors-list-item"
                       // eslint-disable-next-line react/jsx-no-bind
-                      onClick={() => handleClick(userId)}
+                      onClick={() => handleClick(peerId)}
                     >
-                      <Avatar user={user} size="medium" />
+                      <Avatar peer={peer} size="medium" />
                       <div className="info">
-                        <FullNameTitle peer={user} withEmojiStatus />
+                        <FullNameTitle peer={peer} withEmojiStatus />
                         <span className="status" dir="auto">
                           <i className="icon icon-heart-outline status-icon" />
                           {formatDateAtTime(lang, r.addedDate * 1000)}
@@ -222,16 +224,16 @@ const ReactorListModal: FC<OwnProps & StateProps> = ({
                   );
                 });
 
-                if (!chosenTab && !userReactions?.length) {
+                if (!chosenTab && !peerReactions?.length) {
                   items.push(
                     <ListItem
-                      key={`${userId}-seen-by`}
+                      key={`${peerId}-seen-by`}
                       className="chat-item-clickable scroll-item small-icon"
                       // eslint-disable-next-line react/jsx-no-bind
-                      onClick={() => handleClick(userId)}
+                      onClick={() => handleClick(peerId)}
                     >
                       <PrivateChatInfo
-                        userId={userId}
+                        userId={peerId}
                         noStatusOrTyping
                         avatarSize="medium"
                         status={seenByUser ? formatDateAtTime(lang, seenByUser * 1000) : undefined}

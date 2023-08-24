@@ -19,7 +19,7 @@ import {
   selectIsTrustedBot,
   selectTabState,
 } from '../../selectors';
-import generateIdFor from '../../../util/generateIdFor';
+import generateUniqueId from '../../../util/generateUniqueId';
 import { compact, unique } from '../../../util/iteratees';
 import { getAllMultitabTokens, getCurrentTabId, reestablishMasterToSelf } from '../../../util/establishMultitabRole';
 import { getAllNotificationsCount } from '../../../util/folderManager';
@@ -62,7 +62,7 @@ addActionHandler('resetLeftColumnWidth', (global): ActionReturnType => {
 });
 
 addActionHandler('toggleManagement', (global, actions, payload): ActionReturnType => {
-  const { tabId = getCurrentTabId() } = payload || {};
+  const { force, tabId = getCurrentTabId() } = payload || {};
   const { chatId } = selectCurrentMessageList(global, tabId) || {};
 
   if (!chatId) {
@@ -77,7 +77,7 @@ addActionHandler('toggleManagement', (global, actions, payload): ActionReturnTyp
         ...tabState.management.byChatId,
         [chatId]: {
           ...tabState.management.byChatId[chatId],
-          isActive: !(tabState.management.byChatId[chatId] || {}).isActive,
+          isActive: force !== undefined ? force : !(tabState.management.byChatId[chatId] || {}).isActive,
         },
       },
     },
@@ -276,7 +276,7 @@ addActionHandler('showNotification', (global, actions, payload): ActionReturnTyp
   const { ...notification } = payload;
   sendPushNotification(notification.message);
   // const { tabId = getCurrentTabId(), ...notification } = payload;
-  // notification.localId = generateIdFor({});
+  // notification.localId = generateUniqueId();
 
   // const newNotifications = [...selectTabState(global, tabId).notifications];
   // const existingNotificationIndex = newNotifications.findIndex((n) => n.message === notification.message);
@@ -697,7 +697,7 @@ addActionHandler('updatePageTitle', (global, actions, payload): ActionReturnType
     }
   }
 
-  setPageTitleInstant(PAGE_TITLE);
+  setPageTitleInstant(IS_ELECTRON ? '' : PAGE_TITLE);
 });
 
 let prevIsScreenLocked: boolean | undefined;

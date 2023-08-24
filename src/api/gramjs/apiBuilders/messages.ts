@@ -24,7 +24,7 @@ import type {
   ApiGroupCall,
   ApiReactions,
   ApiReactionCount,
-  ApiUserReaction,
+  ApiPeerReaction,
   ApiAvailableReaction,
   ApiSponsoredMessage,
   ApiUser,
@@ -62,12 +62,13 @@ import { addPhotoToLocalDb, resolveMessageApiChatId, serializeBytes } from '../h
 import { buildApiPeerId, getApiChatIdFromMtpPeer, isPeerUser } from './peers';
 import { buildApiCallDiscardReason } from './calls';
 import { getEmojiOnlyCountForMessage } from '../../../global/helpers/getEmojiOnlyCountForMessage';
-import { getServerTimeOffset } from '../../../util/serverTime';
+import { getServerTime, getServerTimeOffset } from '../../../util/serverTime';
 
 const LOCAL_MESSAGES_LIMIT = 1e6; // 1M
 
 const LOCAL_MEDIA_UPLOADING_TEMP_ID = 'temp';
 const INPUT_WAVEFORM_LENGTH = 63;
+const MIN_SCHEDULED_PERIOD = 10;
 
 let localMessageCounter = 0;
 function getNextLocalMessageId(lastMessageId = 0) {
@@ -176,7 +177,7 @@ export function buildApiMessageWithChatId(
   if (action) {
     content.action = action;
   }
-  const isScheduled = mtpMessage.date > (Math.round(Date.now() / 1000) + getServerTimeOffset());
+  const isScheduled = mtpMessage.date > getServerTime() + MIN_SCHEDULED_PERIOD;
 
   const isInvoiceMedia = mtpMessage.media instanceof GramJs.MessageMediaInvoice
     && Boolean(mtpMessage.media.extendedMedia);
@@ -277,20 +278,21 @@ function buildReactionCount(reactionCount: GramJs.ReactionCount): ApiReactionCou
   };
 }
 
-export function buildMessagePeerReaction(userReaction: GramJs.MessagePeerReaction): ApiUserReaction | undefined {
+export function buildMessagePeerReaction(userReaction: GramJs.MessagePeerReaction): ApiPeerReaction | undefined {
   const {
-    peerId, reaction, big, unread, date,
+    peerId, reaction, big, unread, date, my,
   } = userReaction;
 
   const apiReaction = buildApiReaction(reaction);
   if (!apiReaction) return undefined;
 
   return {
-    userId: getApiChatIdFromMtpPeer(peerId),
+    peerId: getApiChatIdFromMtpPeer(peerId),
     reaction: apiReaction,
     addedDate: date,
     isUnread: unread,
     isBig: big,
+    isOwn: my,
   };
 }
 
@@ -833,7 +835,7 @@ export function buildPollResults(pollResults: GramJs.PollResults): ApiPoll['resu
   const {
     results: rawResults, totalVoters, recentVoters, solution, solutionEntities: entities, min,
   } = pollResults;
-  const results = rawResults && rawResults.map(({
+  const results = rawResults?.map(({
     option, chosen, correct, voters,
   }) => ({
     isChosen: chosen,
@@ -845,7 +847,7 @@ export function buildPollResults(pollResults: GramJs.PollResults): ApiPoll['resu
   return {
     isMin: min,
     totalVoters,
-    recentVoterIds: recentVoters?.map((id) => buildApiPeerId(id, 'user')),
+    recentVoterIds: recentVoters?.map((peer) => getApiChatIdFromMtpPeer(peer)),
     results,
     solution,
     ...(entities && { solutionEntities: entities.map(buildApiMessageEntity) }),
@@ -1439,7 +1441,7 @@ function buildUploadingMedia(
           photo: {
             id: LOCAL_MEDIA_UPLOADING_TEMP_ID,
             sizes: [],
-            thumbnail: { width, height, dataUri: blobUrl },
+            thumbnail: { width, height, dataUri: previewBlobUrl || blobUrl },
             blobUrl,
             isSpoiler: shouldSendAsSpoiler,
           },

@@ -8,13 +8,14 @@ import type { ApiAttachMenuPeerType } from '../../../api/types';
 import type { ISettings } from '../../../types';
 
 import {
-  CONTENT_TYPES_WITH_PREVIEW, SUPPORTED_AUDIO_CONTENT_TYPES,
+  CONTENT_TYPES_WITH_PREVIEW, DEBUG_LOG_FILENAME, SUPPORTED_AUDIO_CONTENT_TYPES,
   SUPPORTED_IMAGE_CONTENT_TYPES,
   SUPPORTED_VIDEO_CONTENT_TYPES,
 } from '../../../config';
 import { IS_TOUCH_ENV } from '../../../util/windowEnvironment';
 import { openSystemFilesDialog } from '../../../util/systemFilesDialog';
 import { validateFiles } from '../../../util/files';
+import { getDebugLogs } from '../../../util/debugConsole';
 
 import useLastCallback from '../../../hooks/useLastCallback';
 import useMouseInside from '../../../hooks/useMouseInside';
@@ -42,6 +43,7 @@ export type OwnProps = {
   attachBots: GlobalState['attachMenu']['bots'];
   isChatWithBot: boolean;
   peerType?: ApiAttachMenuPeerType;
+  shouldCollectDebugLogs?: boolean;
   onFileSelect: (files: File[], shouldSuggestCompression?: boolean) => void;
   onPollCreate: () => void;
   handleSendCrypto: () => void;
@@ -66,6 +68,7 @@ const AttachMenu: FC<OwnProps> = ({
   onPollCreate,
   handleSendCrypto,
   theme,
+  shouldCollectDebugLogs,
 }) => {
   const [isAttachMenuOpen, openAttachMenu, closeAttachMenu] = useFlag();
   const [handleMouseEnter, handleMouseLeave, markMouseInside] = useMouseInside(isAttachMenuOpen, closeAttachMenu);
@@ -111,6 +114,11 @@ const AttachMenu: FC<OwnProps> = ({
       ? Array.from(SUPPORTED_AUDIO_CONTENT_TYPES).join(',') : (
         '*'
       ), (e) => handleFileSelect(e, false));
+  });
+
+  const handleSendLogs = useLastCallback(() => {
+    const file = new File([getDebugLogs()], DEBUG_LOG_FILENAME, { type: 'text/plain' });
+    onFileSelect([file]);
   });
 
   const bots = useMemo(() => {
@@ -178,6 +186,11 @@ const AttachMenu: FC<OwnProps> = ({
                   {lang(!canSendDocuments && canSendAudios ? 'InputAttach.Popover.Music' : 'AttachDocument')}
                 </MenuItem>
               )} */}
+            {canSendDocuments && shouldCollectDebugLogs && (
+              <MenuItem icon="bug" onClick={handleSendLogs}>
+                {lang('DebugSendLogs')}
+              </MenuItem>
+            )}
           </>
         )}
         {canAttachPolls && (

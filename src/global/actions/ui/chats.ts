@@ -4,7 +4,7 @@ import { IS_ELECTRON } from '../../../config';
 import { MAIN_THREAD_ID } from '../../../api/types';
 
 import {
-  exitMessageSelectMode, replaceTabThreadParam, updateCurrentMessageList,
+  exitMessageSelectMode, replaceTabThreadParam, updateCurrentMessageList, updateRequestedChatTranslation,
 } from '../../reducers';
 import {
   selectChat, selectCurrentMessageList, selectTabState,
@@ -82,6 +82,7 @@ addActionHandler('openChatInNewTab', (global, actions, payload): ActionReturnTyp
   const { chatId, threadId = MAIN_THREAD_ID } = payload;
 
   const hashUrl = createMessageHashUrl(chatId, 'thread', threadId);
+
   if (IS_ELECTRON) {
     window.electron!.openNewWindow(hashUrl);
   } else {
@@ -173,4 +174,9 @@ addActionHandler('closeChatlistModal', (global, actions, payload): ActionReturnT
   return updateTabState(global, {
     chatlistModal: undefined,
   }, tabId);
+});
+
+addActionHandler('requestChatTranslation', (global, actions, payload): ActionReturnType => {
+  const { chatId, toLanguageCode, tabId = getCurrentTabId() } = payload;
+  return updateRequestedChatTranslation(global, chatId, toLanguageCode, tabId);
 });

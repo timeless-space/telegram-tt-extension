@@ -1,18 +1,20 @@
-import type { FC } from '../../../lib/teact/teact';
 import React, {
   memo, useCallback, useMemo, useRef,
 } from '../../../lib/teact/teact';
 import { getActions, withGlobal } from '../../../global';
 
+import type { FC } from '../../../lib/teact/teact';
 import { LoadMoreDirection } from '../../../types';
+import type { StateProps } from './helpers/createMapStateToProps';
 
 import { SLIDE_TRANSITION_DURATION } from '../../../config';
 import { MEMO_EMPTY_ARRAY } from '../../../util/memo';
-import type { StateProps } from './helpers/createMapStateToProps';
 import { createMapStateToProps } from './helpers/createMapStateToProps';
 import { formatMonthAndYear, toYearMonth } from '../../../util/dateFormat';
 import { getSenderName } from './helpers/getSenderName';
 import { throttle } from '../../../util/schedulers';
+import buildClassName from '../../../util/buildClassName';
+
 import useAsyncRendering from '../../right/hooks/useAsyncRendering';
 import useLang from '../../../hooks/useLang';
 import { useIntersectionObserver } from '../../../hooks/useIntersectionObserver';
@@ -38,7 +40,6 @@ const LinkResults: FC<OwnProps & StateProps> = ({
   usersById,
   globalMessagesByChatId,
   foundIds,
-  lastSyncTime,
   isChatProtected,
 }) => {
   const {
@@ -57,7 +58,7 @@ const LinkResults: FC<OwnProps & StateProps> = ({
   });
 
   const handleLoadMore = useCallback(({ direction }: { direction: LoadMoreDirection }) => {
-    if (lastSyncTime && direction === LoadMoreDirection.Backwards) {
+    if (direction === LoadMoreDirection.Backwards) {
       runThrottled(() => {
         searchMessagesGlobal({
           type: CURRENT_TYPE,
@@ -65,7 +66,7 @@ const LinkResults: FC<OwnProps & StateProps> = ({
       });
     }
   // eslint-disable-next-line react-hooks-static-deps/exhaustive-deps -- `searchQuery` is required to prevent infinite message loading
-  }, [lastSyncTime, searchMessagesGlobal, searchQuery]);
+  }, [searchQuery]);
 
   const foundMessages = useMemo(() => {
     if (!foundIds || !globalMessagesByChatId) {
@@ -85,7 +86,8 @@ const LinkResults: FC<OwnProps & StateProps> = ({
 
   function renderList() {
     return foundMessages.map((message, index) => {
-      const shouldDrawDateDivider = index === 0
+      const isFirst = index === 0;
+      const shouldDrawDateDivider = isFirst
         || toYearMonth(message.date) !== toYearMonth(foundMessages[index - 1].date);
       return (
         <div
@@ -94,7 +96,14 @@ const LinkResults: FC<OwnProps & StateProps> = ({
           key={message.id}
         >
           {shouldDrawDateDivider && (
-            <p className="section-heading" dir={lang.isRtl ? 'rtl' : undefined}>
+            <p
+              className={buildClassName(
+                'section-heading',
+                isFirst && 'section-heading-first',
+                !isFirst && 'section-heading-with-border',
+              )}
+              dir={lang.isRtl ? 'rtl' : undefined}
+            >
               {formatMonthAndYear(lang, new Date(message.date * 1000))}
             </p>
           )}

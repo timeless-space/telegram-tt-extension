@@ -1,7 +1,7 @@
 import type { GroupCallConnectionData } from '../../lib/secret-sauce';
 import { Api as GramJs, connection } from '../../lib/gramjs';
 import type {
-  ApiMessage, ApiMessageExtendedMediaPreview, ApiUpdateConnectionStateType, OnApiUpdate,
+  ApiMessage, ApiMessageExtendedMediaPreview, ApiUpdate, ApiUpdateConnectionStateType, OnApiUpdate,
 } from '../types';
 
 import { DEBUG, GENERAL_TOPIC_ID } from '../../config';
@@ -42,7 +42,7 @@ import localDb from './localDb';
 import { omitVirtualClassFields } from './apiBuilders/helpers';
 import {
   addMessageToLocalDb,
-  addEntitiesWithPhotosToLocalDb,
+  addEntitiesToLocalDb,
   addPhotoToLocalDb,
   resolveMessageApiChatId,
   serializeBytes,
@@ -68,7 +68,7 @@ import { buildApiEmojiInteraction, buildStickerSet } from './apiBuilders/symbols
 import { buildApiBotMenuButton } from './apiBuilders/bots';
 import { scheduleMutedTopicUpdate, scheduleMutedChatUpdate } from './scheduleUnmute';
 
-type Update = (
+export type Update = (
   (GramJs.TypeUpdate | GramJs.TypeUpdates) & { _entities?: (GramJs.TypeUser | GramJs.TypeChat)[] }
 ) | typeof connection.UpdateConnectionState;
 
@@ -82,7 +82,7 @@ export function init(_onUpdate: OnApiUpdate) {
 
 const sentMessageIds = new Set();
 
-function dispatchUserAndChatUpdates(entities: (GramJs.TypeUser | GramJs.TypeChat)[]) {
+export function dispatchUserAndChatUpdates(entities: (GramJs.TypeUser | GramJs.TypeChat)[]) {
   entities
     .filter((e) => e instanceof GramJs.User)
     .map(buildApiUser)
@@ -115,6 +115,10 @@ function dispatchUserAndChatUpdates(entities: (GramJs.TypeUser | GramJs.TypeChat
         chat,
       });
     });
+}
+
+export function sendUpdate(update: ApiUpdate) {
+  onUpdate(update);
 }
 
 export function updater(update: Update) {
@@ -160,7 +164,7 @@ export function updater(update: Update) {
     // eslint-disable-next-line no-underscore-dangle
     const entities = update._entities;
     if (entities) {
-      addEntitiesWithPhotosToLocalDb(entities);
+      addEntitiesToLocalDb(entities);
       dispatchUserAndChatUpdates(entities);
     }
 
@@ -486,7 +490,7 @@ export function updater(update: Update) {
     onUpdate({
       '@type': 'updateMessagePollVote',
       pollId: String(update.pollId),
-      userId: buildApiPeerId(update.userId, 'user'),
+      peerId: getApiChatIdFromMtpPeer(update.peer),
       options: update.options.map(serializeBytes),
     });
   } else if (update instanceof GramJs.UpdateChannelMessageViews) {
@@ -930,7 +934,7 @@ export function updater(update: Update) {
     // eslint-disable-next-line no-underscore-dangle
     const entities = update._entities;
     if (entities) {
-      addEntitiesWithPhotosToLocalDb(entities);
+      addEntitiesToLocalDb(entities);
       dispatchUserAndChatUpdates(entities);
     }
 
@@ -948,7 +952,7 @@ export function updater(update: Update) {
     // eslint-disable-next-line no-underscore-dangle
     const entities = update._entities;
     if (entities) {
-      addEntitiesWithPhotosToLocalDb(entities);
+      addEntitiesToLocalDb(entities);
       dispatchUserAndChatUpdates(entities);
     }
 
@@ -961,7 +965,7 @@ export function updater(update: Update) {
     // eslint-disable-next-line no-underscore-dangle
     const entities = update._entities;
     if (entities) {
-      addEntitiesWithPhotosToLocalDb(entities);
+      addEntitiesToLocalDb(entities);
       dispatchUserAndChatUpdates(entities);
     }
 
@@ -975,7 +979,7 @@ export function updater(update: Update) {
     // eslint-disable-next-line no-underscore-dangle
     const entities = update._entities;
     if (entities) {
-      addEntitiesWithPhotosToLocalDb(entities);
+      addEntitiesToLocalDb(entities);
       dispatchUserAndChatUpdates(entities);
     }
 
@@ -1013,7 +1017,7 @@ export function updater(update: Update) {
     // eslint-disable-next-line no-underscore-dangle
     const entities = update._entities;
     if (entities) {
-      addEntitiesWithPhotosToLocalDb(entities);
+      addEntitiesToLocalDb(entities);
       dispatchUserAndChatUpdates(entities);
     }
 
@@ -1027,7 +1031,7 @@ export function updater(update: Update) {
     // eslint-disable-next-line no-underscore-dangle
     const entities = update._entities;
     if (entities) {
-      addEntitiesWithPhotosToLocalDb(entities);
+      addEntitiesToLocalDb(entities);
       dispatchUserAndChatUpdates(entities);
     }
     onUpdate({ '@type': 'updateConfig' });

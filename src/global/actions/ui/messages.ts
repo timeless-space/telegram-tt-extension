@@ -42,15 +42,16 @@ import {
   selectSender,
   selectChatScheduledMessages,
   selectTabState,
-  selectRequestedTranslationLanguage,
+  selectRequestedMessageTranslationLanguage,
   selectPinnedIds,
+  selectRequestedChatTranslationLanguage,
 } from '../../selectors';
 import { compact, findLast } from '../../../util/iteratees';
 import { getServerTime } from '../../../util/serverTime';
 
 import versionNotification from '../../../versionNotification.txt';
 import parseMessageInput from '../../../util/parseMessageInput';
-import { getMessageSummaryText, getSenderTitle } from '../../helpers';
+import { getMessageSummaryText, getSenderTitle, isChatChannel } from '../../helpers';
 import * as langProvider from '../../../util/langProvider';
 import { copyHtmlToClipboard } from '../../../util/clipboard';
 import { renderMessageSummaryHtml } from '../../helpers/renderMessageSummaryHtml';
@@ -771,21 +772,23 @@ addActionHandler('closeSeenByModal', (global, actions, payload): ActionReturnTyp
   }, tabId);
 });
 
-addActionHandler('openMessageLanguageModal', (global, actions, payload): ActionReturnType => {
-  const { chatId, id, tabId = getCurrentTabId() } = payload;
+addActionHandler('openChatLanguageModal', (global, actions, payload): ActionReturnType => {
+  const { chatId, messageId, tabId = getCurrentTabId() } = payload;
 
-  const activeLanguage = selectRequestedTranslationLanguage(global, chatId, id, tabId);
+  const activeLanguage = messageId
+    ? selectRequestedMessageTranslationLanguage(global, chatId, messageId, tabId)
+    : selectRequestedChatTranslationLanguage(global, chatId, tabId);
 
   return updateTabState(global, {
-    messageLanguageModal: { chatId, messageId: id, activeLanguage },
+    chatLanguageModal: { chatId, messageId, activeLanguage },
   }, tabId);
 });
 
-addActionHandler('closeMessageLanguageModal', (global, actions, payload): ActionReturnType => {
+addActionHandler('closeChatLanguageModal', (global, actions, payload): ActionReturnType => {
   const { tabId = getCurrentTabId() } = payload || {};
 
   return updateTabState(global, {
-    messageLanguageModal: undefined,
+    chatLanguageModal: undefined,
   }, tabId);
 });
 
@@ -814,31 +817,32 @@ function copyTextForMessages(global: GlobalState, chatId: string, messageIds: nu
   const { type: messageListType, threadId } = selectCurrentMessageList(global) || {};
   const lang = langProvider.translate;
 
+  const chat = selectChat(global, chatId);
+
   const chatMessages = messageListType === 'scheduled'
     ? selectChatScheduledMessages(global, chatId)
     : selectChatMessages(global, chatId);
-  if (!chatMessages || !threadId) return;
+
+  if (!chat || !chatMessages || !threadId) return;
+
   const messages = messageIds
     .map((id) => chatMessages[id])
     .filter((message) => selectAllowedMessageActions(global, message, threadId).canCopy)
     .sort((message1, message2) => message1.id - message2.id);
 
-  const result = messages.reduce((acc, message) => {
-    const sender = selectSender(global, message);
+  const resultHtml: string[] = [];
+  const resultText: string[] = [];
 
-    acc.push(`> ${sender ? getSenderTitle(lang, sender) : ''}:`);
-    acc.push(`${renderMessageSummaryHtml(lang, message)}\n`);
+  messages.forEach((message) => {
+    const sender = isChatChannel(chat) ? chat : selectSender(global, message);
+    const senderTitle = `> ${sender ? getSenderTitle(lang, sender) : message.forwardInfo?.hiddenUserName || ''}:`;
 
-    return acc;
-  }, [] as string[]);
+    resultHtml.push(senderTitle);
+    resultHtml.push(`${renderMessageSummaryHtml(lang, message)}\n`);
 
-  const resultText = messages.reduce((acc, message) => {
-    const sender = selectSender(global, message);
-    acc.push(`> ${sender ? getSenderTitle(lang, sender) : ''}:`);
-    acc.push(`${getMessageSummaryText(lang, message, false, 0, true)}\n`);
+    resultText.push(senderTitle);
+    resultText.push(`${getMessageSummaryText(lang, message, false, 0, true)}\n`);
+  });
 
-    return acc;
-  }, [] as string[]);
-
-  copyHtmlToClipboard(result.join('\n'), resultText.join('\n'));
+  copyHtmlToClipboard(resultHtml.join('\n'), resultText.join('\n'));
 }

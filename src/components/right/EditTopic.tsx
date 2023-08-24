@@ -62,6 +62,13 @@ const EditTopic: FC<OwnProps & StateProps> = ({
   });
 
   useEffect(() => {
+    if (!isActive) {
+      setTitle('');
+      setIconEmojiId(undefined);
+    }
+  }, [isActive]);
+
+  useEffect(() => {
     if (topic?.title || topic?.iconEmojiId) {
       setTitle(topic.title);
       setIconEmojiId(topic.iconEmojiId);
@@ -118,8 +125,8 @@ const EditTopic: FC<OwnProps & StateProps> = ({
         {!topic && <Loading />}
         {topic && (
           <>
-            <div className={buildClassName(styles.section, styles.top)}>
-              <span className={styles.heading}>{lang('CreateTopicTitle')}</span>
+            <div className={buildClassName(styles.section, styles.top, isGeneral && styles.general)}>
+              <span className={styles.heading}>{lang(isGeneral ? 'CreateGeneralTopicTitle' : 'CreateTopicTitle')}</span>
               <Transition
                 name="zoomFade"
                 activeKey={Number(dummyTopic.iconEmojiId) || 0}
@@ -150,6 +157,7 @@ const EditTopic: FC<OwnProps & StateProps> = ({
                   loadAndPlay={isActive}
                   onCustomEmojiSelect={handleCustomEmojiSelect}
                   className={styles.iconPicker}
+                  pickerListClassName="fab-padding-bottom"
                   withDefaultTopicIcons
                 />
               </div>

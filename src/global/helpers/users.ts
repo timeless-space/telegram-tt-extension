@@ -100,7 +100,7 @@ export function getUserStatus(
       if (!wasOnline) return lang('LastSeen.Offline');
 
       const serverTimeOffset = getServerTimeOffset();
-      const now = new Date(new Date().getTime() + serverTimeOffset * 1000);
+      const now = new Date(Date.now() + serverTimeOffset * 1000);
       const wasOnlineDate = new Date(wasOnline * 1000);
 
       if (wasOnlineDate >= now) {
@@ -168,6 +168,10 @@ export function isUserOnline(user: ApiUser, userStatus?: ApiUserStatus) {
   }
 
   if (id === SERVICE_NOTIFICATIONS_USER_ID) {
+    return false;
+  }
+
+  if (user.isSelf) {
     return false;
   }
 

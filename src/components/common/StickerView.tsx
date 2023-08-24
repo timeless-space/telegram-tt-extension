@@ -1,6 +1,4 @@
-import React, {
-  memo, useMemo,
-} from '../../lib/teact/teact';
+import React, { memo } from '../../lib/teact/teact';
 import { getGlobal } from '../../global';
 
 import type { FC } from '../../lib/teact/teact';
@@ -10,7 +8,6 @@ import type { ApiSticker } from '../../api/types';
 import { IS_ANDROID, IS_WEBM_SUPPORTED } from '../../util/windowEnvironment';
 import * as mediaLoader from '../../util/mediaLoader';
 import buildClassName from '../../util/buildClassName';
-import generateIdFor from '../../util/generateIdFor';
 import { getStickerPreviewHash } from '../../global/helpers';
 import { selectIsAlwaysHighPriorityEmoji } from '../../global/selectors';
 
@@ -22,6 +19,7 @@ import useFlag from '../../hooks/useFlag';
 import useCoordsInSharedCanvas from '../../hooks/useCoordsInSharedCanvas';
 import useHeavyAnimationCheck, { isHeavyAnimating } from '../../hooks/useHeavyAnimationCheck';
 import useColorFilter from '../../hooks/stickers/useColorFilter';
+import useUniqueId from '../../hooks/useUniqueId';
 
 import AnimatedSticker from './AnimatedSticker';
 import OptimizedVideo from '../ui/OptimizedVideo';
@@ -48,14 +46,12 @@ type OwnProps = {
   withSharedAnimation?: boolean;
   sharedCanvasRef?: React.RefObject<HTMLCanvasElement>;
   withTranslucentThumb?: boolean; // With shared canvas thumbs are opaque by default to provide better transition effect
-  cacheBuster?: number;
   onVideoEnded?: AnyToVoidFunction;
   onAnimatedStickerLoop?: AnyToVoidFunction;
 };
 
 const SHARED_PREFIX = 'shared';
 const STICKER_SIZE = 24;
-const ID_STORE = {};
 
 const StickerView: FC<OwnProps> = ({
   containerRef,
@@ -77,7 +73,6 @@ const StickerView: FC<OwnProps> = ({
   withSharedAnimation,
   withTranslucentThumb,
   sharedCanvasRef,
-  cacheBuster,
   onVideoEnded,
   onAnimatedStickerLoop,
 }) => {
@@ -102,9 +97,7 @@ const StickerView: FC<OwnProps> = ({
   const thumbDataUri = useThumbnail(sticker);
   // Use preview instead of thumb but only if it's already loaded or when playing an animation is disabled
   const previewMediaDataFromCache: string | undefined = mediaLoader.getFromMemory(previewMediaHash);
-  const previewMediaData = useMedia(
-    previewMediaHash, Boolean(previewMediaDataFromCache || !noPlay), undefined, cacheBuster,
-  );
+  const previewMediaData = useMedia(previewMediaHash, Boolean(previewMediaDataFromCache || !noPlay));
   const thumbData = customColor ? thumbDataUri : (previewMediaData || thumbDataUri);
 
   const shouldForcePreview = isUnsupportedVideo || (isStatic && isSmall);
@@ -113,7 +106,7 @@ const StickerView: FC<OwnProps> = ({
   // If preloaded preview is forced, it will render as thumb, so no need to load it again
   const shouldSkipFullMedia = Boolean(fullMediaHash === previewMediaHash && previewMediaData);
 
-  const fullMediaData = useMedia(fullMediaHash, !shouldLoad || shouldSkipFullMedia, undefined, cacheBuster);
+  const fullMediaData = useMedia(fullMediaHash, !shouldLoad || shouldSkipFullMedia);
   // If Lottie data is loaded we will only render thumb if it's good enough (from preview)
   const [isPlayerReady, markPlayerReady] = useFlag(Boolean(isLottie && fullMediaData && !previewMediaData));
   // Delay mounting on Android until heavy animation ends
@@ -129,9 +122,9 @@ const StickerView: FC<OwnProps> = ({
   const coords = useCoordsInSharedCanvas(containerRef, sharedCanvasRef);
 
   // Preload preview for Message Input and local message
-  useMedia(previewMediaHash, !shouldLoad || !shouldPreloadPreview, undefined, cacheBuster);
+  useMedia(previewMediaHash, !shouldLoad || !shouldPreloadPreview);
 
-  const randomIdPrefix = useMemo(() => generateIdFor(ID_STORE, true), []);
+  const randomIdPrefix = useUniqueId();
   const renderId = [
     (withSharedAnimation ? SHARED_PREFIX : randomIdPrefix),
     id,

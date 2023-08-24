@@ -1,8 +1,7 @@
-import type { RefObject } from 'react';
 import React, {
   useEffect, useState, memo, useMemo,
 } from '../../lib/teact/teact';
-import { requestMutation } from '../../lib/fasterdom/fasterdom';
+import { requestMeasure, requestMutation } from '../../lib/fasterdom/fasterdom';
 import { getActions, withGlobal } from '../../global';
 
 import type { ApiChat, ApiChatBannedRights } from '../../api/types';
@@ -18,8 +17,6 @@ import {
   MIN_SCREEN_WIDTH_FOR_STATIC_RIGHT_COLUMN,
   SAFE_SCREEN_WIDTH_FOR_STATIC_RIGHT_COLUMN,
   ANIMATION_END_DELAY,
-  DARK_THEME_BG_COLOR,
-  LIGHT_THEME_BG_COLOR,
   SUPPORTED_IMAGE_CONTENT_TYPES,
   GENERAL_TOPIC_ID,
   TMP_CHAT_ID,
@@ -56,10 +53,13 @@ import {
   isChatGroup,
   isChatSuperGroup,
   isUserId,
+  isUserRightBanned,
+  getHasAdminRight,
 } from '../../global/helpers';
 import calculateMiddleFooterTransforms from './helpers/calculateMiddleFooterTransforms';
 import captureEscKeyListener from '../../util/captureEscKeyListener';
 import buildClassName from '../../util/buildClassName';
+import buildStyle from '../../util/buildStyle';
 
 import useLastCallback from '../../hooks/useLastCallback';
 import useCustomBackground from '../../hooks/useCustomBackground';
@@ -87,14 +87,14 @@ import SeenByModal from '../common/SeenByModal.async';
 import EmojiInteractionAnimation from './EmojiInteractionAnimation.async';
 import ReactorListModal from './ReactorListModal.async';
 import GiftPremiumModal from '../main/premium/GiftPremiumModal.async';
-import MessageLanguageModal from './MessageLanguageModal.async';
+import ChatLanguageModal from './ChatLanguageModal.async';
 
 import './MiddleColumn.scss';
 
 import styles from './MiddleColumn.module.scss';
 
 interface OwnProps {
-  leftColumnRef: RefObject<HTMLDivElement>;
+  leftColumnRef: React.RefObject<HTMLDivElement>;
   isMobile?: boolean;
 }
 
@@ -126,7 +126,7 @@ type StateProps = {
   isSeenByModalOpen: boolean;
   isReactorListModalOpen: boolean;
   isGiftPremiumModalOpen?: boolean;
-  isMessageLanguageModalOpen?: boolean;
+  isChatLanguageModalOpen?: boolean;
   withInterfaceAnimations?: boolean;
   shouldSkipHistoryAnimations?: boolean;
   currentTransitionKey: number;
@@ -139,9 +139,9 @@ type StateProps = {
   activeEmojiInteractions?: ActiveEmojiInteraction[];
   shouldJoinToSend?: boolean;
   shouldSendJoinRequest?: boolean;
-  lastSyncTime?: number;
   pinnedIds?: number[];
   topMessageId?: number;
+  canUnpin?: boolean;
 };
 
 function isImage(item: DataTransferItem) {
@@ -180,7 +180,7 @@ function MiddleColumn({
   isSeenByModalOpen,
   isReactorListModalOpen,
   isGiftPremiumModalOpen,
-  isMessageLanguageModalOpen,
+  isChatLanguageModalOpen,
   withInterfaceAnimations,
   shouldSkipHistoryAnimations,
   currentTransitionKey,
@@ -193,9 +193,9 @@ function MiddleColumn({
   shouldJoinToSend,
   shouldSendJoinRequest,
   shouldLoadFullChat,
-  lastSyncTime,
   pinnedIds,
   topMessageId,
+  canUnpin,
 }: OwnProps & StateProps) {
   const {
     openChat,
@@ -304,6 +304,14 @@ function MiddleColumn({
 
       requestMutation(() => {
         document.body.classList.toggle('keyboard-visible', isFixNeeded);
+
+        requestMeasure(() => {
+          if (!isFixNeeded && visualViewport.offsetTop) {
+            requestMutation(() => {
+              window.scrollTo({ top: 0 });
+            });
+          }
+        });
       });
     };
 
@@ -321,10 +329,10 @@ function MiddleColumn({
   }, [chatId, isPrivate, loadUser]);
 
   useEffect(() => {
-    if (!areChatSettingsLoaded && lastSyncTime) {
+    if (!areChatSettingsLoaded) {
       loadChatSettings({ chatId: chatId! });
     }
-  }, [chatId, isPrivate, areChatSettingsLoaded, lastSyncTime, loadChatSettings]);
+  }, [chatId, isPrivate, areChatSettingsLoaded]);
 
   useEffect(() => {
     if (chatId && shouldLoadFullChat && isReady) {
@@ -458,17 +466,16 @@ function MiddleColumn({
       id="MiddleColumn"
       className={className}
       onTransitionEnd={handleCssTransitionEnd}
-      style={`
-        --composer-hidden-scale: ${composerHiddenScale};
-        --toolbar-hidden-scale: ${toolbarHiddenScale};
-        --unpin-hidden-scale: ${unpinHiddenScale};
-        --toolbar-unpin-hidden-scale: ${toolbarForUnpinHiddenScale};
-        --composer-translate-x: ${composerTranslateX}px;
-        --toolbar-translate-x: ${toolbarTranslateX}px;
-        --pattern-color: ${patternColor};
-        --theme-background-color:
-          ${backgroundColor || (theme === 'dark' ? DARK_THEME_BG_COLOR : LIGHT_THEME_BG_COLOR)};
-      `}
+      style={buildStyle(
+        `--composer-hidden-scale: ${composerHiddenScale}`,
+        `--toolbar-hidden-scale: ${toolbarHiddenScale}`,
+        `--unpin-hidden-scale: ${unpinHiddenScale}`,
+        `--toolbar-unpin-hidden-scale: ${toolbarForUnpinHiddenScale},`,
+        `--composer-translate-x: ${composerTranslateX}px`,
+        `--toolbar-translate-x: ${toolbarTranslateX}px`,
+        `--pattern-color: ${patternColor}`,
+        backgroundColor && `--theme-background-color: ${backgroundColor}`,
+      )}
       onClick={(isTablet && isLeftColumnShown) ? handleTabletFocus : undefined}
     >
       {isDesktop && (
@@ -531,7 +538,7 @@ function MiddleColumn({
                     isMobile={isMobile}
                   />
                 )}
-                {isPinnedMessageList && (
+                {isPinnedMessageList && canUnpin && (
                   <div className="middle-column-footer-button-container" dir={lang.isRtl ? 'rtl' : undefined}>
                     <Button
                       size="tiny"
@@ -615,7 +622,7 @@ function MiddleColumn({
                 />
                 <SeenByModal isOpen={isSeenByModalOpen} />
                 <ReactorListModal isOpen={isReactorListModalOpen} />
-                {IS_TRANSLATION_SUPPORTED && <MessageLanguageModal isOpen={isMessageLanguageModalOpen} />}
+                {IS_TRANSLATION_SUPPORTED && <ChatLanguageModal isOpen={isChatLanguageModalOpen} />}
               </div>
             </Transition>
 
@@ -661,10 +668,10 @@ export default memo(withGlobal<OwnProps>(
     const {
       messageLists, isLeftColumnShown, activeEmojiInteractions,
       seenByModal, giftPremiumModal, reactorModal, audioPlayer, shouldSkipHistoryAnimations,
-      messageLanguageModal,
+      chatLanguageModal,
     } = selectTabState(global);
     const currentMessageList = selectCurrentMessageList(global);
-    const { leftColumnWidth, lastSyncTime } = global;
+    const { leftColumnWidth } = global;
 
     const state: StateProps = {
       theme,
@@ -679,12 +686,11 @@ export default memo(withGlobal<OwnProps>(
       isSeenByModalOpen: Boolean(seenByModal),
       isReactorListModalOpen: Boolean(reactorModal),
       isGiftPremiumModalOpen: giftPremiumModal?.isOpen,
-      isMessageLanguageModalOpen: Boolean(messageLanguageModal),
+      isChatLanguageModalOpen: Boolean(chatLanguageModal),
       withInterfaceAnimations: selectCanAnimateInterface(global),
       currentTransitionKey: Math.max(0, messageLists.length - 1),
       activeEmojiInteractions,
       leftColumnWidth,
-      lastSyncTime,
     };
 
     if (!currentMessageList) {
@@ -713,7 +719,7 @@ export default memo(withGlobal<OwnProps>(
     const canRestartBot = Boolean(bot && selectIsUserBlocked(global, bot.id));
     const canStartBot = !canRestartBot && isBotNotStarted;
     const shouldLoadFullChat = Boolean(
-      chat && isChatGroup(chat) && !selectChatFullInfo(global, chat.id) && lastSyncTime,
+      chat && isChatGroup(chat) && !selectChatFullInfo(global, chat.id),
     );
     const replyingToId = selectReplyingToId(global, chatId, threadId);
     const shouldBlockSendInForum = chat?.isForum
@@ -725,6 +731,13 @@ export default memo(withGlobal<OwnProps>(
 
     const isCommentThread = threadId !== MAIN_THREAD_ID && !chat?.isForum;
     const topMessageId = isCommentThread ? selectThreadTopMessageId(global, chatId, threadId) : undefined;
+
+    const canUnpin = chat && (
+      isPrivate || (
+        chat?.isCreator || (!isChannel && !isUserRightBanned(chat, 'pinMessages'))
+          || getHasAdminRight(chat, 'pinMessages')
+      )
+    );
 
     return {
       ...state,
@@ -757,6 +770,7 @@ export default memo(withGlobal<OwnProps>(
       shouldLoadFullChat,
       pinnedIds,
       topMessageId,
+      canUnpin,
     };
   },
 )(MiddleColumn));

@@ -48,6 +48,8 @@ export function buildContentClassName(
     }
   } else if (hasText) {
     classNames.push('text');
+  } else {
+    classNames.push('no-text');
   }
 
   if (hasActionButton) {
@@ -126,7 +128,7 @@ export function buildContentClassName(
       classNames.push('has-solid-background');
     }
 
-    if (isLastInGroup && (photo || (location && !hasText) || !isMediaWithNoText)) {
+    if (isLastInGroup && (photo || !isMediaWithNoText || (location && asForwarded))) {
       classNames.push('has-appendix');
     }
   }

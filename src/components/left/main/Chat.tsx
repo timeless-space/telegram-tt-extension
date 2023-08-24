@@ -21,6 +21,7 @@ import {
   getMessageAction,
   getPrivateChatUserId,
   isUserId,
+  isUserOnline,
   selectIsChatMuted,
 } from '../../../global/helpers';
 import {
@@ -29,6 +30,8 @@ import {
   selectChatMessage,
   selectCurrentMessageList,
   selectDraft,
+  selectIsForumPanelClosed,
+  selectIsForumPanelOpen,
   selectNotifyExceptions,
   selectNotifySettings,
   selectOutgoingStatus,
@@ -42,11 +45,13 @@ import buildClassName from '../../../util/buildClassName';
 import { createLocationHash } from '../../../util/routing';
 
 import useLastCallback from '../../../hooks/useLastCallback';
+import useSelectorSignal from '../../../hooks/useSelectorSignal';
 import useChatContextActions from '../../../hooks/useChatContextActions';
 import useFlag from '../../../hooks/useFlag';
 import useChatListEntry from './hooks/useChatListEntry';
 import { useIsIntersecting } from '../../../hooks/useIntersectionObserver';
 import useAppLayout from '../../../hooks/useAppLayout';
+import useShowTransition from '../../../hooks/useShowTransition';
 
 import ListItem from '../../ui/ListItem';
 import Avatar from '../../common/Avatar';
@@ -58,7 +63,6 @@ import ChatFolderModal from '../ChatFolderModal.async';
 import MuteChatModal from '../MuteChatModal.async';
 import ChatCallStatus from './ChatCallStatus';
 import ChatBadge from './ChatBadge';
-import AvatarBadge from './AvatarBadge';
 
 import './Chat.scss';
 
@@ -86,9 +90,9 @@ type StateProps = {
   draft?: ApiFormattedText;
   isSelected?: boolean;
   isSelectedForum?: boolean;
+  isForumPanelOpen?: boolean;
   canScrollDown?: boolean;
   canChangeFolder?: boolean;
-  lastSyncTime?: number;
   lastMessageTopic?: ApiTopic;
   typingStatus?: ApiTypingStatus;
   withInterfaceAnimations?: boolean;
@@ -115,9 +119,9 @@ const Chat: FC<OwnProps & StateProps> = ({
   withInterfaceAnimations,
   isSelected,
   isSelectedForum,
+  isForumPanelOpen,
   canScrollDown,
   canChangeFolder,
-  lastSyncTime,
   lastMessageTopic,
   typingStatus,
   onDragEnter,
@@ -159,9 +163,11 @@ const Chat: FC<OwnProps & StateProps> = ({
     orderDiff,
   });
 
+  const getIsForumPanelClosed = useSelectorSignal(selectIsForumPanelClosed);
+
   const handleClick = useLastCallback(() => {
     if (isForum) {
-      if (isSelectedForum) {
+      if (isForumPanelOpen) {
         closeForumPanel(undefined, { forceOnHeavyAnimation: true });
       } else {
         openForumPanel({ chatId }, { forceOnHeavyAnimation: true });
@@ -219,14 +225,19 @@ const Chat: FC<OwnProps & StateProps> = ({
 
   // Load the forum topics to display unread count badge
   useEffect(() => {
-    if (isIntersecting && lastSyncTime && isForum && chat && chat.listedTopicIds === undefined) {
+    if (isIntersecting && isForum && chat && chat.listedTopicIds === undefined) {
       loadTopics({ chatId });
     }
-  }, [chat, chatId, isForum, isIntersecting, lastSyncTime, loadTopics]);
+  }, [chat, chatId, isForum, isIntersecting]);
+
+  const isOnline = user && userStatus && isUserOnline(user, userStatus);
+  const { hasShownClass: isAvatarOnlineShown } = useShowTransition(isOnline);
 
   if (!chat) {
     return undefined;
   }
+
+  const peer = user || chat;
 
   const className = buildClassName(
     'Chat chat-item-clickable',
@@ -250,13 +261,13 @@ const Chat: FC<OwnProps & StateProps> = ({
     >
       <div className="status">
         <Avatar
-          chat={chat}
-          user={user}
-          userStatus={userStatus}
+          peer={peer}
           isSavedMessages={user?.isSelf}
-          lastSyncTime={lastSyncTime}
         />
-        <AvatarBadge chatId={chatId} />
+        <div className="avatar-badge-wrapper">
+          <div className={buildClassName('avatar-online', isAvatarOnlineShown && 'avatar-online-shown')} />
+          <ChatBadge chat={chat} isMuted={isMuted} shouldShowOnlyMostImportant forceHidden={getIsForumPanelClosed} />
+        </div>
         {chat.isCallActive && chat.isCallNotEmpty && (
           <ChatCallStatus isMobile={isMobile} isSelected={isSelected} isActive={withInterfaceAnimations} />
         )}
@@ -264,7 +275,7 @@ const Chat: FC<OwnProps & StateProps> = ({
       <div className="info">
         <div className="info-row">
           <FullNameTitle
-            peer={user || chat}
+            peer={peer}
             withEmojiStatus
             isSavedMessages={chatId === user?.id && user?.isSelf}
             observeIntersection={observeIntersection}
@@ -361,9 +372,9 @@ export default memo(withGlobal<OwnProps>(
       draft: selectDraft(global, chatId, MAIN_THREAD_ID),
       isSelected,
       isSelectedForum,
+      isForumPanelOpen: selectIsForumPanelOpen(global),
       canScrollDown: isSelected && messageListType === 'thread',
       canChangeFolder: (global.chatFolders.orderedIds?.length || 0) > 1,
-      lastSyncTime: global.lastSyncTime,
       ...(isOutgoing && chat.lastMessage && {
         lastMessageOutgoingStatus: selectOutgoingStatus(global, chat.lastMessage),
       }),

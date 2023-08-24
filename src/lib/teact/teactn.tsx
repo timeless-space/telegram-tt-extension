@@ -1,15 +1,16 @@
 /* eslint-disable eslint-multitab-tt/set-global-only-variable */
 import type { FC, FC_withDebug, Props } from './teact';
-import React, { useEffect, useState } from './teact';
+import React, { DEBUG_resolveComponentName, useEffect } from './teact';
 import { requestMeasure } from '../fasterdom/fasterdom';
 
 import { DEBUG, DEBUG_MORE } from '../../config';
-import useForceUpdate from '../../hooks/useForceUpdate';
-import generateIdFor from '../../util/generateIdFor';
 import { throttleWithTickEnd } from '../../util/schedulers';
-import arePropsShallowEqual, { getUnequalProps } from '../../util/arePropsShallowEqual';
+import arePropsShallowEqual, { logUnequalProps } from '../../util/arePropsShallowEqual';
 import { orderBy } from '../../util/iteratees';
 import { handleError } from '../../util/handleError';
+
+import useForceUpdate from '../../hooks/useForceUpdate';
+import useUniqueId from '../../hooks/useUniqueId';
 import { isHeavyAnimating } from '../../hooks/useHeavyAnimationCheck';
 
 export default React;
@@ -197,12 +198,10 @@ function updateContainers() {
 
     if (Object.keys(newMappedProps).length && !arePropsShallowEqual(mappedProps!, newMappedProps)) {
       if (DEBUG_MORE) {
-        // eslint-disable-next-line no-console
-        console.log(
-          '[TeactN] Will update',
-          container.DEBUG_componentName,
-          'caused by',
-          getUnequalProps(mappedProps!, newMappedProps).join(', '),
+        logUnequalProps(
+          mappedProps!,
+          newMappedProps,
+          `[TeactN] Will update ${container.DEBUG_componentName} caused by:`,
         );
       }
 
@@ -249,10 +248,8 @@ export function withGlobal<OwnProps extends AnyLiteral>(
   mapStateToProps: MapStateToProps<OwnProps> = () => ({}),
 ) {
   return (Component: FC) => {
-    return function TeactNContainer(props: OwnProps) {
-      (TeactNContainer as FC_withDebug).DEBUG_contentComponentName = Component.name;
-
-      const [id] = useState(generateIdFor(containers));
+    function TeactNContainer(props: OwnProps) {
+      const id = useUniqueId();
       const forceUpdate = useForceUpdate();
 
       useEffect(() => {
@@ -300,7 +297,11 @@ export function withGlobal<OwnProps extends AnyLiteral>(
 
       // eslint-disable-next-line react/jsx-props-no-spreading
       return <Component {...container.mappedProps} {...props} />;
-    };
+    }
+
+    (TeactNContainer as FC_withDebug).DEBUG_contentComponentName = DEBUG_resolveComponentName(Component);
+
+    return TeactNContainer;
   };
 }
 

@@ -21,6 +21,7 @@ import {
   selectTabState,
   selectUser,
   selectUserFullInfo,
+  selectCanManage, selectIsRightColumnShown, selectCanTranslateChat,
 } from '../../global/selectors';
 import {
   getCanAddContact,
@@ -85,6 +86,7 @@ export type OwnProps = {
   canEnterVoiceChat?: boolean;
   canCreateVoiceChat?: boolean;
   pendingJoinRequests?: number;
+  canTranslate?: boolean;
   onSubscribeChannel: () => void;
   onSearchClick: () => void;
   onAsMessagesClick: () => void;
@@ -108,6 +110,9 @@ type StateProps = {
   canEditTopic?: boolean;
   hasLinkedChat?: boolean;
   isChatInfoShown?: boolean;
+  isRightColumnShown?: boolean;
+  canManage?: boolean;
+  canTranslate?: boolean;
 };
 
 const CLOSE_MENU_ANIMATION_DURATION = 200;
@@ -145,6 +150,9 @@ const HeaderMenuContainer: FC<OwnProps & StateProps> = ({
   canAddContact,
   canCreateTopic,
   canEditTopic,
+  canManage,
+  isRightColumnShown,
+  canTranslate,
   onJoinRequestsClick,
   onSubscribeChannel,
   onSearchClick,
@@ -168,10 +176,13 @@ const HeaderMenuContainer: FC<OwnProps & StateProps> = ({
     openCreateTopicPanel,
     openEditTopicPanel,
     openChat,
+    toggleManagement,
+    togglePeerTranslations,
   } = getActions();
 
   const { isMobile } = useAppLayout();
   const [isMenuOpen, setIsMenuOpen] = useState(true);
+  const [shouldCloseFast, setShouldCloseFast] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isMuteModalOpen, setIsMuteModalOpen] = useState(false);
@@ -210,6 +221,7 @@ const HeaderMenuContainer: FC<OwnProps & StateProps> = ({
 
   const handleViewGroupInfo = useLastCallback(() => {
     openChatWithInfo({ id: chatId, threadId });
+    setShouldCloseFast(!isRightColumnShown);
     closeMenu();
   });
 
@@ -239,11 +251,19 @@ const HeaderMenuContainer: FC<OwnProps & StateProps> = ({
 
   const handleCreateTopicClick = useLastCallback(() => {
     openCreateTopicPanel({ chatId });
+    setShouldCloseFast(!isRightColumnShown);
+    closeMenu();
+  });
+
+  const handleEditClick = useLastCallback(() => {
+    toggleManagement({ force: true });
+    setShouldCloseFast(!isRightColumnShown);
     closeMenu();
   });
 
   const handleEditTopicClick = useLastCallback(() => {
     openEditTopicPanel({ chatId, topicId: threadId });
+    setShouldCloseFast(!isRightColumnShown);
     closeMenu();
   });
 
@@ -303,6 +323,12 @@ const HeaderMenuContainer: FC<OwnProps & StateProps> = ({
 
   const handleStatisticsClick = useLastCallback(() => {
     toggleStatistics();
+    setShouldCloseFast(!isRightColumnShown);
+    closeMenu();
+  });
+
+  const handleEnableTranslations = useLastCallback(() => {
+    togglePeerTranslations({ chatId, isEnabled: true });
     closeMenu();
   });
 
@@ -354,6 +380,7 @@ const HeaderMenuContainer: FC<OwnProps & StateProps> = ({
           positionX="right"
           style={`left: ${x}px;top: ${y}px;`}
           onClose={closeMenu}
+          shouldCloseFast={shouldCloseFast}
         >
           {isMobile && canSearch && (
             <MenuItem
@@ -380,6 +407,14 @@ const HeaderMenuContainer: FC<OwnProps & StateProps> = ({
               onClick={handleViewGroupInfo}
             >
               {isTopic ? lang('lng_context_view_topic') : lang('lng_context_view_group')}
+            </MenuItem>
+          )}
+          {canManage && !canEditTopic && (
+            <MenuItem
+              icon="edit"
+              onClick={handleEditClick}
+            >
+              {lang('Edit')}
             </MenuItem>
           )}
           {canEditTopic && (
@@ -512,6 +547,14 @@ const HeaderMenuContainer: FC<OwnProps & StateProps> = ({
               {lang('Statistics')}
             </MenuItem>
           )}
+          {canTranslate && (
+            <MenuItem
+              icon="language"
+              onClick={handleEnableTranslations}
+            >
+              {lang('lng_context_translate')}
+            </MenuItem>
+          )}
           {canReportChat && (
             <MenuItem
               icon="flag"
@@ -588,9 +631,9 @@ export default memo(withGlobal<OwnProps>(
     const chatBot = chatId !== REPLIES_USER_ID ? selectBot(global, chatId) : undefined;
     const userFullInfo = isPrivate ? selectUserFullInfo(global, chatId) : undefined;
     const chatFullInfo = !isPrivate ? selectChatFullInfo(global, chatId) : undefined;
+    const fullInfo = userFullInfo || chatFullInfo;
     const canGiftPremium = Boolean(
-      global.lastSyncTime
-      && userFullInfo?.premiumGifts?.length
+      userFullInfo?.premiumGifts?.length
       && !selectIsPremiumPurchaseBlocked(global),
     );
 
@@ -599,6 +642,9 @@ export default memo(withGlobal<OwnProps>(
       chat.isCreator || !isUserRightBanned(chat, 'manageTopics') || getHasAdminRight(chat, 'manageTopics')
     );
     const canEditTopic = topic && getCanManageTopic(chat, topic);
+    const canManage = selectCanManage(global, chatId);
+    // Context menu item should only be displayed if user hid translation panel
+    const canTranslate = selectCanTranslateChat(global, chatId) && fullInfo?.isTranslationDisabled;
 
     return {
       chat,
@@ -616,6 +662,9 @@ export default memo(withGlobal<OwnProps>(
         && currentChatId === chatId && currentThreadId === threadId,
       canCreateTopic,
       canEditTopic,
+      canManage,
+      isRightColumnShown: selectIsRightColumnShown(global),
+      canTranslate,
     };
   },
 )(HeaderMenuContainer));

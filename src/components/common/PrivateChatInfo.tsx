@@ -5,7 +5,6 @@ import type { FC } from '../../lib/teact/teact';
 import type {
   ApiUser, ApiTypingStatus, ApiUserStatus, ApiChatMember,
 } from '../../api/types';
-import type { GlobalState } from '../../global/types';
 import { MediaViewerOrigin } from '../../types';
 
 import {
@@ -37,6 +36,7 @@ type OwnProps = {
   withUsername?: boolean;
   withFullInfo?: boolean;
   withUpdatingStatus?: boolean;
+  noEmojiStatus?: boolean;
   emojiStatusSize?: number;
   noStatusOrTyping?: boolean;
   noRtl?: boolean;
@@ -49,8 +49,7 @@ type StateProps =
     userStatus?: ApiUserStatus;
     isSavedMessages?: boolean;
     areMessagesLoaded: boolean;
-  }
-  & Pick<GlobalState, 'lastSyncTime'>;
+  };
 
 const PrivateChatInfo: FC<OwnProps & StateProps> = ({
   typingStatus,
@@ -64,12 +63,12 @@ const PrivateChatInfo: FC<OwnProps & StateProps> = ({
   withUpdatingStatus,
   emojiStatusSize,
   noStatusOrTyping,
+  noEmojiStatus,
   noRtl,
   user,
   userStatus,
   isSavedMessages,
   areMessagesLoaded,
-  lastSyncTime,
   adminMember,
 }) => {
   const {
@@ -78,14 +77,16 @@ const PrivateChatInfo: FC<OwnProps & StateProps> = ({
     loadProfilePhotos,
   } = getActions();
 
+  const lang = useLang();
+
   const { id: userId } = user || {};
 
   useEffect(() => {
-    if (userId && lastSyncTime) {
+    if (userId) {
       if (withFullInfo) loadFullUser({ userId });
       if (withMediaViewer) loadProfilePhotos({ profileId: userId });
     }
-  }, [userId, loadFullUser, loadProfilePhotos, lastSyncTime, withFullInfo, withMediaViewer]);
+  }, [userId, withFullInfo, withMediaViewer]);
 
   const handleAvatarViewerOpen = useLastCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>, hasMedia: boolean) => {
@@ -100,7 +101,6 @@ const PrivateChatInfo: FC<OwnProps & StateProps> = ({
     },
   );
 
-  const lang = useLang();
   const mainUsername = useMemo(() => user && withUsername && getMainUsername(user), [user, withUsername]);
 
   if (!user) {
@@ -151,7 +151,7 @@ const PrivateChatInfo: FC<OwnProps & StateProps> = ({
         <div className="info-name-title">
           <FullNameTitle
             peer={user!}
-            withEmojiStatus
+            withEmojiStatus={!noEmojiStatus}
             emojiStatusSize={emojiStatusSize}
             isSavedMessages={isSavedMessages}
           />
@@ -163,7 +163,7 @@ const PrivateChatInfo: FC<OwnProps & StateProps> = ({
     return (
       <FullNameTitle
         peer={user!}
-        withEmojiStatus
+        withEmojiStatus={!noEmojiStatus}
         emojiStatusSize={emojiStatusSize}
         isSavedMessages={isSavedMessages}
       />
@@ -175,7 +175,7 @@ const PrivateChatInfo: FC<OwnProps & StateProps> = ({
       <Avatar
         key={user.id}
         size={avatarSize}
-        user={user}
+        peer={user}
         isSavedMessages={isSavedMessages}
         onClick={withMediaViewer ? handleAvatarViewerOpen : undefined}
       />
@@ -189,14 +189,12 @@ const PrivateChatInfo: FC<OwnProps & StateProps> = ({
 
 export default memo(withGlobal<OwnProps>(
   (global, { userId, forceShowSelf }): StateProps => {
-    const { lastSyncTime } = global;
     const user = selectUser(global, userId);
     const userStatus = selectUserStatus(global, userId);
     const isSavedMessages = !forceShowSelf && user && user.isSelf;
     const areMessagesLoaded = Boolean(selectChatMessages(global, userId));
 
     return {
-      lastSyncTime,
       user,
       userStatus,
       isSavedMessages,

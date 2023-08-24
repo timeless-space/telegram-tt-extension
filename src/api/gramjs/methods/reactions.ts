@@ -9,7 +9,8 @@ import { buildApiUser } from '../apiBuilders/users';
 import { buildApiAvailableReaction, buildApiReaction, buildMessagePeerReaction } from '../apiBuilders/messages';
 import { invokeRequest } from './client';
 import localDb from '../localDb';
-import { addEntitiesWithPhotosToLocalDb } from '../helpers';
+import { addEntitiesToLocalDb } from '../helpers';
+import { buildApiChatFromPreview } from '../apiBuilders/chats';
 
 export function sendWatchingEmojiInteraction({
   chat,
@@ -22,7 +23,9 @@ export function sendWatchingEmojiInteraction({
     action: new GramJs.SendMessageEmojiInteractionSeen({
       emoticon,
     }),
-  }));
+  }), {
+    abortControllerChatId: chat.id,
+  });
 }
 
 export function sendEmojiInteraction({
@@ -48,7 +51,9 @@ export function sendEmojiInteraction({
         }),
       }),
     }),
-  }));
+  }), {
+    abortControllerChatId: chat.id,
+  });
 }
 
 export async function getAvailableReactions() {
@@ -92,7 +97,10 @@ export function sendReaction({
     peer: buildInputPeer(chat.id, chat.accessHash),
     msgId: messageId,
     ...(shouldAddToRecent && { addToRecent: true }),
-  }), true, true);
+  }), {
+    shouldReturnTrue: true,
+    shouldThrow: true,
+  });
 }
 
 export function fetchMessageReactions({
@@ -103,7 +111,10 @@ export function fetchMessageReactions({
   return invokeRequest(new GramJs.messages.GetMessagesReactions({
     id: ids,
     peer: buildInputPeer(chat.id, chat.accessHash),
-  }), true);
+  }), {
+    shouldReturnTrue: true,
+    abortControllerChatId: chat.id,
+  });
 }
 
 export async function fetchMessageReactionsList({
@@ -123,12 +134,14 @@ export async function fetchMessageReactionsList({
     return undefined;
   }
 
-  addEntitiesWithPhotosToLocalDb(result.users);
+  addEntitiesToLocalDb(result.users);
+  addEntitiesToLocalDb(result.chats);
 
   const { nextOffset, reactions, count } = result;
 
   return {
     users: result.users.map(buildApiUser).filter(Boolean),
+    chats: result.chats.map((c) => buildApiChatFromPreview(c)).filter(Boolean),
     nextOffset,
     reactions: reactions.map(buildMessagePeerReaction).filter(Boolean),
     count,

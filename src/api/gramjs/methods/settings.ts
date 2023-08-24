@@ -5,9 +5,10 @@ import type {
   ApiAppConfig,
   ApiConfig,
   ApiError,
-  ApiLangString,
   ApiLanguage,
-  ApiNotifyException, ApiPhoto, ApiUser,
+  ApiNotifyException,
+  ApiPhoto,
+  ApiUser,
 } from '../../types';
 import type { ApiPrivacyKey, InputPrivacyRules, LangCode } from '../../../types';
 import type { LANG_PACKS } from '../../../config';
@@ -20,7 +21,7 @@ import {
   buildApiNotifyException,
   buildApiSession,
   buildApiWallpaper,
-  buildApiWebSession,
+  buildApiWebSession, buildLangPack, buildLangPackString,
   buildPrivacyRules,
 } from '../apiBuilders/misc';
 
@@ -36,7 +37,7 @@ import {
 import { getClient, invokeRequest, uploadFile } from './client';
 import { buildCollectionByKey } from '../../../util/iteratees';
 import { getServerTime } from '../../../util/serverTime';
-import { addEntitiesWithPhotosToLocalDb, addPhotoToLocalDb } from '../helpers';
+import { addEntitiesToLocalDb, addPhotoToLocalDb } from '../helpers';
 import localDb from '../localDb';
 
 const BETA_LANG_CODES = ['ar', 'fa', 'id', 'ko', 'uz', 'en'];
@@ -54,14 +55,18 @@ export function updateProfile({
     firstName: firstName || '',
     lastName: lastName || '',
     about: about || '',
-  }), true);
+  }), {
+    shouldReturnTrue: true,
+  });
 }
 
 export async function checkUsername(username: string) {
   try {
     const result = await invokeRequest(new GramJs.account.CheckUsername({
       username,
-    }), undefined, true);
+    }), {
+      shouldThrow: true,
+    });
 
     return { result, error: undefined };
   } catch (error) {
@@ -79,7 +84,9 @@ export async function checkUsername(username: string) {
 }
 
 export function updateUsername(username: string) {
-  return invokeRequest(new GramJs.account.UpdateUsername({ username }), true);
+  return invokeRequest(new GramJs.account.UpdateUsername({ username }), {
+    shouldReturnTrue: true,
+  });
 }
 
 export async function updateProfilePhoto(photo?: ApiPhoto, isFallback?: boolean) {
@@ -90,7 +97,7 @@ export async function updateProfilePhoto(photo?: ApiPhoto, isFallback?: boolean)
   }));
   if (!result) return undefined;
 
-  addEntitiesWithPhotosToLocalDb(result.users);
+  addEntitiesToLocalDb(result.users);
   if (result.photo instanceof GramJs.Photo) {
     addPhotoToLocalDb(result.photo);
     return {
@@ -110,7 +117,7 @@ export async function uploadProfilePhoto(file: File, isFallback?: boolean, isVid
 
   if (!result) return undefined;
 
-  addEntitiesWithPhotosToLocalDb(result.users);
+  addEntitiesToLocalDb(result.users);
   if (result.photo instanceof GramJs.Photo) {
     addPhotoToLocalDb(result.photo);
     return {
@@ -137,7 +144,7 @@ export async function uploadContactProfilePhoto({
 
   if (!result) return undefined;
 
-  addEntitiesWithPhotosToLocalDb(result.users);
+  addEntitiesToLocalDb(result.users);
 
   const users = result.users.map(buildApiUser).filter(Boolean);
 
@@ -157,7 +164,9 @@ export async function uploadContactProfilePhoto({
 
 export async function deleteProfilePhotos(photos: ApiPhoto[]) {
   const photoIds = photos.map(buildInputPhoto).filter(Boolean);
-  const isDeleted = await invokeRequest(new GramJs.photos.DeletePhotos({ id: photoIds }), true);
+  const isDeleted = await invokeRequest(new GramJs.photos.DeletePhotos({ id: photoIds }), {
+    shouldReturnTrue: true,
+  });
   if (isDeleted) {
     photos.forEach((photo) => {
       delete localDb.photos[photo.id];
@@ -271,7 +280,7 @@ export async function fetchWebAuthorizations() {
   if (!result) {
     return undefined;
   }
-  addEntitiesWithPhotosToLocalDb(result.users);
+  addEntitiesToLocalDb(result.users);
 
   return {
     users: result.users.map(buildApiUser).filter(Boolean),
@@ -290,7 +299,9 @@ export function terminateAllWebAuthorizations() {
 export async function fetchNotificationExceptions() {
   const result = await invokeRequest(new GramJs.account.GetNotifyExceptions({
     compareSound: true,
-  }), undefined, undefined, true);
+  }), {
+    shouldIgnoreUpdates: true,
+  });
 
   if (!(result instanceof GramJs.Updates || result instanceof GramJs.UpdatesCombined)) {
     return undefined;
@@ -416,12 +427,7 @@ export async function fetchLangPack({ sourceLangPacks, langCode }: {
     }));
   }));
 
-  const collections = results
-    .filter(Boolean)
-    .map((result) => {
-      return buildCollectionByKey(result.strings.map<ApiLangString>(omitVirtualClassFields), 'key');
-    });
-
+  const collections = results.filter(Boolean).map(buildLangPack);
   if (!collections.length) {
     return undefined;
   }
@@ -442,7 +448,7 @@ export async function fetchLangStrings({ langPack, langCode, keys }: {
     return undefined;
   }
 
-  return result.map(omitVirtualClassFields);
+  return result.map(buildLangPackString);
 }
 
 export async function fetchPrivacySettings(privacyKey: ApiPrivacyKey) {
@@ -607,8 +613,8 @@ function updateLocalDb(
     GramJs.Updates | GramJs.UpdatesCombined
   ),
 ) {
-  addEntitiesWithPhotosToLocalDb(result.users);
-  addEntitiesWithPhotosToLocalDb(result.chats);
+  addEntitiesToLocalDb(result.users);
+  addEntitiesToLocalDb(result.chats);
 }
 
 export async function fetchCountryList({ langCode = 'en' }: { langCode?: LangCode }) {

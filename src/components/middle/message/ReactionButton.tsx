@@ -4,7 +4,7 @@ import { getActions, getGlobal } from '../../../global';
 import type { FC } from '../../../lib/teact/teact';
 import type { ObserveFn } from '../../../hooks/useIntersectionObserver';
 import type {
-  ApiAvailableReaction, ApiMessage, ApiReactionCount, ApiStickerSet, ApiUser,
+  ApiAvailableReaction, ApiChat, ApiMessage, ApiReactionCount, ApiStickerSet, ApiUser,
 } from '../../../api/types';
 import type { ActiveReaction } from '../../../global/types';
 
@@ -15,7 +15,7 @@ import { isSameReaction, isReactionChosen } from '../../../global/helpers';
 import useLastCallback from '../../../hooks/useLastCallback';
 
 import Button from '../../ui/Button';
-import Avatar from '../../common/Avatar';
+import AvatarList from '../../common/AvatarList';
 import ReactionAnimatedEmoji from './ReactionAnimatedEmoji';
 import AnimatedCounter from '../../common/AnimatedCounter';
 
@@ -48,13 +48,14 @@ const ReactionButton: FC<{
       return undefined;
     }
 
-    // No need for expensive global updates on users, so we avoid them
+    // No need for expensive global updates on chats or users, so we avoid them
+    const chatsById = getGlobal().chats.byId;
     const usersById = getGlobal().users.byId;
 
     return recentReactions
       .filter((recentReaction) => isSameReaction(recentReaction.reaction, reaction.reaction))
-      .map((recentReaction) => usersById[recentReaction.userId])
-      .filter(Boolean) as ApiUser[];
+      .map((recentReaction) => usersById[recentReaction.peerId] || chatsById[recentReaction.peerId])
+      .filter(Boolean) as (ApiChat | ApiUser)[];
   }, [reaction.reaction, recentReactions, withRecentReactors]);
 
   const handleClick = useLastCallback(() => {
@@ -80,15 +81,7 @@ const ReactionButton: FC<{
         withEffects={withEffects}
       />
       {recentReactors?.length ? (
-        <div className="avatars">
-          {recentReactors.map((user) => (
-            <Avatar
-              key={user.id}
-              user={user}
-              size="micro"
-            />
-          ))}
-        </div>
+        <AvatarList size="mini" peers={recentReactors} />
       ) : <AnimatedCounter text={formatIntegerCompact(reaction.count)} className="counter" />}
     </Button>
   );
