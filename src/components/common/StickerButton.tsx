@@ -88,7 +88,12 @@ const StickerButton = <T extends number | ApiSticker | ApiBotInlineMediaResult |
   onContextMenuClose,
   onContextMenuClick,
 }: OwnProps<T>) => {
-  const { openStickerSet, openPremiumModal, setEmojiStatus } = getActions();
+  const {
+    openStickerSet,
+    openPremiumModal,
+    setEmojiStatus,
+    showNotification,
+  } = getActions();
   // eslint-disable-next-line no-null/no-null
   const ref = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line no-null/no-null
@@ -151,7 +156,13 @@ const StickerButton = <T extends number | ApiSticker | ApiBotInlineMediaResult |
       openPremiumModal({ initialSection: 'premium_stickers' });
       return;
     }
-    onClick?.(clickArg);
+    if (isCurrentUserPremium) {
+      onClick?.(clickArg);
+    } else {
+      showNotification({
+        message: 'Subscribe to ** Telegram Premium ** to unlock this emoji.',
+      });
+    }
   };
 
   const handleMouseDown = (e: React.MouseEvent<HTMLElement>) => {
