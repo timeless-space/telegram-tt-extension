@@ -28,6 +28,7 @@ type OwnProps = {
   inputMode?: 'text' | 'none' | 'tel' | 'url' | 'email' | 'numeric' | 'decimal' | 'search';
   loadingSize?: 'small' | 'medium' | 'large' | 'x-large';
   caretColor?: string;
+  isAuth?: boolean;
   onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
   onInput?: (e: FormEvent<HTMLInputElement>) => void;
   onKeyPress?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
@@ -36,6 +37,11 @@ type OwnProps = {
   onPaste?: (e: React.ClipboardEvent<HTMLInputElement>) => void;
   onClick?: (e: React.MouseEventHandler<HTMLInputElement>) => void;
 };
+
+/**
+ * TL - Followed E.164 international rules for phone number length limit
+ */
+const MAX_NUMBER_LENGTH = 15;
 
 /**
  * TL - Custom InputText
@@ -62,6 +68,7 @@ const InputText: FC<OwnProps> = ({
   tabIndex,
   teactExperimentControlled,
   loadingSize,
+  isAuth,
   onLoading,
   onChange,
   onInput,
@@ -83,6 +90,8 @@ const InputText: FC<OwnProps> = ({
     className,
   );
 
+  const numberOfSpace = [...value?.split('') ?? ''].filter((item) => item === ' ').length;
+
   return (
     <div className={fullClassName} dir={lang.isRtl ? 'rtl' : undefined}>
       {
@@ -97,7 +106,7 @@ const InputText: FC<OwnProps> = ({
         value={value || ''}
         tabIndex={tabIndex}
         placeholder={placeholder}
-        maxLength={maxLength}
+        maxLength={isAuth ? MAX_NUMBER_LENGTH + numberOfSpace : maxLength}
         autoComplete={autoComplete}
         inputMode={inputMode}
         disabled={disabled}

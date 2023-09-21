@@ -439,7 +439,7 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
           transformOriginX={IS_ELECTRON && IS_MAC_OS && !isFullscreen ? 90 : undefined}
           onTransitionEnd={lang.isRtl ? handleDropdownMenuTransitionEnd : undefined}
         >
-          {menuItems}
+          {/* {menuItems} */}
         </DropdownMenu>
         <SearchInput
           inputId="telegram-search-input"

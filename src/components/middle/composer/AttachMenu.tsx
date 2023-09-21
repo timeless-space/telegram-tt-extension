@@ -47,6 +47,7 @@ export type OwnProps = {
   onFileSelect: (files: File[], shouldSuggestCompression?: boolean) => void;
   onPollCreate: () => void;
   handleSendCrypto: () => void;
+  handleCreatePOAP: () => void;
   theme: ISettings['theme'];
 };
 
@@ -67,6 +68,7 @@ const AttachMenu: FC<OwnProps> = ({
   onFileSelect,
   onPollCreate,
   handleSendCrypto,
+  handleCreatePOAP,
   theme,
   shouldCollectDebugLogs,
 }) => {
@@ -77,6 +79,7 @@ const AttachMenu: FC<OwnProps> = ({
   const canSendVideoOrPhoto = canSendPhotos || canSendVideos;
 
   const [isAttachmentBotMenuOpen, markAttachmentBotMenuOpen, unmarkAttachmentBotMenuOpen] = useFlag();
+
   useEffect(() => {
     if (isAttachMenuOpen) {
       markMouseInside();
@@ -158,7 +161,7 @@ const AttachMenu: FC<OwnProps> = ({
         positionX="right"
         positionY="bottom"
         onClose={closeAttachMenu}
-        className="AttachMenu--menu fluid"
+        className={isAttachMenuOpen || isAttachmentBotMenuOpen ? 'AttachMenu--menu fluid' : 'AttachMenuHidden'}
         onCloseAnimationEnd={closeAttachMenu}
         onMouseEnter={!IS_TOUCH_ENV ? handleMouseEnter : undefined}
         onMouseLeave={!IS_TOUCH_ENV ? handleMouseLeave : undefined}
@@ -196,12 +199,10 @@ const AttachMenu: FC<OwnProps> = ({
         {canAttachPolls && (
           <MenuItem icon="poll" onClick={onPollCreate}>{lang('Poll')}</MenuItem>
         )}
-        {
-          /**
+        {/**
            * TL - Add send crypto button to attachments
            * Description: Only chat 1-1 (except with bot and self) or group has this button
-           */
-        }
+           */}
         {!isChatWithBot && Number(chatId) >= 0 && (
           <MenuItem
             icon="lock"
@@ -212,6 +213,21 @@ const AttachMenu: FC<OwnProps> = ({
             onClick={handleSendCrypto}
           >
             {lang('Send Crypto')}
+          </MenuItem>
+        )}
+        {/**
+         * TL - Add create POAP button to attachments
+         */}
+        {!isChatWithBot && Number(chatId) >= 0 && (
+          <MenuItem
+            icon="lock"
+            className="margin-left-1px"
+            customIcon={(
+              <img className="icon" src="./camera_macro.svg" alt="" />
+            )}
+            onClick={handleCreatePOAP}
+          >
+            {lang('Create POAP')}
           </MenuItem>
         )}
 

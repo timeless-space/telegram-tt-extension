@@ -216,9 +216,6 @@ const MiddleHeader: FC<OwnProps & StateProps> = ({
   });
 
   const handleBackClick = useLastCallback((e: React.MouseEvent<HTMLElement, MouseEvent>) => {
-    if (!getGlobal().isArchivePrevious) {
-      sendScreenName('tl_navigation_mainScreen');
-    }
     if (!isBackButtonActive.current) return;
 
     // Workaround for missing UI when quickly clicking the Back button
@@ -238,6 +235,9 @@ const MiddleHeader: FC<OwnProps & StateProps> = ({
       if (!isTablet || shouldShowCloseButton) {
         e.stopPropagation(); // Stop propagation to prevent chat re-opening on tablets
         openChat({ id: undefined }, { forceOnHeavyAnimation: true });
+        if (!getGlobal().isArchivePrevious) {
+          sendScreenName('tl_navigation_mainScreen');
+        }
       } else {
         toggleLeftColumn();
       }

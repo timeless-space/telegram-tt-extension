@@ -22,6 +22,16 @@ export function handleSendMessage({ chatId, threadId = 0, text }: Message) {
 }
 
 /**
+ * TL - Custom a sendDefault emoji
+ */
+export function handleSendDefaultEmoji({ chatId, messageId }: { chatId: string; messageId: number }) {
+  getActions().sendDefaultReaction({
+    chatId,
+    messageId,
+  });
+}
+
+/**
  * TL - Set session screen name
  */
 export function sendScreenName(name: string) {

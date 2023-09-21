@@ -81,9 +81,8 @@ const NewChatStep1: FC<OwnProps & StateProps> = ({
       }),
       chatsById,
       false,
-      selectedMemberIds,
     );
-  }, [localContactIds, chatsById, searchQuery, localUserIds, globalUserIds, selectedMemberIds]);
+  }, [localContactIds, chatsById, searchQuery, localUserIds, globalUserIds]);
 
   const handleNextStep = useCallback(() => {
     setGlobalSearchQuery({ query: '' });

@@ -99,14 +99,6 @@ function LeftColumn({
   // Used to reset child components in background.
   const [lastResetTime, setLastResetTime] = useState<number>(0);
 
-  useEffect(() => {
-    if (settingsScreen === SettingsScreens.Main) {
-      sendScreenName('tl_navigation_mainScreen');
-    } else {
-      sendScreenName('tl_navigation_otherScreen');
-    }
-  }, [settingsScreen]);
-
   let contentType: ContentType = ContentType.Main;
   switch (content) {
     case LeftColumnContent.Archived:
@@ -127,6 +119,14 @@ function LeftColumn({
       contentType = ContentType.NewGroup;
       break;
   }
+
+  useEffect(() => {
+    if (settingsScreen === SettingsScreens.Main && contentType === ContentType.Main) {
+      sendScreenName('tl_navigation_mainScreen');
+    } else {
+      sendScreenName('tl_navigation_otherScreen');
+    }
+  }, [settingsScreen, contentType]);
 
   const handleReset = useLastCallback((forceReturnToChatList?: true | Event) => {
     function fullReset() {

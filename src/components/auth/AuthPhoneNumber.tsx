@@ -277,6 +277,7 @@ const AuthPhoneNumber: FC<StateProps> = ({
             onPaste={IS_SAFARI ? handlePaste : undefined}
             onLoading={!authNearestCountry && !country}
             disabled={!authNearestCountry && !country}
+            isAuth
           />
           {/* <Checkbox
             id="sign-in-keep-session"

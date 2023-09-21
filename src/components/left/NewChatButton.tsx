@@ -72,6 +72,7 @@ const NewChatButton: FC<OwnProps> = ({
       </Button>
       <Menu
         isOpen={isMenuOpen}
+        className={!isMenuOpen ? 'custom-translate-self' : ''}
         positionX={lang.isRtl ? 'left' : 'right'}
         positionY="bottom"
         autoClose

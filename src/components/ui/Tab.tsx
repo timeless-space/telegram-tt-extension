@@ -109,6 +109,10 @@ const Tab: FC<OwnProps> = ({
   } = useContextMenuHandlers(tabRef, !contextActions);
 
   const { handleClick, handleMouseDown } = useFastClick((e: React.MouseEvent<HTMLDivElement>) => {
+    const infScroll: any = document.querySelector('#custom-id-chat-list-inf-scroll.Transition_slide-active');
+    if (infScroll) {
+      infScroll.style.overflow = 'hidden';
+    }
     if (contextActions && (e.button === MouseButton.Secondary || !onClick)) {
       handleBeforeContextMenu(e);
     }

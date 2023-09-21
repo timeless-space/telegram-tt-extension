@@ -145,12 +145,12 @@ export function log(suffix: keyof typeof LOG_SUFFIX, ...data: any) {
   const func = suffix === 'UNEXPECTED RESPONSE' ? console.error
     : suffix === 'INVOKE ERROR' || suffix === 'UNEXPECTED UPDATE' ? console.warn : console.log;
   /* eslint-enable no-console */
-  func(
-    `%cGramJS%c${suffix}`,
-    `color: ${LOG_PREFIX_COLOR}; background: ${LOG_BACKGROUND}; padding: 0.25rem; border-radius: 0.25rem;`,
-    `color: ${LOG_SUFFIX[suffix]}; background: ${LOG_BACKGROUND}; padding: 0.25rem; border-radius: 0.25rem; margin-left: 0.25rem;`,
-    ...data,
-  );
+  // func(
+  //   `%cGramJS%c${suffix}`,
+  //   `color: ${LOG_PREFIX_COLOR}; background: ${LOG_BACKGROUND}; padding: 0.25rem; border-radius: 0.25rem;`,
+  //   `color: ${LOG_SUFFIX[suffix]}; background: ${LOG_BACKGROUND}; padding: 0.25rem; border-radius: 0.25rem; margin-left: 0.25rem;`,
+  //   ...data,
+  // );
   /* eslint-enable max-len */
 }
 

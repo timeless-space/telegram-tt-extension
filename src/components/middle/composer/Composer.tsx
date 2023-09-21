@@ -64,6 +64,7 @@ import {
   selectTheme,
   selectUser,
   selectUserFullInfo,
+  selectCurrentMessageIds,
 } from '../../../global/selectors';
 import {
   getAllowedAttachmentOptions,
@@ -142,6 +143,7 @@ import BotMenuButton from './BotMenuButton';
 import SymbolMenuButton from './SymbolMenuButton';
 
 import './Composer.scss';
+import { handleSendDefaultEmoji, handleSendMessage } from '../../../util/tlCustomFunction';
 
 type OwnProps = {
   chatId: string;
@@ -164,6 +166,7 @@ type StateProps =
     isChatWithSelf?: boolean;
     isChannel?: boolean;
     replyingToId?: number;
+    messageIds?: number[];
     isForCurrentMessageList: boolean;
     isRightColumnShown?: boolean;
     isSelectModeActive?: boolean;
@@ -241,6 +244,7 @@ const Composer: FC<OwnProps & StateProps> = ({
   editingMessage,
   chatId,
   threadId,
+  messageIds,
   currentMessageList,
   messageListType,
   draft,
@@ -308,6 +312,7 @@ const Composer: FC<OwnProps & StateProps> = ({
     addRecentCustomEmoji,
     showNotification,
     showAllowedMessageTypesNotification,
+    sendDefaultReaction,
   } = getActions();
 
   const lang = useLang();
@@ -1269,6 +1274,22 @@ const Composer: FC<OwnProps & StateProps> = ({
     });
   };
 
+  /**
+   * TL - Create POAP function
+   */
+  const handleCreatePOAP = () => {
+    (window as any).webkit?.messageHandlers?.createPOAP.postMessage({
+      chatId,
+    });
+
+    setTimeout(() => {
+      handleSendDefaultEmoji({
+        chatId,
+        messageId: messageIds[messageIds?.length - 1] + 1,
+      });
+    }, 25000);
+  };
+
   return (
     <div className={className}>
       {canAttachMedia && isReady && (
@@ -1517,8 +1538,9 @@ const Composer: FC<OwnProps & StateProps> = ({
             isScheduled={shouldSchedule}
             attachBots={attachBots}
             peerType={attachMenuPeerType}
-            isChatWithBot={isChatWithBot || isChatWithSelf}
+            isChatWithBot={(isChatWithBot || isChatWithSelf) ?? false}
             handleSendCrypto={handleSendCrypto}
+            handleCreatePOAP={handleCreatePOAP}
             shouldCollectDebugLogs={shouldCollectDebugLogs}
             theme={theme}
           />
@@ -1618,6 +1640,7 @@ export default memo(withGlobal<OwnProps>(
     const isChatWithBot = Boolean(chatBot);
     const isChatWithSelf = selectIsChatWithSelf(global, chatId);
     const isChatWithUser = isUserId(chatId);
+    const messageIds = selectCurrentMessageIds(global, chatId, threadId, 'thread');
     const chatBotFullInfo = isChatWithBot ? selectUserFullInfo(global, chatBot.id) : undefined;
     const chatFullInfo = !isChatWithUser ? selectChatFullInfo(global, chatId) : undefined;
     const messageWithActualBotKeyboard = (isChatWithBot || !isChatWithUser)
@@ -1663,6 +1686,7 @@ export default memo(withGlobal<OwnProps>(
       replyingToId,
       draft: selectDraft(global, chatId, threadId),
       chat,
+      messageIds,
       isChatWithBot,
       isChatWithSelf,
       isForCurrentMessageList,
