@@ -1,8 +1,8 @@
 import React, {
-  memo, useEffect, useMemo, useRef, useState,
+  memo, useCallback, useEffect, useMemo, useRef, useState,
 } from '../../../lib/teact/teact';
 import { requestMeasure, requestNextMutation } from '../../../lib/fasterdom/fasterdom';
-import { getActions, withGlobal } from '../../../global';
+import { getActions, getGlobal, withGlobal } from '../../../global';
 
 import type { FC } from '../../../lib/teact/teact';
 import type {
@@ -64,7 +64,6 @@ import {
   selectTheme,
   selectUser,
   selectUserFullInfo,
-  selectCurrentMessageIds,
 } from '../../../global/selectors';
 import {
   getAllowedAttachmentOptions,
@@ -143,7 +142,6 @@ import BotMenuButton from './BotMenuButton';
 import SymbolMenuButton from './SymbolMenuButton';
 
 import './Composer.scss';
-import { handleSendDefaultEmoji, handleSendMessage } from '../../../util/tlCustomFunction';
 
 type OwnProps = {
   chatId: string;
@@ -166,7 +164,6 @@ type StateProps =
     isChatWithSelf?: boolean;
     isChannel?: boolean;
     replyingToId?: number;
-    messageIds?: number[];
     isForCurrentMessageList: boolean;
     isRightColumnShown?: boolean;
     isSelectModeActive?: boolean;
@@ -233,6 +230,8 @@ const MESSAGE_MAX_LENGTH = 4096;
 const SENDING_ANIMATION_DURATION = 350;
 const MOUNT_ANIMATION_DURATION = 430;
 
+let interval: any;
+
 const Composer: FC<OwnProps & StateProps> = ({
   isOnActiveTab,
   dropAreaState,
@@ -244,7 +243,6 @@ const Composer: FC<OwnProps & StateProps> = ({
   editingMessage,
   chatId,
   threadId,
-  messageIds,
   currentMessageList,
   messageListType,
   draft,
@@ -332,6 +330,17 @@ const Composer: FC<OwnProps & StateProps> = ({
   // Prevent Symbol Menu from closing when calendar is open
   const [isSymbolMenuForced, forceShowSymbolMenu, cancelForceShowSymbolMenu] = useFlag();
   const sendMessageAction = useSendMessageAction(chatId, threadId);
+
+  useEffect(() => {
+    const clearIntervalFn = () => {
+      clearInterval(interval);
+    };
+    window.addEventListener('cleanup-interval', clearIntervalFn);
+
+    return () => {
+      window.removeEventListener('cleanup-interval', clearIntervalFn);
+    };
+  }, []);
 
   useEffect(processMessageInputForCustomEmoji, [getHtml]);
 
@@ -1268,11 +1277,15 @@ const Composer: FC<OwnProps & StateProps> = ({
    * TL - Send a post message to Timeless Wallet
    * Description: The data is an object with 2 properties: chatId and threadId
    */
-  const handleSendCrypto = () => {
+  const handleSendCrypto = useCallback(() => {
     (window as any).webkit?.messageHandlers?.sendCrypto.postMessage({
       chatId,
     });
-  };
+  }, [chatId]);
+
+  const handleGetLastMessageId = useCallback(() => {
+    return getGlobal().chats.byId[chatId].lastMessage?.id;
+  }, [chatId]);
 
   /**
    * TL - Create POAP function
@@ -1282,12 +1295,16 @@ const Composer: FC<OwnProps & StateProps> = ({
       chatId,
     });
 
-    setTimeout(() => {
-      handleSendDefaultEmoji({
-        chatId,
-        messageId: messageIds[messageIds?.length - 1] + 1,
-      });
-    }, 25000);
+    const currentMessageId = handleGetLastMessageId();
+    if (currentMessageId) {
+      interval = setInterval(() => {
+        const messageId = handleGetLastMessageId();
+        if (currentMessageId !== messageId && messageId) {
+          sendDefaultReaction({ chatId, messageId });
+          window.dispatchEvent(new Event('cleanup-interval'));
+        }
+      }, 5000);
+    }
   };
 
   return (
@@ -1640,7 +1657,6 @@ export default memo(withGlobal<OwnProps>(
     const isChatWithBot = Boolean(chatBot);
     const isChatWithSelf = selectIsChatWithSelf(global, chatId);
     const isChatWithUser = isUserId(chatId);
-    const messageIds = selectCurrentMessageIds(global, chatId, threadId, 'thread');
     const chatBotFullInfo = isChatWithBot ? selectUserFullInfo(global, chatBot.id) : undefined;
     const chatFullInfo = !isChatWithUser ? selectChatFullInfo(global, chatId) : undefined;
     const messageWithActualBotKeyboard = (isChatWithBot || !isChatWithUser)
@@ -1686,7 +1702,6 @@ export default memo(withGlobal<OwnProps>(
       replyingToId,
       draft: selectDraft(global, chatId, threadId),
       chat,
-      messageIds,
       isChatWithBot,
       isChatWithSelf,
       isForCurrentMessageList,
