@@ -112,7 +112,7 @@
   border: var(--border-width) solid var(--color-borders-input);
   border-radius: var(--border-radius-default);
   color: var(--color-text);
-  background-color: var(--color-background);
+  background-color: transparent;
   outline: none;
   transition: border-color 0.15s ease;
   word-break: break-word;
