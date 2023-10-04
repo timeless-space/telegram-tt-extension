@@ -91,7 +91,12 @@ const Auth: FC<StateProps> = ({
   }
 
   return (
-    <Transition activeKey={getActiveKey()} name="fade" className="Auth" ref={containerRef}>
+    <Transition
+      activeKey={getActiveKey()}
+      name="fade"
+      className="Auth"
+      ref={containerRef}
+    >
       {getScreen()}
     </Transition>
   );

@@ -212,7 +212,6 @@ const ChatList: FC<OwnProps> = ({
     const viewportOffset = orderedIds!.indexOf(viewportIds![0]);
 
     const pinnedCount = getPinnedChatsCount(resolvedFolderId) || 0;
-
     return viewportIds!.map((id, i) => {
       const isPinned = viewportOffset + i < pinnedCount;
       const offsetTop = unconfirmedSessionHeight + archiveHeight + (viewportOffset + i) * CHAT_HEIGHT_PX;

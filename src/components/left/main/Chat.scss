@@ -1,5 +1,4 @@
 .Chat {
-  --background-color: var(--color-background);
   --thumbs-background: var(--background-color);
 
   --z-forum-indicator: 2;
@@ -91,7 +90,6 @@
 
       .VerifiedIcon, .StarIcon {
         --color-fill: #fff;
-        --color-checkmark: var(--color-primary);
       }
 
       .avatar-online {
@@ -179,8 +177,7 @@
         transition: none;
       }
 
-      background: var(--color-primary);
-      z-index: var(--z-forum-indicator);
+      z-index: 1;
 
       border-start-end-radius: var(--border-radius-default);
       border-end-end-radius: var(--border-radius-default);
@@ -215,7 +212,7 @@
     align-self: stretch;
     display: flex;
     align-items: center;
-    z-index: var(--z-status);
+    z-index: 1;
   }
 
   .avatar-badge-wrapper {
@@ -268,9 +265,6 @@
       transition: opacity 300ms ease;
     }
 
-    .title .custom-emoji {
-      color: var(--color-primary);
-    }
 
     .icon-muted {
       font-size: 1.125rem;

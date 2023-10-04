@@ -99,7 +99,6 @@
 
 // Used by ChatList and ContactList components
 .chat-list {
-  background: var(--color-background);
   height: 100%;
   padding: 0.5rem 0.4375rem 0.5rem 0.4375rem;
   @include mixins.adapt-padding-to-scrollbar(0.4375rem);
@@ -159,8 +158,8 @@
 
   body.is-ios &,
   body.is-android & {
-    padding-left: 0;
-    padding-right: 0;
+    // padding-left: 0;
+    // padding-right: 0;
 
     .ListItem::after {
       opacity: 1;

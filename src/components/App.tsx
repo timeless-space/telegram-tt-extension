@@ -201,10 +201,7 @@ const App: FC<StateProps> = ({
   }, []);
 
   useLayoutEffect(() => {
-    document.body.style.setProperty(
-      '--theme-background-color',
-      theme === 'dark' ? DARK_THEME_BG_COLOR : LIGHT_THEME_BG_COLOR,
-    );
+    sessionStorage.clear();
   }, [theme]);
 
   return (

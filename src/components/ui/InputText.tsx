@@ -30,6 +30,7 @@ type OwnProps = {
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   onPaste?: (e: React.ClipboardEvent<HTMLInputElement>) => void;
+  onClick?: (e: React.MouseEvent<HTMLInputElement>) => void;
 };
 
 const InputText: FC<OwnProps> = ({
@@ -89,6 +90,7 @@ const InputText: FC<OwnProps> = ({
         onKeyDown={onKeyDown}
         onBlur={onBlur}
         onPaste={onPaste}
+        onClick={(event) => onClick?.(event)}
         aria-label={labelText}
         teactExperimentControlled={teactExperimentControlled}
       />
