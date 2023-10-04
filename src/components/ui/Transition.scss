@@ -237,10 +237,10 @@
   &-slideLayers {
     --background-color: var(--color-background);
 
-    background: black !important;
+    background: transparent !important;
 
     > .Transition_slide {
-      background: var(--background-color);
+      background: transparent;
     }
 
     > .Transition_slide-to {

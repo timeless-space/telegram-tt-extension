@@ -94,7 +94,6 @@
 
 // Used by ChatList and ContactList components
 .chat-list {
-  background: var(--color-background);
   height: 100%;
   padding: 0.5rem 0.4375rem 0.5rem 0.4375rem;
 
@@ -161,7 +160,7 @@
   body.is-android & {
     // padding-left: 0;
     // padding-right: 0;
-    
+
     .ListItem::after {
       opacity: 1;
       transition: opacity var(--layer-transition);

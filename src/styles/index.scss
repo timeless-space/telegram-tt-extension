@@ -22,7 +22,7 @@ html,
 body {
   width: 100%;
   height: 100%;
-  background-color: var(--color-background);
+  background-color: transparent;
   font-family: var(--font-family);
   margin: 0;
   padding: 0;
@@ -106,9 +106,6 @@ body.cursor-ew-resize {
     height: calc(var(--vh, 1vh) * 100);
   }
 
-  &.is-auth {
-    background: var(--color-background);
-  }
 }
 
 #middle-column-portals,
@@ -194,7 +191,7 @@ body:not(.is-ios) {
   flex-shrink: 0;
 
   &::selection {
-    background-color: var(--color-selection-highlight-emoji);
+    background-color: transparent;
     color: transparent;
   }
 }

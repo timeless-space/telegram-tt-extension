@@ -1,5 +1,4 @@
 .Chat {
-  --background-color: var(--color-background);
   --thumbs-background: var(--background-color);
 
   body.is-ios &,
@@ -79,7 +78,6 @@
 
       .VerifiedIcon, .PremiumIcon {
         --color-fill: #fff;
-        --color-checkmark: var(--color-primary)
       }
 
       .avatar-online {
@@ -167,7 +165,6 @@
         transition: none;
       }
 
-      background: var(--color-primary);
       z-index: 1;
 
       border-start-end-radius: var(--border-radius-default);
@@ -200,7 +197,6 @@
     display: flex;
     align-items: center;
     z-index: 1;
-    background: var(--background-color);
   }
 
   .avatar-badge-wrapper {
@@ -252,9 +248,6 @@
       transition: opacity 300ms ease;
     }
 
-    .title .custom-emoji {
-      color: var(--color-primary);
-    }
 
     .icon-muted {
       font-size: 1.25rem;
