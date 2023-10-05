@@ -13,7 +13,8 @@
       flex-grow: 1;
     }
 
-    > .Button, > .playback-rate-menu {
+    > .Button,
+    > .playback-rate-menu {
       margin: -0.0625rem 0 0;
     }
 
@@ -280,7 +281,8 @@
     }
   }
 
-  .Avatar, .topic-header-icon {
+  .Avatar,
+  .topic-header-icon {
     // TODO For some reason webpack imports `Audio.scss` second time when loading calls bundle
     width: 2.5rem !important;
     height: 2.5rem !important;
@@ -315,7 +317,7 @@
     font-size: 0.875rem;
     line-height: 1.125rem;
     margin: 0;
-    color: var(--color-text-secondary);
+    color: #fff;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;

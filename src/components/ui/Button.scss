@@ -46,7 +46,12 @@
   text-decoration: none !important;
   text-transform: uppercase;
 
-  --premium-gradient: linear-gradient(88.39deg, #6C93FF -2.56%, #976FFF 51.27%, #DF69D1 107.39%);
+  --premium-gradient: linear-gradient(
+    88.39deg,
+    #6c93ff -2.56%,
+    #976fff 51.27%,
+    #df69d1 107.39%
+  );
 
   // @optimization
   &:active,
@@ -186,7 +191,7 @@
   &.translucent {
     --ripple-color: var(--color-interactive-element-hover);
     background-color: transparent;
-    color: var(--color-text-secondary);
+    color: #fff;
 
     @include active-styles() {
       background-color: var(--color-interactive-element-hover);
@@ -401,7 +406,12 @@
     display: block;
     width: 100%;
     height: 100%;
-    background: linear-gradient(to right, transparent 0%, var(--color-skeleton-foreground) 50%, transparent 100%);
+    background: linear-gradient(
+      to right,
+      transparent 0%,
+      var(--color-skeleton-foreground) 50%,
+      transparent 100%
+    );
     animation: wave 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 
     @keyframes wave {

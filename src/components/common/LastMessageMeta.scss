@@ -6,7 +6,7 @@
   align-items: center;
 
   .MessageOutgoingStatus {
-    color: var(--color-text-meta-colored);
+    color: greenyellow;
     margin-right: 0.125rem;
     font-size: 1.125rem;
 
@@ -16,6 +16,6 @@
   }
 
   .time {
-    color: var(--color-text-meta);
+    color: #fff;
   }
 }
