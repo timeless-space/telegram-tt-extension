@@ -69,13 +69,16 @@
 
 .avatarWrapper {
   flex-shrink: 0;
-  background-color: var(--background-color);
+  background-color: transparent;
   z-index: 1;
 }
 
 .avatar {
   font-size: 1.625rem;
-  background: linear-gradient(var(--color-white) -125%, var(--color-archive)) !important;
+  background: linear-gradient(
+    var(--color-white) -125%,
+    var(--color-archive)
+  ) !important;
 }
 
 .title {

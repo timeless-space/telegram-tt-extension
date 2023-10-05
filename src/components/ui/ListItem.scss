@@ -91,13 +91,8 @@
     }
   }
 
-  &.with-color-transition {
-    .ListItem-button {
-      transition: background-color 150ms ease-in-out;
-    }
-  }
-
-  .title, .subtitle {
+  .title,
+  .subtitle {
     line-height: 1.5rem;
   }
 
@@ -292,7 +287,7 @@
     .contact-username {
       font-size: 0.875rem;
       line-height: 1.25rem;
-      color: var(--color-text-secondary);
+      color: #fff;
     }
 
     .ChatInfo {
