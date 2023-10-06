@@ -76,7 +76,8 @@
         color: var(--color-white);
       }
 
-      .VerifiedIcon, .PremiumIcon {
+      .VerifiedIcon,
+      .PremiumIcon {
         --color-fill: #fff;
       }
 
@@ -115,7 +116,7 @@
 
       .ChatBadge:not(.pinned).muted {
         color: var(--color-white);
-        background: #FFFFFF33;
+        background: #ffffff33;
       }
 
       .avatar-badge-wrapper .ChatBadge:not(.pinned) {
@@ -151,7 +152,7 @@
     --color-chat-username: var(--color-text);
 
     &::before {
-      content: '';
+      content: "";
       position: absolute;
       top: 0.625rem;
       bottom: 0.625rem;
@@ -212,7 +213,8 @@
     }
 
     .ChatBadge-transition {
-      transition: opacity var(--layer-transition), transform var(--layer-transition);
+      transition: opacity var(--layer-transition),
+        transform var(--layer-transition);
 
       body.no-page-transitions & {
         transition: opacity var(--layer-transition);
@@ -248,7 +250,6 @@
       transition: opacity 300ms ease;
     }
 
-
     .icon-muted {
       font-size: 1.25rem;
       margin-top: -0.0625rem;
@@ -277,7 +278,7 @@
     .typing-status {
       padding-right: 0.25rem;
       flex-grow: 1;
-      color: var(--color-text-secondary);
+      color: #fff;
       unicode-bidi: plaintext;
 
       &[dir="ltr"] {

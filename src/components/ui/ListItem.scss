@@ -72,11 +72,11 @@
 
     body.is-ios &,
     body.is-android & {
-      border-radius: 0 ;
+      border-radius: 0;
     }
 
     @media (max-width: 600px) {
-      border-radius: 0 ;
+      border-radius: 0;
     }
 
     > .icon {
@@ -90,7 +90,8 @@
     }
   }
 
-  .title, .subtitle {
+  .title,
+  .subtitle {
     line-height: 1.5rem;
   }
 
@@ -271,7 +272,7 @@
     .contact-username {
       font-size: 0.875rem;
       line-height: 1.25rem;
-      color: var(--color-text-secondary);
+      color: #fff;
     }
 
     .ChatInfo {
