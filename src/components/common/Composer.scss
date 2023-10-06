@@ -346,23 +346,16 @@
 .composer-wrapper {
   flex-grow: 1;
   max-width: calc(100% - 4rem);
-  background: var(--color-background);
+  background: rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 1px 1px 4px 0 rgba(0, 0, 0, 0.08);
+  border-radius: 21.76px;
   position: relative;
   z-index: 1;
-  box-shadow: 0 1px 2px var(--color-default-shadow);
-  border-radius: var(--border-radius-messages);
-  border-bottom-right-radius: 0;
-
-  &.with-story-tweaks {
-    border-radius: var(--border-radius-default-small);
-    border-bottom-right-radius: 0;
-    &.is-need-premium {
-      border-bottom-right-radius: var(--border-radius-default-small);
-    }
-    box-shadow: none;
-  }
+  color: #fff;
 
   .svg-appendix {
+    display: none;
     position: absolute;
     bottom: -0.1875rem;
     right: -0.5rem;
