@@ -70,7 +70,7 @@
   @media (min-width: 600px) {
     &.selected:not(.forum),
     &.selected:not(.forum):hover {
-      --background-color: var(--color-chat-active) !important;
+      background-color: rgb(101, 73, 212) !important;
 
       .title .custom-emoji {
         color: var(--color-white);
