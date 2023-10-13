@@ -193,13 +193,18 @@ const LeftMain: FC<OwnProps> = ({
           switch (content) {
             case LeftColumnContent.ChatList:
               return (
-                <ChatFolders
-                  shouldHideFolderTabs={isForumPanelVisible}
-                  onSettingsScreenSelect={onSettingsScreenSelect}
-                  onLeftColumnContentChange={onContentChange}
-                  foldersDispatch={foldersDispatch}
-                  isForumPanelOpen={isForumPanelVisible}
-                />
+                <>
+                  <ChatFolders
+                    shouldHideFolderTabs={isForumPanelVisible}
+                    onSettingsScreenSelect={onSettingsScreenSelect}
+                    onLeftColumnContentChange={onContentChange}
+                    foldersDispatch={foldersDispatch}
+                    isForumPanelOpen={isForumPanelVisible}
+                  />
+                  <div style="display: none;">
+                    <ContactList filter={contactsFilter} isActive={isActive} onReset={onReset} />
+                  </div>
+                </>
               );
             case LeftColumnContent.GlobalSearch:
               return (

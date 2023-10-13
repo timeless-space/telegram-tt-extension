@@ -158,6 +158,9 @@ const App: FC<StateProps> = ({
 
   useEffect(() => {
     updateSizes();
+    window.addEventListener('tlSessionStorage', () => {
+      handleGetContacts();
+    });
   }, []);
 
   useEffect(() => {
@@ -221,6 +224,14 @@ const App: FC<StateProps> = ({
 
   useEffect(() => {
     sessionStorage.setItem('isExpandHeader', 'false');
+
+    const interval = setInterval(() => {
+      handleGetUserInfo();
+    }, 300000);
+
+    return () => {
+      clearInterval(interval);
+    };
   }, []);
 
   return (

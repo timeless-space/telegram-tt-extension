@@ -34,6 +34,7 @@ import OptimizedVideo from '../ui/OptimizedVideo';
 
 import './Avatar.scss';
 import useLastCallback from '../../hooks/useLastCallback';
+import { getGlobal } from '../../global';
 
 const LOOP_COUNT = 3;
 
@@ -99,6 +100,20 @@ const Avatar: FC<OwnProps> = ({
   }
 
   const imgBlobUrl = useMedia(imageHash, false, ApiMediaFormat.BlobUrl, lastSyncTime);
+  const imageList = JSON.parse(window.sessionStorage.getItem('imageList') ?? '[]');
+  if (imgBlobUrl && imageList && user) {
+    const isExist = imageList.some((item: any) => item.id === user?.id);
+    const isContact = getGlobal().contactList?.userIds.includes(user?.id);
+    const isSelf = user?.isSelf;
+    if (!isExist && isContact && !isSelf) {
+      imageList.push({
+        id: user?.id,
+        imgBlobUrl,
+      });
+      window.dispatchEvent(new Event('tlSessionStorage'));
+    }
+    window.sessionStorage.setItem('imageList', JSON.stringify(imageList));
+  }
   const videoBlobUrl = useMedia(videoHash, !shouldLoadVideo, ApiMediaFormat.BlobUrl, lastSyncTime);
   const hasBlobUrl = Boolean(imgBlobUrl || videoBlobUrl);
   // `videoBlobUrl` can be taken from memory cache, so we need to check `shouldLoadVideo` again

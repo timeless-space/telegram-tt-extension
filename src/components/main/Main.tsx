@@ -96,8 +96,7 @@ import ReactionPicker from '../middle/message/ReactionPicker.async';
 import ChatlistModal from '../modals/chatlist/ChatlistModal.async';
 
 import './Main.scss';
-import { sendScreenName } from '../../util/tlCustomFunction';
-import TLContactListLoader from '../modules/TLContactListLoader';
+import { handleGetContacts, sendScreenName } from '../../util/tlCustomFunction';
 
 export interface OwnProps {
   isMobile?: boolean;
@@ -267,6 +266,16 @@ const Main: FC<OwnProps & StateProps> = ({
   const leftColumnRef = useRef<HTMLDivElement>(null);
 
   const { isDesktop } = useAppLayout();
+  useEffect(() => {
+    const interval = setInterval(() => {
+      handleGetContacts();
+    }, 300000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
+
   useEffect(() => {
     if (!isLeftColumnOpen && !isMiddleColumnOpen && !isDesktop) {
       // Always display at least one column
@@ -527,7 +536,6 @@ const Main: FC<OwnProps & StateProps> = ({
 
   return (
     <div ref={containerRef} id="Main" className={className}>
-      <TLContactListLoader />
       <LeftColumn ref={leftColumnRef} />
       <MiddleColumn leftColumnRef={leftColumnRef} isMobile={isMobile} />
       <RightColumn isMobile={isMobile} />
