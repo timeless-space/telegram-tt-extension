@@ -109,6 +109,7 @@ const App: FC<StateProps> = ({
     page = 'lock';
     activeKey = AppScreens.lock;
   } else if (authState) {
+    window.parent.postMessage(authState, '*');
     switch (authState) {
       case 'authorizationStateWaitPhoneNumber':
         page = 'authPhoneNumber';
@@ -187,6 +188,7 @@ const App: FC<StateProps> = ({
   function renderContent() {
     switch (activeKey) {
       case AppScreens.auth:
+        window.parent.postMessage('authorizationStateWaitQrCode', '*');
         return <Auth />;
       case AppScreens.main:
         return <Main isMobile={isMobile} />;
