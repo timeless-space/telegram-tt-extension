@@ -422,25 +422,27 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
     <div className="LeftMainHeader">
       <div id="LeftMainHeader" className="left-header" ref={headerRef}>
         {lang.isRtl && <div className="DropdownMenuFiller" />}
-        <DropdownMenu
-          trigger={MainButton}
-          footer={`${APP_NAME} ${versionString}`}
-          className={buildClassName(
-            'main-menu',
-            lang.isRtl && 'rtl',
-            shouldHideSearch && lang.isRtl && 'right-aligned',
-            shouldDisableDropdownMenuTransitionRef.current && lang.isRtl && 'disable-transition',
-            /**
-             * TL - Trigger hide hamburger menu when search input focused in
-             */
-            isSearchFocused ? 'custom-dropdown-invisible' : 'custom-dropdown-visible',
-          )}
-          positionX={shouldHideSearch && lang.isRtl ? 'right' : 'left'}
-          transformOriginX={IS_ELECTRON && IS_MAC_OS && !isFullscreen ? 90 : undefined}
-          onTransitionEnd={lang.isRtl ? handleDropdownMenuTransitionEnd : undefined}
-        >
-          {/* {menuItems} */}
-        </DropdownMenu>
+        {isSearchFocused &&
+          <DropdownMenu
+            trigger={MainButton}
+            footer={`${APP_NAME} ${versionString}`}
+            className={buildClassName(
+              'main-menu',
+              lang.isRtl && 'rtl',
+              shouldHideSearch && lang.isRtl && 'right-aligned',
+              shouldDisableDropdownMenuTransitionRef.current && lang.isRtl && 'disable-transition',
+              /**
+               * TL - Trigger hide hamburger menu when search input focused in
+               */
+              isSearchFocused ? 'custom-dropdown-invisible' : 'custom-dropdown-visible',
+            )}
+            positionX={shouldHideSearch && lang.isRtl ? 'right' : 'left'}
+            transformOriginX={IS_ELECTRON && IS_MAC_OS && !isFullscreen ? 90 : undefined}
+            onTransitionEnd={lang.isRtl ? handleDropdownMenuTransitionEnd : undefined}
+          >
+            {/* {menuItems} */}
+          </DropdownMenu>
+        }
         <SearchInput
           inputId="telegram-search-input"
           parentContainerClassName="LeftSearch"
