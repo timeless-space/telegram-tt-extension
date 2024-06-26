@@ -618,7 +618,8 @@
     border: none !important;
     border-radius: 0 !important;
     box-shadow: none !important;
-    caret-color: var(--color-text);
+    caret-color: #fff;
+    color: #fff;
 
     &.touched {
       & ~ .placeholder-text {

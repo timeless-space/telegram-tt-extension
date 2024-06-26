@@ -1,5 +1,6 @@
 .root {
   display: flex;
+  color: #fff;
 }
 
 .button {
@@ -50,9 +51,9 @@
 .duration {
   margin-inline-start: 0.25rem;
   font-size: 0.875rem;
-  color: var(--color-text-secondary);
+  color: rgb(255,255,255,0.533);
 
   :global(.own) & {
-    color: var(--color-message-meta-own);
+    color: rgb(255,255,255,0.533);
   }
 }
