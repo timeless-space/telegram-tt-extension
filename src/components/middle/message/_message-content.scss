@@ -388,7 +388,15 @@
   }
 
   &.has-solid-background {
-    padding: 0.3125rem 0.5rem 0.375rem;
+    // padding: 0.3125rem 0.5rem 0.375rem;
+    padding: 0.625rem 1rem 0.75rem;
+
+    .forwarded-message > .text-content:not(.with-meta):last-child::after {
+      content: "";
+      display: inline-block;
+      width: var(--meta-safe-area-size);
+      height: 1rem;
+    }
   }
 
   body.is-ios &.has-solid-background {

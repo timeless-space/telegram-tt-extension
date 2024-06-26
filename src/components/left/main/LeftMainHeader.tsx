@@ -244,29 +244,28 @@ const LeftMainHeader: FC<OwnProps & StateProps> = ({
   return (
     <div className="LeftMainHeader">
       <div id="LeftMainHeader" className="left-header" ref={headerRef}>
-        {oldLang.isRtl && <div className="DropdownMenuFiller" />}
-        <DropdownMenu
-          trigger={MainButton}
-          footer={`${APP_NAME} ${versionString}`}
-          className={buildClassName(
-            'main-menu',
-            oldLang.isRtl && 'rtl',
-            shouldHideSearch && oldLang.isRtl && 'right-aligned',
-            shouldDisableDropdownMenuTransitionRef.current && oldLang.isRtl && 'disable-transition',
-          )}
-          forceOpen={isBotMenuOpen}
-          positionX={shouldHideSearch && oldLang.isRtl ? 'right' : 'left'}
-          transformOriginX={IS_ELECTRON && IS_MAC_OS && !isFullscreen ? 90 : undefined}
-          onTransitionEnd={oldLang.isRtl ? handleDropdownMenuTransitionEnd : undefined}
-        >
-          <LeftSideMenuItems
-            onSelectArchived={onSelectArchived}
-            onSelectContacts={onSelectContacts}
-            onSelectSettings={onSelectSettings}
-            onBotMenuOpened={markBotMenuOpen}
-            onBotMenuClosed={unmarkBotMenuOpen}
-          />
-        </DropdownMenu>
+        {lang.isRtl && <div className="DropdownMenuFiller" />}
+        {isSearchFocused &&
+          <DropdownMenu
+            trigger={MainButton}
+            footer={`${APP_NAME} ${versionString}`}
+            className={buildClassName(
+              'main-menu',
+              lang.isRtl && 'rtl',
+              shouldHideSearch && lang.isRtl && 'right-aligned',
+              shouldDisableDropdownMenuTransitionRef.current && lang.isRtl && 'disable-transition',
+              /**
+               * TL - Trigger hide hamburger menu when search input focused in
+               */
+              isSearchFocused ? 'custom-dropdown-invisible' : 'custom-dropdown-visible',
+            )}
+            positionX={shouldHideSearch && lang.isRtl ? 'right' : 'left'}
+            transformOriginX={IS_ELECTRON && IS_MAC_OS && !isFullscreen ? 90 : undefined}
+            onTransitionEnd={lang.isRtl ? handleDropdownMenuTransitionEnd : undefined}
+          >
+            {/* {menuItems} */}
+          </DropdownMenu>
+        }
         <SearchInput
           inputId="telegram-search-input"
           parentContainerClassName="LeftSearch"
