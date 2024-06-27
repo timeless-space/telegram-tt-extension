@@ -18,11 +18,11 @@
 
   @media (hover: hover) {
     :global(.ListItem-button:hover) & {
-      --first-column-background-color: var(--color-forum-unread-topic-hover);
+      // --first-column-background-color: var(--color-forum-unread-topic-hover);
     }
 
     &:hover {
-      --first-column-background-color: var(--color-forum-hover-unread-topic-hover) !important;
+      // --first-column-background-color: var(--color-forum-hover-unread-topic-hover) !important;
     }
   }
 
