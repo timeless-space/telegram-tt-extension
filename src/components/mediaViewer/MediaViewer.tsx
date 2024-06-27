@@ -324,6 +324,16 @@ const MediaViewer: FC<StateProps> = ({
     );
   }
 
+  useEffect(()=>{
+    if(isOpen) {
+       localStorage.setItem('zIndex', '1');
+    }
+    else {
+       localStorage.setItem('zIndex', '3');
+    }
+    window.parent.postMessage("changeZindex", "*")
+  },[isOpen])
+
   return (
     <ShowTransition
       id="MediaViewer"
