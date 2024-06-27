@@ -33,6 +33,7 @@
     position: relative;
     overflow-x: hidden;
     padding-top: 0 !important;
+    z-index: 3;
   }
 
   :global(.HeaderActions) {
