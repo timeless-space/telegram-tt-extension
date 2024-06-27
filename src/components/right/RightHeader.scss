@@ -4,6 +4,8 @@
   height: var(--header-height);
   padding: 0.5rem 0.8125rem;
   pointer-events: auto;
+  position: relative;
+  z-index: 3;
 
   @media (max-width: 600px) {
     padding: 0.5rem;

@@ -462,6 +462,8 @@
   }
 
   &.document {
+    padding: 1rem !important;
+
     .File {
       margin-top: calc(0.5rem - 0.3125rem);
       margin-bottom: calc(0.5rem - 0.3125rem);
