@@ -172,8 +172,10 @@ const Modal: FC<OwnProps & StateProps> = ({
             {renderHeader()}
             <div className={buildClassName('modal-content custom-scroll', contentClassName)} style={style}>
               {children}
+              <div className="blur" />
             </div>
           </div>
+          <div className="blur" />
         </div>
       </div>
     </Portal>

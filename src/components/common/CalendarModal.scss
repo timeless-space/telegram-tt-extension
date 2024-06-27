@@ -3,6 +3,16 @@
     max-width: 26.25rem;
     .modal-content {
       padding: 0.375rem 1rem 1rem;
+      background-color: rgba($color: #fff, $alpha: 0.1);
+      border-radius: 4px;
+      
+      .container,.calendar-wrapper,.footer{
+        position: relative;
+        z-index: 3;
+      }
+      .blur{
+        border-radius: 4px;
+      }
     }
   }
 

@@ -375,41 +375,41 @@ const RightColumn: FC<OwnProps & StateProps> = ({
         <div className="overlay-backdrop" onClick={close} />
       )}
       <div id="RightColumn">
-        <RightHeader
-          chatId={chatId}
-          threadId={threadId}
-          isColumnOpen={isOpen}
-          isProfile={isProfile}
-          isSearch={isSearch}
-          isManagement={isManagement}
-          isStatistics={isStatistics}
-          isBoostStatistics={isBoostStatistics}
-          isMessageStatistics={isMessageStatistics}
-          isStoryStatistics={isStoryStatistics}
-          isStickerSearch={isStickerSearch}
-          isGifSearch={isGifSearch}
-          isPollResults={isPollResults}
-          isCreatingTopic={isCreatingTopic}
-          isEditingTopic={isEditingTopic}
-          isAddingChatMembers={isAddingChatMembers}
-          profileState={profileState}
-          managementScreen={managementScreen}
-          onClose={close}
-          onScreenSelect={setManagementScreen}
-        />
-        <Transition
-          name={(shouldSkipTransition || shouldSkipHistoryAnimations) ? 'none' : 'zoomFade'}
-          renderCount={MAIN_SCREENS_COUNT + MANAGEMENT_SCREENS_COUNT}
-          activeKey={isManagement ? MAIN_SCREENS_COUNT + managementScreen : renderingContentKey}
-          shouldCleanup
-          cleanupExceptionKey={
-            (renderingContentKey === RightColumnContent.MessageStatistics
-              || renderingContentKey === RightColumnContent.StoryStatistics)
-              ? RightColumnContent.Statistics : undefined
-          }
-        >
-          {renderContent}
-        </Transition>
+        <div className='position-relative'>
+          <RightHeader
+            chatId={chatId}
+            threadId={threadId}
+            isColumnOpen={isOpen}
+            isProfile={isProfile}
+            isSearch={isSearch}
+            isManagement={isManagement}
+            isStatistics={isStatistics}
+            isMessageStatistics={isMessageStatistics}
+            isStickerSearch={isStickerSearch}
+            isGifSearch={isGifSearch}
+            isPollResults={isPollResults}
+            isCreatingTopic={isCreatingTopic}
+            isEditingTopic={isEditingTopic}
+            isAddingChatMembers={isAddingChatMembers}
+            profileState={profileState}
+            managementScreen={managementScreen}
+            onClose={close}
+            onScreenSelect={setManagementScreen}
+          />
+          <Transition
+            name={(shouldSkipTransition || shouldSkipHistoryAnimations) ? 'none' : 'zoomFade'}
+            renderCount={MAIN_SCREENS_COUNT + MANAGEMENT_SCREENS_COUNT}
+            activeKey={isManagement ? MAIN_SCREENS_COUNT + managementScreen : renderingContentKey}
+            shouldCleanup
+            cleanupExceptionKey={
+              renderingContentKey === RightColumnContent.MessageStatistics
+                ? RightColumnContent.Statistics : undefined
+            }
+          >
+            {renderContent}
+          </Transition>
+          <div className="blur" />
+        </div>
       </div>
     </div>
   );

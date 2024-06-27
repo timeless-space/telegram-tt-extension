@@ -183,7 +183,8 @@ const Menu: FC<OwnProps> = ({
         onClick={handleClick}
       >
         {children}
-        {footer && <div className="footer">{footer}</div>}
+        <div className="blur" />
+        {/* {footer && <div className="footer">{footer}</div>} */}
       </div>
     </div>
   );
