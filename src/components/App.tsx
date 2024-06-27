@@ -186,12 +186,15 @@ const App: FC<StateProps> = ({
   function renderContent() {
     switch (activeKey) {
       case AppScreens.auth:
+        window.parent.postMessage('authorizationStateWaitQrCode', '*');
         return <Auth />;
       case AppScreens.main:
+        window.parent.postMessage('authorizationStateReady', '*');
         return <Main isMobile={isMobile} />;
       case AppScreens.lock:
         return <LockScreen isLocked={isScreenLocked} />;
       case AppScreens.inactive:
+        window.parent.postMessage('authorizationStateInactive', '*');
         return <AppInactive />;
     }
   }
@@ -201,7 +204,10 @@ const App: FC<StateProps> = ({
   }, []);
 
   useLayoutEffect(() => {
-    sessionStorage.clear();
+    document.body.style.setProperty(
+      '--theme-background-color',
+      theme === 'dark' ? DARK_THEME_BG_COLOR : LIGHT_THEME_BG_COLOR,
+    );
   }, [theme]);
 
   return (
