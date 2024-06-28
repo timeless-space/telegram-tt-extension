@@ -63,8 +63,8 @@ jobs:
 
       - name: Build, package and publish
         env:
-          TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
-          TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
+          TELEGRAM_T_API_ID: ${{ secrets.TELEGRAM_T_API_ID }}
+          TELEGRAM_T_API_HASH: ${{ secrets.TELEGRAM_T_API_HASH }}
 
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
