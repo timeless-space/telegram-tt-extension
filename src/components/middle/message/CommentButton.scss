@@ -1,5 +1,5 @@
 .CommentButton {
-  --background-color: var(--color-background);
+  // --background-color: var(--color-background);
   --hover-color: var(--color-chat-hover);
 
   display: flex;
@@ -8,7 +8,7 @@
   padding: 0.5rem 0.25rem 0.5rem 0.625rem;
   padding-inline-start: 0.625rem;
   padding-inline-end: 0.25rem;
-  background: var(--background-color);
+  // background: var(--background-color);
   border-bottom-right-radius: var(--border-bottom-right-radius);
   border-bottom-left-radius: var(--border-bottom-left-radius);
   font-size: 0.9375rem;
