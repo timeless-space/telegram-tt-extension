@@ -246,16 +246,18 @@ const AttachMenu: FC<OwnProps> = ({
           <MenuItem icon="poll" onClick={onPollCreate}>{lang('Poll')}</MenuItem>
         )}
 
-        {!editingMessage && !hasReplaceableMedia && !isScheduled && bots?.map((bot) => (
-          <AttachBotItem
-            bot={bot}
-            chatId={chatId}
-            threadId={threadId}
-            theme={theme}
-            onMenuOpened={markAttachmentBotMenuOpen}
-            onMenuClosed={unmarkAttachmentBotMenuOpen}
-          />
-        ))}
+        {!editingMessage && !hasReplaceableMedia && !isScheduled && bots?.map((bot) => {
+          if(bot.shortName !== "Wallet")
+            return (
+              <AttachBotItem
+                bot={bot}
+                chatId={chatId}
+                threadId={threadId}
+                theme={theme}
+                onMenuOpened={markAttachmentBotMenuOpen}
+                onMenuClosed={unmarkAttachmentBotMenuOpen}
+              />
+          )})}
       </Menu>
     </div>
   );
