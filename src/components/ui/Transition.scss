@@ -188,7 +188,7 @@
     > .Transition_slide {
       z-index: 0;
 
-      background: var(--background-color);
+      background: transparent;
     }
 
     > .Transition_slide-to {
@@ -207,7 +207,7 @@
     > .Transition_slide {
       z-index: 0;
 
-      background: var(--background-color);
+      background: transparent;
     }
 
     > .Transition_slide-from {
@@ -324,10 +324,10 @@
   &-slideLayersBackwards {
     --background-color: var(--color-background);
 
-    background: black !important;
+    background: transparent !important;
 
     > .Transition_slide {
-      background: var(--background-color);
+      background: transparent;
     }
 
     > .Transition_slide-to {
@@ -346,7 +346,7 @@
 
   &-pushSlide {
     > .Transition_slide {
-      background: var(--color-background);
+      background: transparent;
     }
 
     > .Transition_slide-from {
@@ -375,7 +375,7 @@
 
   &-pushSlideBackwards {
     > .Transition_slide {
-      background: var(--color-background);
+      background: transparent;
     }
 
     > .Transition_slide-to {
