@@ -1,21 +1,27 @@
-import type { FC, TeactNode } from '../../../lib/teact/teact';
-import React, { memo, useMemo } from '../../../lib/teact/teact';
+import type { FC, TeactNode } from "../../../lib/teact/teact";
+import React, { memo, useMemo } from "../../../lib/teact/teact";
 
-import type { ApiKeyboardButton, ApiMessage } from '../../../api/types';
+import type { ApiKeyboardButton, ApiMessage } from "../../../api/types";
 
-import { RE_TME_LINK } from '../../../config';
-import renderKeyboardButtonText from '../composer/helpers/renderKeyboardButtonText';
+import { RE_TME_LINK } from "../../../config";
+import renderKeyboardButtonText from "../composer/helpers/renderKeyboardButtonText";
 
-import useOldLang from '../../../hooks/useOldLang';
+import useOldLang from "../../../hooks/useOldLang";
 
-import Icon from '../../common/icons/Icon';
-import Button from '../../ui/Button';
+import Icon from "../../common/icons/Icon";
+import Button from "../../ui/Button";
 
-import './InlineButtons.scss';
+import "./InlineButtons.scss";
 
 type OwnProps = {
   message: ApiMessage;
-  onClick: ({ messageId, button }: { messageId: number; button: ApiKeyboardButton }) => void;
+  onClick: ({
+    messageId,
+    button,
+  }: {
+    messageId: number;
+    button: ApiKeyboardButton;
+  }) => void;
 };
 
 const InlineButtons: FC<OwnProps> = ({ message, onClick }) => {
@@ -24,21 +30,21 @@ const InlineButtons: FC<OwnProps> = ({ message, onClick }) => {
   const renderIcon = (button: ApiKeyboardButton) => {
     const { type } = button;
     switch (type) {
-      case 'url': {
+      case "url": {
         if (!RE_TME_LINK.test(button.url)) {
           return <Icon className="corner-icon" name="arrow-right" />;
         }
         break;
       }
-      case 'urlAuth':
+      case "urlAuth":
         return <Icon className="corner-icon" name="arrow-right" />;
-      case 'buy':
-      case 'receipt':
+      case "buy":
+      case "receipt":
         return <Icon className="corner-icon" name="card" />;
-      case 'switchBotInline':
+      case "switchBotInline":
         return <Icon className="corner-icon" name="share-filled" />;
-      case 'webView':
-      case 'simpleWebView':
+      case "webView":
+      case "simpleWebView":
         return <Icon className="corner-icon" name="webapp" />;
     }
     return undefined;
@@ -56,24 +62,25 @@ const InlineButtons: FC<OwnProps> = ({ message, onClick }) => {
     <div className="InlineButtons">
       {message.inlineButtons!.map((row, i) => (
         <div className="row">
-          {row.map((button, j) =>{ 
+          {row.map((button, j) => {
             // @ts-ignore
-            if(!button.url.startsWith('https://t.me/wallet'))
-              return(
-              <Button
-                size="tiny"
-                ripple
-                disabled={button.type === 'unsupported'}
-                // eslint-disable-next-line react/jsx-no-bind
-                onClick={() => onClick({ messageId: message.id, button })}
-                className={`${buttonTexts[i][j]}`}
-              >
-                <span className="inline-button-text">
-                  {buttonTexts[i][j]}
-                </span>
-                {renderIcon(button)}
-              </Button>
-            )})}
+            if (!button.url?.startsWith("https://t.me/wallet"))
+              return (
+                <Button
+                  size="tiny"
+                  ripple
+                  disabled={button.type === "unsupported"}
+                  // eslint-disable-next-line react/jsx-no-bind
+                  onClick={() => onClick({ messageId: message.id, button })}
+                  className={`${buttonTexts[i][j]}`}
+                >
+                  <span className="inline-button-text">
+                    {buttonTexts[i][j]}
+                  </span>
+                  {renderIcon(button)}
+                </Button>
+              );
+          })}
         </div>
       ))}
     </div>
