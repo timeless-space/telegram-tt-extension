@@ -9,11 +9,11 @@
 
   --background-color: var(--color-background);
   --hover-color: var(--color-reply-hover);
-  --color-reaction: var(--color-message-reaction);
+  --color-reaction: rgb(255, 255, 255, 0.1);
   --hover-color-reaction: var(--color-message-reaction-hover);
   --text-color-reaction: var(--accent-color);
   --color-reaction-chosen: var(--accent-color);
-  --text-color-reaction-chosen: #FFFFFF;
+  --text-color-reaction-chosen: #ffffff;
   --hover-color-reaction-chosen: var(--color-message-reaction-chosen-hover);
   --active-color: var(--color-reply-active);
   --max-width: 29rem;
@@ -196,7 +196,9 @@
     --text-color-reaction: var(--accent-color);
     --color-reaction-chosen: var(--accent-color);
     --text-color-reaction-chosen: var(--color-background);
-    --hover-color-reaction-chosen: var(--color-message-reaction-chosen-hover-own);
+    --hover-color-reaction-chosen: var(
+      --color-message-reaction-chosen-hover-own
+    );
     --active-color: var(--color-reply-own-active);
     --max-width: 30rem;
     --accent-color: var(--color-accent-own);
@@ -304,7 +306,7 @@
       }
 
       &.with-preview::before {
-        content: '';
+        content: "";
         position: absolute;
         left: 50%;
         top: 1rem;
@@ -317,20 +319,18 @@
         /* stylelint-disable-next-line plugin/whole-pixel */
         box-shadow: 0 0 0 0.03125rem rgba(255, 255, 255, 0.3);
         background: rgba(255, 255, 255, 0.3);
-        mask:
-          linear-gradient(to bottom, #fff 0%, #fff 100%) content-box,
+        mask: linear-gradient(to bottom, #fff 0%, #fff 100%) content-box,
           linear-gradient(to bottom, #fff 0%, #fff 100%);
         mask-composite: exclude;
       }
 
       &.is-unread::before {
         padding: 0.125rem;
-        background:
-          linear-gradient(
-            215.87deg,
-            var(--color-message-story-mention-from) -1.61%,
-            var(--color-message-story-mention-to) 97.44%,
-          );
+        background: linear-gradient(
+          215.87deg,
+          var(--color-message-story-mention-from) -1.61%,
+          var(--color-message-story-mention-to) 97.44%
+        );
         box-shadow: none;
       }
     }
@@ -727,6 +727,7 @@
   }
 
   .bottom-marker {
+    display: none;
     height: 1px;
     width: 1px;
     visibility: hidden;
