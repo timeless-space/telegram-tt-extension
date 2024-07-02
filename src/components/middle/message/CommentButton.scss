@@ -27,7 +27,7 @@
 
   .Message .has-appendix &::before {
     content: "";
-    display: block;
+    display: none;
     position: absolute;
     bottom: -0.1875rem;
     left: -0.5625rem;
