@@ -75,6 +75,7 @@
     min-width: 0;
     background: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0) 100%);
     padding: 0.5rem max(1.25rem, env(safe-area-inset-left));
+    margin-top: 16px;
 
     & > .Transition {
       width: 100%;
