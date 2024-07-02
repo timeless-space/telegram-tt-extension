@@ -1384,7 +1384,7 @@ const Composer: FC<OwnProps & StateProps> = ({
     }
   }, [isSelectModeActive, enableHover, disableHover, isReady]);
 
-  const withBotMenuButton = isChatWithBot && botMenuButton?.type === 'webApp' && !botMenuButton.url.startsWith('https://walletbot.me/') && !editingMessage;
+  const withBotMenuButton = isChatWithBot && botMenuButton?.type === 'webApp' && !editingMessage;
   const isBotMenuButtonOpen = useDerivedState(() => {
     return withBotMenuButton && !getHtml() && !activeVoiceRecording;
   }, [withBotMenuButton, getHtml, activeVoiceRecording]);
@@ -1747,14 +1747,14 @@ const Composer: FC<OwnProps & StateProps> = ({
         <div className={buildClassName('message-input-wrapper', getPeerColorClass(currentUser))}>
           {isInMessageList && (
             <>
-              {withBotMenuButton && (
+              {/* {withBotMenuButton && (
                 <BotMenuButton
                   isOpen={isBotMenuButtonOpen}
                   text={botMenuButton.text}
                   isDisabled={Boolean(activeVoiceRecording)}
                   onClick={handleClickBotMenu}
                 />
-              )}
+              )} */}
 
               {withBotCommands && (
                 <ResponsiveHoverButton

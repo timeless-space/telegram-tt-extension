@@ -63,23 +63,19 @@ const InlineButtons: FC<OwnProps> = ({ message, onClick }) => {
       {message.inlineButtons!.map((row, i) => (
         <div className="row">
           {row.map((button, j) => {
-            // @ts-ignore
-            if (!button.url?.startsWith("https://t.me/wallet"))
-              return (
-                <Button
-                  size="tiny"
-                  ripple
-                  disabled={button.type === "unsupported"}
-                  // eslint-disable-next-line react/jsx-no-bind
-                  onClick={() => onClick({ messageId: message.id, button })}
-                  className={`${buttonTexts[i][j]}`}
-                >
-                  <span className="inline-button-text">
-                    {buttonTexts[i][j]}
-                  </span>
-                  {renderIcon(button)}
-                </Button>
-              );
+            return (
+              <Button
+                size="tiny"
+                ripple
+                disabled={button.type === "unsupported"}
+                // eslint-disable-next-line react/jsx-no-bind
+                onClick={() => onClick({ messageId: message.id, button })}
+                className={`${buttonTexts[i][j]}`}
+              >
+                <span className="inline-button-text">{buttonTexts[i][j]}</span>
+                {renderIcon(button)}
+              </Button>
+            );
           })}
         </div>
       ))}
