@@ -4,6 +4,10 @@
   cursor: var(--custom-cursor, pointer);
   color: rgba(255, 255, 255, 0.5);
   transition: 0.15s color;
+  justify-content: center;
+  position: relative;
+  left: 54%;
+  transform: translateX(-40%);
 
   &:hover {
     color: white;
