@@ -1560,9 +1560,9 @@ const Message: FC<OwnProps & StateProps> = ({
           {withAppendix && <MessageAppendix isOwn={isOwn} />}
           {withQuickReactionButton && quickReactionPosition === 'in-content' && renderQuickReactionButton()}
         </div>
-        {message.inlineButtons && (
+        {/* {message.inlineButtons && (
           <InlineButtons message={message} onClick={clickBotInlineButton} />
-        )}
+        )} */}
         {reactionsPosition === 'outside' && !isStoryMention && (
           <Reactions
             message={reactionMessage!}
