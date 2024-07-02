@@ -10,7 +10,7 @@
   padding-inline-end: 0.25rem;
   // background: var(--background-color);
   border-bottom-right-radius: var(--border-bottom-right-radius);
-  border-bottom-left-radius: var(--border-bottom-left-radius);
+  border-bottom-left-radius: var(--border-bottom-right-radius);
   font-size: 0.9375rem;
   font-weight: 500;
   line-height: 2.125rem;
@@ -71,7 +71,8 @@
       }
     }
 
-    .Message:hover &, &.loading {
+    .Message:hover &,
+    &.loading {
       opacity: 1;
     }
 
@@ -216,7 +217,9 @@
   }
 }
 
-.CommentButton_loading, .CommentButton_icon-open, .CommentButton_icon-comments {
+.CommentButton_loading,
+.CommentButton_icon-open,
+.CommentButton_icon-comments {
   transition: transform 250ms ease-in-out, opacity 250ms ease-in-out;
 }
 
