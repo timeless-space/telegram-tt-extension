@@ -210,7 +210,7 @@
   &.chat-item-clickable {
     body.is-ios &,
     body.is-macos & {
-      --color-text-secondary: var(--color-text-secondary-apple);
+      --color-text-secondary: var(--color-text-secondary);
     }
 
     .ListItem-button {

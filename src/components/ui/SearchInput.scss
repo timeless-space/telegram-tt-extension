@@ -1,3 +1,5 @@
+$colorText: rgba($color: #fff, $alpha: 0.7);
+
 .SearchInput {
   position: relative;
   width: 100%;
@@ -49,7 +51,7 @@
       calc(2.75rem - var(--border-width));
 
     &::placeholder {
-      color: var(--color-placeholders);
+      color: $colorText
     }
   }
 
@@ -67,6 +69,7 @@
     transform: translateY(-50%);
     font-size: 1.375rem;
     line-height: 1;
+    color: $colorText;
   }
 
   .Loading {
