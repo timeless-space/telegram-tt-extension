@@ -1,5 +1,6 @@
 .NewChatButton {
   position: absolute;
+  z-index: 9999;
   right: 1rem;
   bottom: 1rem;
   transform: translateY(5rem);
@@ -32,7 +33,8 @@
     }
   }
 
-  > .Button {
+  >.Button {
+
     .icon-new-chat-filled,
     .icon-close {
       position: absolute;
