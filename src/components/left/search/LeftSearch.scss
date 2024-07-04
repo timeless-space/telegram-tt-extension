@@ -70,7 +70,7 @@
     margin-left: -0.5rem !important;
     padding-left: 1.5rem;
     width: calc(100% + 0.625rem);
-    box-shadow: 0 -1px 0 0 var(--color-borders);
+    // box-shadow: 0 -1px 0 0 var(--color-borders);
 
     &::before {
       display: none;
@@ -239,7 +239,7 @@
     flex-wrap: nowrap;
     justify-content: space-between;
     align-items: flex-end;
-    box-shadow: inset 0 -1px 0 0 var(--color-borders);
+    // box-shadow: inset 0 -1px 0 0 var(--color-borders);
     // background-color: var(--color-background);
     -webkit-overflow-scrolling: touch;
     overflow-x: auto;
