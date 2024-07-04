@@ -252,9 +252,9 @@ const AuthPhoneNumber: FC<StateProps> = ({
               {lang('Login.QR.Login')}
             </Button>
           )}
-          {suggestedLanguage && suggestedLanguage !== language && continueText && (
+          {/* {suggestedLanguage && suggestedLanguage !== language && continueText && (
             <Button isText isLoading={isLoading} onClick={handleLangChange}>{continueText}</Button>
-          )}
+          )} */}
         </form>
       </div>
     </div>
