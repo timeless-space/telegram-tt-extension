@@ -1,14 +1,14 @@
 @use '../../styles/mixins';
 
 .Profile {
-  height: 100%;
+  height: calc(100% - 56px);
   display: flex;
   flex-direction: column;
 
   overflow-x: hidden;
   overflow-y: scroll;
 
-  > .profile-info > .ChatInfo {
+  >.profile-info>.ChatInfo {
     grid-area: chat_info;
 
     .status.online {
@@ -16,7 +16,7 @@
     }
   }
 
-  > .profile-info > .ChatExtra {
+  >.profile-info>.ChatExtra {
     padding: 0.875rem 0.5rem 0.5rem;
     @include mixins.side-panel-section;
 
@@ -92,7 +92,7 @@
     &.documents-list {
       padding: 1.25rem;
 
-      & .File + .File {
+      & .File+.File {
         margin-top: 1.25rem;
       }
     }
@@ -119,7 +119,7 @@
           justify-content: center;
         }
 
-        & + .Audio {
+        &+.Audio {
           margin-top: 1.6875rem;
         }
       }
