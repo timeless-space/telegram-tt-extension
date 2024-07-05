@@ -1,5 +1,5 @@
 .NewChat {
-  height: 100%;
+  height: calc(100% - 89px);
   overflow: hidden;
   position: relative;
 
@@ -12,7 +12,8 @@
       display: flex;
       flex-direction: column;
 
-      .note, .error {
+      .note,
+      .error {
         font-size: 0.875rem;
         line-height: 1.25rem;
         margin: 1.5rem 0.25rem;
