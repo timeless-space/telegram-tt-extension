@@ -7,4 +7,8 @@
     height: 100%;
     overflow: hidden;
   }
+
+  .revealed {
+    transform: translateY(-3rem);
+  }
 }
