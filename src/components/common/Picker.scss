@@ -1,5 +1,5 @@
 .Picker {
-  height: 100%;
+  height: calc(100% - 89px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
