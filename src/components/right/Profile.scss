@@ -35,6 +35,10 @@
   .FloatingActionButton {
     z-index: 1;
   }
+
+  .revealed {
+    transform: translateY(-3rem);
+  }
 }
 
 .shared-media {
