@@ -27,12 +27,12 @@
     transform: translate3d(110vw, 0, 0);
   }
 
-  > .Transition {
+  >.Transition {
     height: calc(100% - var(--header-height));
     overflow: hidden;
   }
 
-  .Management .section > .ChatInfo {
+  .Management .section>.ChatInfo {
     padding: 0 1.5rem;
     margin: 1rem 0;
     text-align: center;
@@ -125,7 +125,7 @@
     #RightColumn {
       pointer-events: auto;
       transform: translate3d(0, 0, 0);
-      background: rgba(0, 0, 0, 0.9);
+      background: var(--color-background);
       backdrop-filter: blur(50px);
     }
   }

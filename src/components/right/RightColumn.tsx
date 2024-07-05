@@ -408,7 +408,6 @@ const RightColumn: FC<OwnProps & StateProps> = ({
           >
             {renderContent}
           </Transition>
-          <div className="blur" />
         </div>
       </div>
     </div>
