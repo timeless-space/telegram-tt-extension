@@ -2,9 +2,9 @@
 
 .Management {
   position: relative;
-  height: 100%;
+  height: calc(100% - 56px);
 
-  & > .custom-scroll {
+  &>.custom-scroll {
     height: 100%;
     overflow-y: scroll;
     overflow-x: hidden;
@@ -32,7 +32,7 @@
       border-top: none;
     }
 
-    > .ChatInfo {
+    >.ChatInfo {
       margin: 0 0 2rem !important;
 
       .title h3 {
@@ -69,6 +69,7 @@
       }
 
       &.with-checkbox {
+
         body.is-ios &::after,
         body.is-android &::after {
           bottom: -1rem;
@@ -264,6 +265,7 @@
     margin-top: 1rem;
 
     -moz-appearance: textfield;
+
     &::-webkit-outer-spin-button,
     &::-webkit-inner-spin-button {
       -webkit-appearance: none;
@@ -338,7 +340,9 @@
 }
 
 .with-shifted-dropdown {
-  .ListItem, .section-heading {
+
+  .ListItem,
+  .section-heading {
     position: relative;
     z-index: 2;
   }
@@ -355,7 +359,8 @@
     @include mixins.side-panel-section;
   }
 
-  .section, .part {
+  .section,
+  .part {
     position: relative;
     transition: 0.25s ease-in-out transform;
 
