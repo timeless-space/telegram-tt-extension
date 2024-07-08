@@ -228,6 +228,8 @@
       opacity: 1;
 
       animation: fade-out-opacity 0.15s ease;
+
+
     }
 
     >.Transition_slide-to {
@@ -238,6 +240,10 @@
       // We need to for proper position calculation in `InfiniteScroll`.
 
       animation: fade-in-opacity 0.15s ease, zoom-fade-in-move 0.15s ease;
+    }
+
+    button {
+      display: none;
     }
   }
 
@@ -252,6 +258,10 @@
       transform: scale(0.95);
 
       animation: fade-out-backwards-opacity 0.15s ease, zoom-fade-out-backwards-move 0.15s ease;
+    }
+
+    button {
+      display: none;
     }
   }
 
