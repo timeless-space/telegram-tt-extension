@@ -95,8 +95,8 @@ const CountryCodeInput: FC<OwnProps & StateProps> = ({
 
       onTrigger();
 
-      const formEl = document.getElementById('auth-phone-number-form')!;
-      formEl.scrollTo({ top: formEl.scrollHeight, behavior: 'smooth' });
+      // const formEl = document.getElementById('auth-phone-number-form')!;
+      // formEl.scrollTo({ top: formEl.scrollHeight, behavior: 'smooth' });
     };
 
     const handleCodeInput = (e: React.FormEvent<HTMLInputElement>) => {
