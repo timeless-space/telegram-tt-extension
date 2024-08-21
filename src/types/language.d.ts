@@ -1511,7 +1511,8 @@ export interface LangPair {
   'MenuBetaChangelog': undefined;
   'MenuSwitchToK': undefined;
   'MenuInstallApp': undefined;
-
+  'RemoveEffect' : undefined;
+  'ReplyInPrivateMessage': undefined;
 }
 
 export type LangKey = keyof LangPair;

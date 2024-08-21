@@ -64,6 +64,7 @@ import GroupCall from '../calls/group/GroupCall.async';
 import PhoneCall from '../calls/phone/PhoneCall.async';
 import RatePhoneCallModal from '../calls/phone/RatePhoneCallModal.async';
 import CustomEmojiSetsModal from '../common/CustomEmojiSetsModal.async';
+import DeleteMessageModal from '../common/DeleteMessageModal.async';
 import StickerSetModal from '../common/StickerSetModal.async';
 import UnreadCount from '../common/UnreadCounter';
 import LeftColumn from '../left/LeftColumn';
@@ -143,6 +144,7 @@ type StateProps = {
   isReactionPickerOpen: boolean;
   isAppendModalOpen?: boolean;
   isGiveawayModalOpen?: boolean;
+  isDeleteMessageModalOpen?: boolean;
   isPremiumGiftingModalOpen?: boolean;
   isCurrentUserPremium?: boolean;
   noRightColumnAnimation?: boolean;
@@ -192,6 +194,7 @@ const Main: FC<OwnProps & StateProps> = ({
   requestedDraft,
   isPremiumModalOpen,
   isGiveawayModalOpen,
+  isDeleteMessageModalOpen,
   isPremiumGiftingModalOpen,
   isPaymentModalOpen,
   isReceiptModalOpen,
@@ -249,6 +252,7 @@ const Main: FC<OwnProps & StateProps> = ({
     loadTimezones,
     loadQuickReplies,
     loadStarStatus,
+    loadAvailableEffects,
   } = getActions();
 
   if (DEBUG && !DEBUG_isLogged) {
@@ -310,26 +314,27 @@ const Main: FC<OwnProps & StateProps> = ({
       initMain();
       loadAvailableReactions();
       loadAnimatedEmojis();
-      loadBirthdayNumbersStickers();
-      loadGenericEmojiEffects();
       loadNotificationSettings();
       loadNotificationExceptions();
-      loadTopInlineBots();
-      loadEmojiKeywords({ language: BASE_EMOJI_KEYWORD_LANG });
       loadAttachBots();
       loadContactList();
-      loadPremiumGifts();
       loadDefaultTopicIcons();
       checkAppVersion();
       loadTopReactions();
       loadRecentReactions();
       loadDefaultTagReactions();
       loadFeaturedEmojiStickers();
-      loadAuthorizations();
-      loadSavedReactionTags();
+      loadTopInlineBots();
+      loadEmojiKeywords({ language: BASE_EMOJI_KEYWORD_LANG });
       loadTimezones();
       loadQuickReplies();
       loadStarStatus();
+      loadPremiumGifts();
+      loadAvailableEffects();
+      loadBirthdayNumbersStickers();
+      loadGenericEmojiEffects();
+      loadSavedReactionTags();
+      loadAuthorizations();
     }
   }, [isMasterTab, isSynced]);
 
@@ -575,6 +580,7 @@ const Main: FC<OwnProps & StateProps> = ({
       <ReceiptModal isOpen={isReceiptModalOpen} onClose={clearReceipt} />
       <DeleteFolderDialog folder={deleteFolderDialog} />
       <ReactionPicker isOpen={isReactionPickerOpen} />
+      <DeleteMessageModal isOpen={isDeleteMessageModalOpen} />
     </div>
   );
 };
@@ -608,6 +614,7 @@ export default memo(withGlobal<OwnProps>(
       ratingPhoneCall,
       premiumModal,
       giveawayModal,
+      deleteMessageModal,
       giftingModal,
       isMasterTab,
       payment,
@@ -663,6 +670,7 @@ export default memo(withGlobal<OwnProps>(
       isCurrentUserPremium: selectIsCurrentUserPremium(global),
       isPremiumModalOpen: premiumModal?.isOpen,
       isGiveawayModalOpen: giveawayModal?.isOpen,
+      isDeleteMessageModalOpen: Boolean(deleteMessageModal),
       isPremiumGiftingModalOpen: giftingModal?.isOpen,
       limitReached: limitReachedModal?.limit,
       isPaymentModalOpen: payment.isPaymentModalOpen,

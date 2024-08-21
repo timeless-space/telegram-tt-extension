@@ -17,6 +17,7 @@ import type {
   ApiNewPoll,
   ApiPeer,
   ApiPhoto,
+  ApiPoll,
   ApiQuickReply,
   ApiReplyInfo,
   ApiReplyKeyboard,
@@ -38,7 +39,7 @@ import {
   SERVICE_NOTIFICATIONS_USER_ID,
   SPONSORED_MESSAGE_CACHE_MS,
   SUPPORTED_AUDIO_CONTENT_TYPES,
-  SUPPORTED_IMAGE_CONTENT_TYPES,
+  SUPPORTED_PHOTO_CONTENT_TYPES,
   SUPPORTED_VIDEO_CONTENT_TYPES,
 } from '../../../config';
 import { getEmojiOnlyCountForMessage } from '../../../global/helpers/getEmojiOnlyCountForMessage';
@@ -48,6 +49,7 @@ import { interpolateArray } from '../../../util/waveform';
 import { buildPeer } from '../gramjsBuilders';
 import {
   addPhotoToLocalDb,
+  type MediaRepairContext,
   resolveMessageApiChatId,
   serializeBytes,
 } from '../helpers';
@@ -121,6 +123,7 @@ export function buildApiMessageFromShort(mtpMessage: GramJs.UpdateShortMessage):
   return buildApiMessageWithChatId(chatId, {
     ...mtpMessage,
     fromId: buildPeer(mtpMessage.out ? currentUserId : buildApiPeerId(mtpMessage.userId, 'user')),
+    peerId: buildPeer(mtpMessage.out ? buildApiPeerId(mtpMessage.userId, 'user') : currentUserId),
   });
 }
 
@@ -130,6 +133,7 @@ export function buildApiMessageFromShortChat(mtpMessage: GramJs.UpdateShortChatM
   return buildApiMessageWithChatId(chatId, {
     ...mtpMessage,
     fromId: buildPeer(buildApiPeerId(mtpMessage.fromId, 'user')),
+    peerId: buildPeer(buildApiPeerId(mtpMessage.chatId, 'chat')),
   });
 }
 
@@ -150,7 +154,7 @@ export function buildApiMessageFromNotification(
 }
 
 export type UniversalMessage = (
-  Pick<GramJs.Message & GramJs.MessageService, ('id' | 'date')>
+  Pick<GramJs.Message & GramJs.MessageService, ('id' | 'date' | 'peerId')>
   & Partial<GramJs.Message & GramJs.MessageService>
 );
 
@@ -210,7 +214,7 @@ export function buildApiMessageWithChatId(
     isPinned: mtpMessage.pinned,
     reactions: mtpMessage.reactions && buildMessageReactions(mtpMessage.reactions),
     emojiOnlyCount,
-    ...(mtpMessage.replyTo && { replyInfo: buildApiReplyInfo(mtpMessage.replyTo) }),
+    ...(mtpMessage.replyTo && { replyInfo: buildApiReplyInfo(mtpMessage.replyTo, mtpMessage) }),
     forwardInfo,
     isEdited,
     editDate: mtpMessage.editDate,
@@ -235,6 +239,7 @@ export function buildApiMessageWithChatId(
     senderBoosts,
     viaBusinessBotId: mtpMessage.viaBusinessBotId?.toString(),
     factCheck,
+    effectId: mtpMessage.effect?.toString(),
     isInvertedMedia,
   });
 }
@@ -245,7 +250,7 @@ export function buildMessageDraft(draft: GramJs.TypeDraftMessage): ApiDraft | un
   }
 
   const {
-    message, entities, replyTo, date,
+    message, entities, replyTo, date, effect,
   } = draft;
 
   const replyInfo = replyTo instanceof GramJs.InputReplyToMessage ? {
@@ -260,6 +265,7 @@ export function buildMessageDraft(draft: GramJs.TypeDraftMessage): ApiDraft | un
     text: message ? buildMessageTextContent(message, entities) : undefined,
     replyInfo,
     date,
+    effectId: effect?.toString(),
   };
 }
 
@@ -283,7 +289,9 @@ function buildApiMessageForwardInfo(fwdFrom: GramJs.MessageFwdHeader, isChatWith
   };
 }
 
-function buildApiReplyInfo(replyHeader: GramJs.TypeMessageReplyHeader): ApiReplyInfo | undefined {
+function buildApiReplyInfo(
+  replyHeader: GramJs.TypeMessageReplyHeader, context?: MediaRepairContext,
+): ApiReplyInfo | undefined {
   if (replyHeader instanceof GramJs.MessageReplyStoryHeader) {
     return {
       type: 'story',
@@ -312,7 +320,7 @@ function buildApiReplyInfo(replyHeader: GramJs.TypeMessageReplyHeader): ApiReply
       isForumTopic: forumTopic,
       replyFrom: replyFrom && buildApiMessageForwardInfo(replyFrom),
       replyToPeerId: replyToPeerId && getApiChatIdFromMtpPeer(replyToPeerId),
-      replyMedia: replyMedia && buildMessageMediaContent(replyMedia),
+      replyMedia: replyMedia && buildMessageMediaContent(replyMedia, context),
       isQuote: quote,
       quoteText: quoteText ? buildMessageTextContent(quoteText, quoteEntities) : undefined,
     };
@@ -609,6 +617,7 @@ function buildAction(
   }
 
   return {
+    mediaType: 'action',
     text,
     type,
     targetUserIds,
@@ -776,13 +785,12 @@ function buildReplyButtons(message: UniversalMessage, shouldSkipBuyButton?: bool
   };
 }
 
-function buildNewPoll(poll: ApiNewPoll, localId: number) {
+function buildNewPoll(poll: ApiNewPoll, localId: number): ApiPoll {
   return {
-    poll: {
-      id: String(localId),
-      summary: pick(poll.summary, ['question', 'answers']),
-      results: {},
-    },
+    mediaType: 'poll',
+    id: String(localId),
+    summary: pick(poll.summary, ['question', 'answers']),
+    results: {},
   };
 }
 
@@ -802,6 +810,7 @@ export function buildLocalMessage(
   sendAs?: ApiPeer,
   story?: ApiStory | ApiStorySkipped,
   isInvertedMedia?: true,
+  effectId?: string,
 ): ApiMessage {
   const localId = getNextLocalMessageId(lastMessageId);
   const media = attachment && buildUploadingMedia(attachment);
@@ -822,9 +831,12 @@ export function buildLocalMessage(
       ...media,
       ...(sticker && { sticker }),
       ...(gif && { video: gif }),
-      ...(poll && buildNewPoll(poll, localId)),
-      ...(contact && { contact }),
-      ...(story && { storyData: story }),
+      poll: poll && buildNewPoll(poll, localId),
+      contact,
+      storyData: story && {
+        mediaType: 'storyData',
+        ...story,
+      },
     },
     date: scheduledAt || Math.round(Date.now() / 1000) + getServerTimeOffset(),
     isOutgoing: !isChannel,
@@ -837,6 +849,7 @@ export function buildLocalMessage(
     ...(scheduledAt && { isScheduled: true }),
     isForwardingAllowed: true,
     isInvertedMedia,
+    effectId,
   } satisfies ApiMessage;
 
   const emojiOnlyCount = getEmojiOnlyCountForMessage(message.content, message.groupedId);
@@ -974,14 +987,16 @@ export function buildUploadingMedia(
   if (!shouldSendAsFile) {
     if (attachment.quick) {
       // TODO Handle GIF as video, but support playback in <video>
-      if (SUPPORTED_IMAGE_CONTENT_TYPES.has(mimeType)) {
+      if (SUPPORTED_PHOTO_CONTENT_TYPES.has(mimeType)) {
         const { width, height } = attachment.quick;
         return {
           photo: {
+            mediaType: 'photo',
             id: LOCAL_MEDIA_UPLOADING_TEMP_ID,
             sizes: [],
             thumbnail: { width, height, dataUri: previewBlobUrl || blobUrl },
             blobUrl,
+            date: Math.round(Date.now() / 1000),
             isSpoiler: shouldSendAsSpoiler,
           },
         };
@@ -990,6 +1005,7 @@ export function buildUploadingMedia(
         const { width, height, duration } = attachment.quick;
         return {
           video: {
+            mediaType: 'video',
             id: LOCAL_MEDIA_UPLOADING_TEMP_ID,
             mimeType,
             duration: duration || 0,
@@ -1009,9 +1025,11 @@ export function buildUploadingMedia(
       const { data: inputWaveform } = interpolateArray(waveform, INPUT_WAVEFORM_LENGTH);
       return {
         voice: {
+          mediaType: 'voice',
           id: LOCAL_MEDIA_UPLOADING_TEMP_ID,
           duration,
           waveform: inputWaveform,
+          size,
         },
         ttlSeconds,
       };
@@ -1020,6 +1038,7 @@ export function buildUploadingMedia(
       const { duration, performer, title } = audio || {};
       return {
         audio: {
+          mediaType: 'audio',
           id: LOCAL_MEDIA_UPLOADING_TEMP_ID,
           mimeType,
           fileName,
@@ -1033,6 +1052,7 @@ export function buildUploadingMedia(
   }
   return {
     document: {
+      mediaType: 'document',
       mimeType,
       fileName,
       size,

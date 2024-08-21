@@ -102,7 +102,7 @@ const PrivateChatInfo: FC<OwnProps & StateProps> = ({
   const {
     loadFullUser,
     openMediaViewer,
-    loadProfilePhotos,
+    loadMoreProfilePhotos,
   } = getActions();
 
   const lang = useOldLang();
@@ -112,7 +112,7 @@ const PrivateChatInfo: FC<OwnProps & StateProps> = ({
   useEffect(() => {
     if (userId) {
       if (withFullInfo && isSynced) loadFullUser({ userId });
-      if (withMediaViewer) loadProfilePhotos({ profileId: userId });
+      if (withMediaViewer) loadMoreProfilePhotos({ peerId: userId, isPreload: true });
     }
   }, [userId, withFullInfo, withMediaViewer, isSynced]);
 
@@ -121,8 +121,9 @@ const PrivateChatInfo: FC<OwnProps & StateProps> = ({
       if (user && hasMedia) {
         e.stopPropagation();
         openMediaViewer({
-          avatarOwnerId: user.id,
-          mediaId: 0,
+          isAvatarView: true,
+          chatId: user.id,
+          mediaIndex: 0,
           origin: avatarSize === 'jumbo' ? MediaViewerOrigin.ProfileAvatar : MediaViewerOrigin.MiddleHeaderAvatar,
         });
       }

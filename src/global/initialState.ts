@@ -66,6 +66,7 @@ export const INITIAL_PERFORMANCE_STATE_MIN: PerformanceType = {
 };
 
 export const INITIAL_GLOBAL_STATE: GlobalState = {
+  isInited: true,
   attachMenu: { bots: {} },
   passcode: {},
   twoFaSettings: {},
@@ -160,8 +161,10 @@ export const INITIAL_GLOBAL_STATE: GlobalState = {
     defaultTags: [],
     topReactions: [],
     recentReactions: [],
+    effectReactions: [],
     hash: {},
   },
+  availableEffectById: {},
 
   stickers: {
     setsById: {},
@@ -180,6 +183,10 @@ export const INITIAL_GLOBAL_STATE: GlobalState = {
     },
     featured: {
       setIds: [],
+    },
+    effect: {
+      stickers: [],
+      emojis: [],
     },
     forEmoji: {},
   },
@@ -343,7 +350,11 @@ export const INITIAL_TAB_STATE: TabState = {
     isMuted: false,
   },
 
+  isShareMessageModalShown: false,
+
   forwardMessages: {},
+
+  replyingMessage: {},
 
   pollResults: {},
 
@@ -355,9 +366,7 @@ export const INITIAL_TAB_STATE: TabState = {
 
   activeReactions: {},
 
-  activeDownloads: {
-    byChatId: {},
-  },
+  activeDownloads: {},
 
   statistics: {
     byChatId: {},

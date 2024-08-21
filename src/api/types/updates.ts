@@ -21,8 +21,8 @@ import type {
 import type {
   ApiFormattedText,
   ApiInputInvoice,
+  ApiMediaExtendedPreview,
   ApiMessage,
-  ApiMessageExtendedMediaPreview,
   ApiPhoto,
   ApiPoll,
   ApiQuickReply,
@@ -30,7 +30,7 @@ import type {
   ApiReactions,
   ApiStickerSet,
   ApiThreadInfo,
-  MediaContent,
+  BoughtPaidMedia,
 } from './messages';
 import type {
   ApiEmojiInteraction, ApiError, ApiInviteInfo, ApiNotifyException, ApiSessionData,
@@ -100,7 +100,6 @@ export type ApiUpdateChat = {
   '@type': 'updateChat';
   id: string;
   chat: Partial<ApiChat>;
-  newProfilePhoto?: ApiPhoto;
   noTopChatsRequest?: boolean;
 };
 
@@ -344,12 +343,6 @@ export type ApiUpdateDeleteSavedHistory = {
   chatId: string;
 };
 
-export type ApiUpdateDeleteProfilePhotos = {
-  '@type': 'deleteProfilePhotos';
-  ids: string[];
-  chatId: string;
-};
-
 export type ApiUpdateResetMessages = {
   '@type': 'resetMessages';
   id: string;
@@ -373,9 +366,13 @@ export type ApiUpdateMessageExtendedMedia = {
   '@type': 'updateMessageExtendedMedia';
   id: number;
   chatId: string;
-  media?: MediaContent;
-  preview?: ApiMessageExtendedMediaPreview;
-};
+} & ({
+  isBought?: true;
+  extendedMedia: BoughtPaidMedia[];
+} | {
+  isBought?: undefined;
+  extendedMedia: ApiMediaExtendedPreview[];
+});
 
 export type ApiDeleteContact = {
   '@type': 'deleteContact';
@@ -744,6 +741,18 @@ export type ApiUpdateStarsBalance = {
   balance: number;
 };
 
+export type ApiUpdateDeleteProfilePhoto = {
+  '@type': 'updateDeleteProfilePhoto';
+  peerId: string;
+  photoId?: string;
+};
+
+export type ApiUpdateNewProfilePhoto = {
+  '@type': 'updateNewProfilePhoto';
+  peerId: string;
+  photo: ApiPhoto;
+};
+
 export type ApiUpdate = (
   ApiUpdateReady | ApiUpdateSession | ApiUpdateWebAuthTokenFailed | ApiUpdateRequestUserUpdate |
   ApiUpdateAuthorizationState | ApiUpdateAuthorizationError | ApiUpdateConnectionState | ApiUpdateCurrentUser |
@@ -753,7 +762,7 @@ export type ApiUpdate = (
   ApiUpdateNewMessage | ApiUpdateMessage | ApiUpdateThreadInfos | ApiUpdateCommonBoxMessages |
   ApiUpdateDeleteMessages | ApiUpdateMessagePoll | ApiUpdateMessagePollVote | ApiUpdateDeleteHistory |
   ApiUpdateMessageSendSucceeded | ApiUpdateMessageSendFailed | ApiUpdateServiceNotification |
-  ApiDeleteContact | ApiUpdateUser | ApiUpdateUserStatus | ApiUpdateUserFullInfo | ApiUpdateDeleteProfilePhotos |
+  ApiDeleteContact | ApiUpdateUser | ApiUpdateUserStatus | ApiUpdateUserFullInfo |
   ApiUpdateAvatar | ApiUpdateMessageImage | ApiUpdateDraftMessage |
   ApiUpdateError | ApiUpdateResetContacts | ApiUpdateStartEmojiInteraction |
   ApiUpdateFavoriteStickers | ApiUpdateStickerSet | ApiUpdateStickerSets | ApiUpdateStickerSetsOrder |
@@ -775,7 +784,8 @@ export type ApiUpdate = (
   ApiUpdateStealthMode | ApiUpdateAttachMenuBots | ApiUpdateNewAuthorization | ApiUpdateGroupInvitePrivacyForbidden |
   ApiUpdateViewForumAsMessages | ApiUpdateSavedDialogPinned | ApiUpdatePinnedSavedDialogIds | ApiUpdateChatLastMessage |
   ApiUpdateDeleteSavedHistory | ApiUpdatePremiumFloodWait | ApiUpdateStarsBalance |
-  ApiUpdateQuickReplyMessage | ApiUpdateQuickReplies | ApiDeleteQuickReply | ApiUpdateDeleteQuickReplyMessages
+  ApiUpdateQuickReplyMessage | ApiUpdateQuickReplies | ApiDeleteQuickReply | ApiUpdateDeleteQuickReplyMessages |
+  ApiUpdateDeleteProfilePhoto | ApiUpdateNewProfilePhoto
 );
 
 export type OnApiUpdate = (update: ApiUpdate) => void;

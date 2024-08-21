@@ -52,7 +52,7 @@ type OwnProps = {
   message: ApiMessage | ApiSponsoredMessage;
   canSendNow?: boolean;
   enabledReactions?: ApiChatReactions;
-  maxUniqueReactions?: number;
+  reactionsLimit?: number;
   canReschedule?: boolean;
   canReply?: boolean;
   canQuote?: boolean;
@@ -140,7 +140,7 @@ const MessageContextMenu: FC<OwnProps> = ({
   isPrivate,
   isCurrentUserPremium,
   enabledReactions,
-  maxUniqueReactions,
+  reactionsLimit,
   anchor,
   targetHref,
   canSendNow,
@@ -214,7 +214,9 @@ const MessageContextMenu: FC<OwnProps> = ({
   onShowOriginal,
   onSelectLanguage,
 }) => {
-  const { showNotification, openStickerSet, openCustomEmojiSets } = getActions();
+  const {
+    showNotification, openStickerSet, openCustomEmojiSets, loadStickers,
+  } = getActions();
   // eslint-disable-next-line no-null/no-null
   const menuRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line no-null/no-null
@@ -243,6 +245,19 @@ const MessageContextMenu: FC<OwnProps> = ({
       onClose();
     }
   }, [onClose, isOpen, isReactionPickerOpen, areItemsHidden]);
+
+  useEffect(() => {
+    if (customEmojiSets?.length) {
+      customEmojiSets.map((customEmojiSet) => {
+        return loadStickers({
+          stickerSetInfo: {
+            id: customEmojiSet.id,
+            accessHash: customEmojiSet.accessHash,
+          },
+        });
+      });
+    }
+  }, [customEmojiSets, openCustomEmojiSets]);
 
   const handleOpenCustomEmojiSets = useLastCallback(() => {
     if (!customEmojiSets) return;
@@ -349,7 +364,7 @@ const MessageContextMenu: FC<OwnProps> = ({
           allAvailableReactions={availableReactions}
           defaultTagReactions={defaultTagReactions}
           currentReactions={!isSponsoredMessage ? message.reactions?.results : undefined}
-          maxUniqueReactions={maxUniqueReactions}
+          reactionsLimit={reactionsLimit}
           onToggleReaction={onToggleReaction!}
           isPrivate={isPrivate}
           isReady={isReady}
