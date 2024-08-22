@@ -65,7 +65,6 @@ import {
   buildInputReplyTo,
   buildMtpMessageEntity,
   generateRandomBigInt,
-  isMessageWithMedia,
 } from '../gramjsBuilders';
 import {
   addEntitiesToLocalDb,
@@ -74,7 +73,6 @@ import {
   deserializeBytes,
   isChatFolder,
 } from '../helpers';
-import localDb from '../localDb';
 import { scheduleMutedChatUpdate } from '../scheduleUnmute';
 import {
   applyState, processAffectedHistory, updateChannelState,
@@ -360,16 +358,19 @@ export async function searchChats({ query }: { query: string }) {
   updateLocalDb(result);
 
   const accountPeerIds = result.myResults.map(getApiChatIdFromMtpPeer);
-  const allChats = result.chats.concat(result.users)
+  const globalPeerIds = result.results.map(getApiChatIdFromMtpPeer)
+    .filter((id) => !accountPeerIds.includes(id));
+
+  const chats = result.chats.concat(result.users)
     .map((user) => buildApiChatFromPreview(user))
     .filter(Boolean);
-  const allUsers = result.users.map(buildApiUser).filter((user) => Boolean(user) && !user.isSelf) as ApiUser[];
+  const users = result.users.map(buildApiUser).filter(Boolean);
 
   return {
-    accountChats: allChats.filter((r) => accountPeerIds.includes(r.id)),
-    accountUsers: allUsers.filter((u) => accountPeerIds.includes(u.id)),
-    globalChats: allChats.filter((r) => !accountPeerIds.includes(r.id)),
-    globalUsers: allUsers.filter((u) => !accountPeerIds.includes(u.id)),
+    accountResultIds: accountPeerIds,
+    globalResultIds: globalPeerIds,
+    chats,
+    users,
   };
 }
 
@@ -513,10 +514,11 @@ async function getFullChatInfo(chatId: string): Promise<FullChatData | undefined
     requestsPending,
     chatPhoto,
     translationsDisabled,
+    reactionsLimit,
   } = result.fullChat;
 
-  if (chatPhoto instanceof GramJs.Photo) {
-    localDb.photos[chatPhoto.id.toString()] = chatPhoto;
+  if (chatPhoto) {
+    addPhotoToLocalDb(chatPhoto);
   }
 
   const members = buildChatMembers(participants);
@@ -537,6 +539,7 @@ async function getFullChatInfo(chatId: string): Promise<FullChatData | undefined
       inviteLink,
       groupCallId: call?.id.toString(),
       enabledReactions: buildApiChatReactions(availableReactions),
+      reactionsLimit,
       requestsPending,
       recentRequesterIds: recentRequesters?.map((userId) => buildApiPeerId(userId, 'user')),
       isTranslationDisabled: translationsDisabled,
@@ -587,6 +590,7 @@ async function getFullChannelInfo(
     call,
     botInfo,
     availableReactions,
+    reactionsLimit,
     defaultSendAs,
     requestsPending,
     recentRequesters,
@@ -603,8 +607,8 @@ async function getFullChannelInfo(
     boostsUnrestrict,
   } = result.fullChat;
 
-  if (chatPhoto instanceof GramJs.Photo) {
-    localDb.photos[chatPhoto.id.toString()] = chatPhoto;
+  if (chatPhoto) {
+    addPhotoToLocalDb(chatPhoto);
   }
 
   const inviteLink = exportedInvite instanceof GramJs.ChatInviteExported
@@ -669,6 +673,7 @@ async function getFullChannelInfo(
       linkedChatId: linkedChatId ? buildApiPeerId(linkedChatId, 'channel') : undefined,
       botCommands,
       enabledReactions: buildApiChatReactions(availableReactions),
+      reactionsLimit,
       sendAsId: defaultSendAs ? getApiChatIdFromMtpPeer(defaultSendAs) : undefined,
       requestsPending,
       recentRequesterIds: recentRequesters?.map((userId) => buildApiPeerId(userId, 'user')),
@@ -1552,9 +1557,7 @@ function updateLocalDb(result: (
 
   if ('messages' in result) {
     result.messages.forEach((message) => {
-      if (message instanceof GramJs.Message && isMessageWithMedia(message)) {
-        addMessageToLocalDb(message);
-      }
+      addMessageToLocalDb(message);
     });
   }
 }
@@ -1569,13 +1572,14 @@ export async function importChatInvite({ hash }: { hash: string }) {
 }
 
 export function setChatEnabledReactions({
-  chat, enabledReactions,
+  chat, enabledReactions, reactionsLimit,
 }: {
-  chat: ApiChat; enabledReactions?: ApiChatReactions;
+  chat: ApiChat; enabledReactions?: ApiChatReactions; reactionsLimit?: number;
 }) {
   return invokeRequest(new GramJs.messages.SetChatAvailableReactions({
     peer: buildInputPeer(chat.id, chat.accessHash),
     availableReactions: buildInputChatReactions(enabledReactions),
+    reactionsLimit,
   }), {
     shouldReturnTrue: true,
   });

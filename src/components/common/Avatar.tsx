@@ -17,6 +17,7 @@ import {
   getChatTitle,
   getPeerStoryHtmlId,
   getUserFullName,
+  getVideoProfilePhotoMediaHash,
   getWebDocumentHash,
   isAnonymousForwardsChat,
   isChatWithRepliesBot,
@@ -120,7 +121,7 @@ const Avatar: FC<OwnProps> = ({
     } else if (photo) {
       imageHash = `photo${photo.id}?size=m`;
       if (photo.isVideo && withVideo) {
-        videoHash = `videoAvatar${photo.id}?size=u`;
+        videoHash = getVideoProfilePhotoMediaHash(photo);
       }
     } else if (webPhoto) {
       imageHash = getWebDocumentHash(webPhoto);

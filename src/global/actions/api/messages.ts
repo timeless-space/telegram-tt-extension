@@ -31,7 +31,7 @@ import {
   RE_TELEGRAM_LINK,
   SERVICE_NOTIFICATIONS_USER_ID,
   SUPPORTED_AUDIO_CONTENT_TYPES,
-  SUPPORTED_IMAGE_CONTENT_TYPES,
+  SUPPORTED_PHOTO_CONTENT_TYPES,
   SUPPORTED_VIDEO_CONTENT_TYPES,
 } from '../../../config';
 import { copyTextToClipboardFromPromise } from '../../../util/clipboard';
@@ -67,10 +67,12 @@ import {
 import {
   addChatMessagesById,
   addChats,
+  addUnreadMentions,
   addUsers,
   deleteSponsoredMessage,
   removeOutlyingList,
   removeRequestedMessageTranslation,
+  removeUnreadMentions,
   replaceSettings,
   replaceThreadParam,
   replaceUserStatuses,
@@ -361,30 +363,55 @@ addActionHandler('sendMessage', (global, actions, payload): ActionReturnType => 
     } = params;
     const byType = splitAttachmentsByType(attachments!);
 
+    let hasSentCaption = false;
     byType.forEach((group, groupIndex) => {
       const groupedAttachments = split(group as ApiAttachment[], MAX_MEDIA_FILES_FOR_ALBUM);
       for (let i = 0; i < groupedAttachments.length; i++) {
-        const [firstAttachment, ...restAttachments] = groupedAttachments[i];
         const groupedId = `${Date.now()}${groupIndex}${i}`;
 
         const isFirst = i === 0 && groupIndex === 0;
+        const isLast = i === groupedAttachments.length - 1 && groupIndex === byType.length - 1;
 
-        sendMessage(global, {
-          ...commonParams,
-          text: isFirst ? text : undefined,
-          entities: isFirst ? entities : undefined,
-          attachment: firstAttachment,
-          groupedId: restAttachments.length > 0 ? groupedId : undefined,
-          wasDrafted: Boolean(draft),
-        });
-
-        restAttachments.forEach((attachment: ApiAttachment) => {
+        if (group[0].quick && !group[0].shouldSendAsFile) {
+          const [firstAttachment, ...restAttachments] = groupedAttachments[i];
           sendMessage(global, {
             ...commonParams,
-            attachment,
-            groupedId,
+            text: isFirst && !hasSentCaption ? text : undefined,
+            entities: isFirst && !hasSentCaption ? entities : undefined,
+            attachment: firstAttachment,
+            groupedId: restAttachments.length > 0 ? groupedId : undefined,
+            wasDrafted: Boolean(draft),
           });
-        });
+          hasSentCaption = true;
+
+          restAttachments.forEach((attachment: ApiAttachment) => {
+            sendMessage(global, {
+              ...commonParams,
+              attachment,
+              groupedId,
+            });
+          });
+        } else {
+          const firstAttachments = groupedAttachments[i].slice(0, -1);
+          const lastAttachment = groupedAttachments[i][groupedAttachments[i].length - 1];
+          firstAttachments.forEach((attachment: ApiAttachment) => {
+            sendMessage(global, {
+              ...commonParams,
+              attachment,
+              groupedId,
+            });
+          });
+
+          sendMessage(global, {
+            ...commonParams,
+            text: isLast && !hasSentCaption ? text : undefined,
+            entities: isLast && !hasSentCaption ? entities : undefined,
+            attachment: lastAttachment,
+            groupedId: firstAttachments.length > 0 ? groupedId : undefined,
+            wasDrafted: Boolean(draft),
+          });
+          hasSentCaption = true;
+        }
       }
     });
   } else {
@@ -523,6 +550,7 @@ addActionHandler('saveDraft', (global, actions, payload): ActionReturnType => {
   const newDraft: ApiDraft = {
     text,
     replyInfo: currentDraft?.replyInfo,
+    effectId: currentDraft?.effectId,
   };
 
   saveDraft({
@@ -595,6 +623,23 @@ addActionHandler('resetDraftReplyInfo', (global, actions, payload): ActionReturn
 
   saveDraft({
     global, chatId, threadId, draft: newDraft, isLocalOnly: Boolean(newDraft),
+  });
+});
+
+addActionHandler('saveEffectInDraft', (global, actions, payload): ActionReturnType => {
+  const {
+    chatId, threadId, effectId,
+  } = payload;
+
+  const currentDraft = selectDraft(global, chatId, threadId);
+
+  const newDraft = {
+    ...currentDraft,
+    effectId,
+  };
+
+  saveDraft({
+    global, chatId, threadId, draft: newDraft, isLocalOnly: true, noLocalTimeUpdate: true,
   });
 });
 
@@ -1076,6 +1121,7 @@ addActionHandler('forwardMessages', (global, actions, payload): ActionReturnType
   global = getGlobal();
   global = updateTabState(global, {
     forwardMessages: {},
+    isShareMessageModalShown: false,
   }, tabId);
   setGlobal(global);
 });
@@ -1408,6 +1454,7 @@ async function sendMessage<T extends GlobalState>(global: T, params: {
   wasDrafted?: boolean;
   lastMessageId?: number;
   isInvertedMedia?: true;
+  effectId?: string;
 }) {
   let currentMessageKey: MessageKey | undefined;
   const progressCallback = params.attachment ? (progress: number, messageKey: MessageKey) => {
@@ -1655,9 +1702,7 @@ async function fetchUnreadMentions<T extends GlobalState>(global: T, chatId: str
   global = addChatMessagesById(global, chat.id, byId);
   global = addUsers(global, buildCollectionByKey(users, 'id'));
   global = addChats(global, buildCollectionByKey(chats, 'id'));
-  global = updateChat(global, chatId, {
-    unreadMentions: [...(chat.unreadMentions || []), ...ids],
-  });
+  global = addUnreadMentions(global, chatId, chat, ids);
 
   setGlobal(global);
 }
@@ -1668,18 +1713,7 @@ addActionHandler('markMentionsRead', (global, actions, payload): ActionReturnTyp
   const chat = selectCurrentChat(global, tabId);
   if (!chat) return;
 
-  const currentUnreadMentions = chat.unreadMentions || [];
-
-  const unreadMentions = currentUnreadMentions.filter((id) => !messageIds.includes(id));
-  const removedCount = currentUnreadMentions.length - unreadMentions.length;
-
-  global = updateChat(global, chat.id, {
-    ...(chat.unreadMentionsCount && {
-      unreadMentionsCount: Math.max(chat.unreadMentionsCount - removedCount, 0) || undefined,
-    }),
-    unreadMentions,
-  });
-
+  global = removeUnreadMentions(global, chat.id, chat, messageIds, true);
   setGlobal(global);
 
   actions.markMessagesRead({ messageIds, tabId });
@@ -1720,12 +1754,10 @@ addActionHandler('readAllMentions', (global, actions, payload): ActionReturnType
 addActionHandler('openUrl', (global, actions, payload): ActionReturnType => {
   const { url, shouldSkipModal, tabId = getCurrentTabId() } = payload;
   const urlWithProtocol = ensureProtocol(url)!;
-  const isStoriesViewerOpen = Boolean(selectTabState(global, tabId).storyViewer.peerId);
 
   if (isDeepLink(urlWithProtocol)) {
-    if (isStoriesViewerOpen) {
-      actions.closeStoryViewer({ tabId });
-    }
+    actions.closeStoryViewer({ tabId });
+    actions.closePaymentModal({ tabId });
 
     actions.openTelegramLink({ url, tabId });
     return;
@@ -1742,9 +1774,7 @@ addActionHandler('openUrl', (global, actions, payload): ActionReturnType => {
     }
 
     if (appConfig.urlAuthDomains.includes(parsedUrl.hostname)) {
-      if (isStoriesViewerOpen) {
-        actions.closeStoryViewer({ tabId });
-      }
+      actions.closeStoryViewer({ tabId });
 
       actions.requestLinkUrlAuth({ url, tabId });
       return;
@@ -1798,11 +1828,12 @@ addActionHandler('openChatOrTopicWithReplyInDraft', (global, actions, payload): 
 
   global = getGlobal();
 
+  const tabState = selectTabState(global, tabId);
+  const replyingInfo = tabState.replyingMessage;
+
   global = updateTabState(global, {
-    forwardMessages: {
-      ...selectTabState(global, tabId).forwardMessages,
-      isModalShown: false,
-    },
+    isShareMessageModalShown: false,
+    replyingMessage: {},
   }, tabId);
   setGlobal(global);
 
@@ -1814,7 +1845,16 @@ addActionHandler('openChatOrTopicWithReplyInDraft', (global, actions, payload): 
   const threadId = topicId || MAIN_THREAD_ID;
   const currentChatId = currentChat.id;
 
-  const currentReplyInfo = selectDraft(global, currentChatId, currentThreadId)?.replyInfo;
+  const newReplyInfo = {
+    type: 'message',
+    replyToMsgId: replyingInfo.messageId,
+    replyToTopId: replyingInfo.toThreadId,
+    replyToPeerId: currentChatId,
+    quoteText: replyingInfo.quoteText,
+  } as ApiInputMessageReplyInfo;
+
+  const currentReplyInfo = replyingInfo.messageId
+    ? newReplyInfo : selectDraft(global, currentChatId, currentThreadId)?.replyInfo;
   if (!currentReplyInfo) return;
 
   if (!selectReplyCanBeSentToChat(global, toChatId, currentChatId, currentReplyInfo)) {
@@ -1867,8 +1907,8 @@ addActionHandler('setForwardChatOrTopic', async (global, actions, payload): Prom
       ...selectTabState(global, tabId).forwardMessages,
       toChatId: chatId,
       toThreadId: topicId,
-      isModalShown: false,
     },
+    isShareMessageModalShown: false,
   }, tabId);
   setGlobal(global);
   actions.openThread({ chatId, threadId: topicId || MAIN_THREAD_ID, tabId });
@@ -1918,6 +1958,7 @@ addActionHandler('forwardStory', (global, actions, payload): ActionReturnType =>
   global = getGlobal();
   global = updateTabState(global, {
     forwardMessages: {},
+    isShareMessageModalShown: false,
   }, tabId);
   setGlobal(global);
 });
@@ -2205,10 +2246,10 @@ function getAttachmentType(attachment: ApiAttachment) {
   const {
     shouldSendAsFile, mimeType,
   } = attachment;
+  if (SUPPORTED_AUDIO_CONTENT_TYPES.has(mimeType)) return 'audio';
   if (shouldSendAsFile) return 'file';
   if (mimeType === GIF_MIME_TYPE) return 'gif';
-  if (SUPPORTED_IMAGE_CONTENT_TYPES.has(mimeType) || SUPPORTED_VIDEO_CONTENT_TYPES.has(mimeType)) return 'media';
-  if (SUPPORTED_AUDIO_CONTENT_TYPES.has(mimeType)) return 'audio';
+  if (SUPPORTED_PHOTO_CONTENT_TYPES.has(mimeType) || SUPPORTED_VIDEO_CONTENT_TYPES.has(mimeType)) return 'media';
   if (attachment.voice) return 'voice';
   return 'file';
 }

@@ -93,6 +93,7 @@ const HEADER_BUTTON_WIDTH = 2.5 * REM; // px (including margin)
 const DEFAULT_ID_PREFIX = 'custom-emoji-set';
 const TOP_REACTIONS_COUNT = 16;
 const RECENT_REACTIONS_COUNT = 32;
+const RECENT_DEFAULT_STATUS_COUNT = 7;
 const FADED_BUTTON_SET_IDS = new Set([RECENT_SYMBOL_SET_ID, FAVORITE_SYMBOL_SET_ID, POPULAR_SYMBOL_SET_ID]);
 const STICKER_SET_IDS_WITH_COVER = new Set([
   RECENT_SYMBOL_SET_ID,
@@ -201,6 +202,7 @@ const CustomEmojiPicker: FC<OwnProps & StateProps> = ({
         .filter((reaction) => !topReactionsSlice.some((topReaction) => isSameReaction(topReaction, reaction)))
         .slice(0, RECENT_REACTIONS_COUNT);
       const cleanAvailableReactions = (availableReactions || [])
+        .filter(({ isInactive }) => !isInactive)
         .map(({ reaction }) => reaction)
         .filter((reaction) => {
           return !topReactionsSlice.some((topReaction) => isSameReaction(topReaction, reaction))
@@ -221,7 +223,9 @@ const CustomEmojiPicker: FC<OwnProps & StateProps> = ({
     } else if (isStatusPicker) {
       const defaultStatusIconsPack = stickerSetsById[defaultStatusIconsId!];
       if (defaultStatusIconsPack?.stickers?.length) {
-        const stickers = (defaultStatusIconsPack.stickers || []).concat(recentCustomEmojis || []);
+        const stickers = defaultStatusIconsPack.stickers
+          .slice(0, RECENT_DEFAULT_STATUS_COUNT)
+          .concat(recentCustomEmojis || []);
         defaultSets.push({
           ...defaultStatusIconsPack,
           stickers,
@@ -390,6 +394,7 @@ const CustomEmojiPicker: FC<OwnProps & StateProps> = ({
     pickerStyles.main_customEmoji,
     IS_TOUCH_ENV ? 'no-scrollbar' : 'custom-scroll',
     pickerListClassName,
+    pickerStyles.hasHeader,
   );
 
   return (

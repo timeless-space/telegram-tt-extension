@@ -6,10 +6,8 @@ import type { GlobalState } from "../../../global/types";
 import type { ISettings, ThreadId } from "../../../types";
 
 import {
-  CONTENT_TYPES_WITH_PREVIEW,
-  DEBUG_LOG_FILENAME,
-  SUPPORTED_AUDIO_CONTENT_TYPES,
-  SUPPORTED_IMAGE_CONTENT_TYPES,
+  CONTENT_TYPES_WITH_PREVIEW, DEBUG_LOG_FILENAME, SUPPORTED_AUDIO_CONTENT_TYPES,
+  SUPPORTED_PHOTO_CONTENT_TYPES,
   SUPPORTED_VIDEO_CONTENT_TYPES,
 } from "../../../config";
 import {
@@ -155,14 +153,10 @@ const AttachMenu: FC<OwnProps> = ({
 
   const handleQuickSelect = useLastCallback(() => {
     openSystemFilesDialog(
-      Array.from(
-        canSendVideoAndPhoto
-          ? CONTENT_TYPES_WITH_PREVIEW
-          : canSendPhotos
-          ? SUPPORTED_IMAGE_CONTENT_TYPES
-          : SUPPORTED_VIDEO_CONTENT_TYPES
-      ).join(","),
-      (e) => handleFileSelect(e, true)
+      Array.from(canSendVideoAndPhoto ? CONTENT_TYPES_WITH_PREVIEW : (
+        canSendPhotos ? SUPPORTED_PHOTO_CONTENT_TYPES : SUPPORTED_VIDEO_CONTENT_TYPES
+      )).join(','),
+      (e) => handleFileSelect(e, true),
     );
   });
 

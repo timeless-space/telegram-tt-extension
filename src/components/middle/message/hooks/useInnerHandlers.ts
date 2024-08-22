@@ -39,7 +39,7 @@ export default function useInnerHandlers(
   } = getActions();
 
   const {
-    id: messageId, forwardInfo, groupedId,
+    id: messageId, forwardInfo, groupedId, content: { paidMedia },
   } = message;
 
   const {
@@ -98,28 +98,30 @@ export default function useInnerHandlers(
     openMediaViewer({
       chatId,
       threadId,
-      mediaId: messageId,
+      messageId,
       origin: isScheduled ? MediaViewerOrigin.ScheduledInline : MediaViewerOrigin.Inline,
     });
   });
   const openMediaViewerWithPhotoOrVideo = useLastCallback((withDynamicLoading: boolean): void => {
+    if (paidMedia && !paidMedia.isBought) return;
     if (withDynamicLoading) {
       searchChatMediaMessages({ chatId, threadId, currentMediaMessageId: messageId });
     }
     openMediaViewer({
       chatId,
       threadId,
-      mediaId: messageId,
+      messageId,
       origin: isScheduled ? MediaViewerOrigin.ScheduledInline : MediaViewerOrigin.Inline,
       withDynamicLoading,
     });
   });
   const handlePhotoMediaClick = useLastCallback((): void => {
-    const withDynamicLoading = !isScheduled;
+    const withDynamicLoading = !isScheduled && !paidMedia;
     openMediaViewerWithPhotoOrVideo(withDynamicLoading);
   });
-  const handleVideoMediaClick = useLastCallback((id: number, isGif?: boolean): void => {
-    const withDynamicLoading = !isGif && !isScheduled;
+  const handleVideoMediaClick = useLastCallback(() => {
+    const isGif = message.content?.video?.isGif;
+    const withDynamicLoading = !isGif && !isScheduled && !paidMedia;
     openMediaViewerWithPhotoOrVideo(withDynamicLoading);
   });
 
@@ -127,14 +129,17 @@ export default function useInnerHandlers(
     openAudioPlayer({ chatId, messageId });
   });
 
-  const handleAlbumMediaClick = useLastCallback((albumMessageId: number): void => {
+  const handleAlbumMediaClick = useLastCallback((albumMessageId: number, albumIndex?: number): void => {
+    if (paidMedia && !paidMedia.isBought) return;
+
     searchChatMediaMessages({ chatId, threadId, currentMediaMessageId: messageId });
     openMediaViewer({
       chatId,
       threadId,
-      mediaId: albumMessageId,
+      messageId: albumMessageId,
+      mediaIndex: albumIndex,
       origin: isScheduled ? MediaViewerOrigin.ScheduledAlbum : MediaViewerOrigin.Album,
-      withDynamicLoading: true,
+      withDynamicLoading: !paidMedia,
     });
   });
 

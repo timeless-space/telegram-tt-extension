@@ -1,5 +1,6 @@
 import type {
-  ApiChat, ApiMessage, ApiPollResult, ApiReactions,
+  ApiChat, ApiMediaExtendedPreview, ApiMessage, ApiPollResult, ApiReactions,
+  MediaContent,
 } from '../../../api/types';
 import type { ThreadId } from '../../../types';
 import type { RequiredGlobalActions } from '../../index';
@@ -29,6 +30,7 @@ import {
   clearMessageTranslation,
   deleteChatMessages,
   deleteChatScheduledMessages,
+  deletePeerPhoto,
   deleteQuickReply,
   deleteQuickReplyMessages,
   deleteTopic,
@@ -673,29 +675,49 @@ addActionHandler('apiUpdate', (global, actions, update): ActionReturnType => {
 
     case 'updateMessageExtendedMedia': {
       const {
-        chatId, id, media, preview,
+        chatId, id, extendedMedia, isBought,
       } = update;
       const message = selectChatMessage(global, chatId, id);
       const chat = selectChat(global, update.chatId);
 
       if (!chat || !message) return;
 
-      if (preview) {
-        if (!message.content.invoice) return;
+      if (message.content.invoice) {
+        const media = extendedMedia[0];
+        if ('mediaType' in media && media.mediaType === 'extendedMediaPreview') {
+          if (!message.content.invoice) return;
+          global = updateChatMessage(global, chatId, id, {
+            content: {
+              ...message.content,
+              invoice: {
+                ...message.content.invoice,
+                extendedMedia: media,
+              },
+            },
+          });
+          setGlobal(global);
+        } else {
+          const content = media as MediaContent;
+          global = updateChatMessage(global, chatId, id, {
+            content: {
+              ...content,
+            },
+          });
+          setGlobal(global);
+        }
+      }
+
+      if (message.content.paidMedia) {
+        const paidMediaUpdate = isBought ? { isBought, extendedMedia }
+          : { extendedMedia: extendedMedia as ApiMediaExtendedPreview[], isBought: undefined };
+
         global = updateChatMessage(global, chatId, id, {
           content: {
             ...message.content,
-            invoice: {
-              ...message.content.invoice,
-              extendedMedia: preview,
+            paidMedia: {
+              ...message.content.paidMedia,
+              ...paidMediaUpdate,
             },
-          },
-        });
-        setGlobal(global);
-      } else if (media) {
-        global = updateChatMessage(global, chatId, id, {
-          content: {
-            ...media,
           },
         });
         setGlobal(global);
@@ -1050,6 +1072,10 @@ export function deleteMessages<T extends GlobalState>(
         return;
       }
 
+      if (message.content.action?.photo) {
+        global = deletePeerPhoto(global, chatId, message.content.action.photo.id, true);
+      }
+
       global = updateThreadUnread(global, actions, message, true);
 
       const threadId = selectThreadIdFromMessage(global, message);
@@ -1123,6 +1149,10 @@ export function deleteMessages<T extends GlobalState>(
             global = updateChatLastMessageId(global, commonBoxChatId, newLastSavedDialogMessage.id, 'saved');
           }
         }
+      }
+
+      if (message?.content.action?.photo) {
+        global = deletePeerPhoto(global, commonBoxChatId, message.content.action.photo.id, true);
       }
 
       setTimeout(() => {
