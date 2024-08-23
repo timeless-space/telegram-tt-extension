@@ -1,5 +1,5 @@
 .menuContent {
-  --offset-y: 3.25rem !important;
+  --offset-y: 5.25rem !important;
   --offset-x: auto !important;
   --color-text: var(--color-primary);
   --border-radius-default: 1.25rem;
@@ -12,8 +12,7 @@
 
   :global(body:not(.no-menu-blur)) & {
     --color-background: var(--color-background-compact-menu);
-
-    backdrop-filter: blur(25px);
+    // backdrop-filter: blur(25px);
   }
 
   @media (max-width: 26rem) {

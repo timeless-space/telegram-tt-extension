@@ -27,7 +27,8 @@ export function animateOpening(isArchived?: boolean) {
   }
 
   const { bottom: headerBottom, right: headerRight } = leftMainHeader.getBoundingClientRect();
-  const toTop = headerBottom + RIBBON_OFFSET;
+  //[Animation] Fix animation scroll for story (margintop: 89)
+  const toTop = headerBottom + RIBBON_OFFSET - 89;
 
   // Toggle avatars are in the reverse order
   const lastToggleAvatar = toggleAvatars[0];
@@ -191,7 +192,7 @@ export function animateClosing(isArchived?: boolean) {
     if (!toggleAvatar) return;
 
     const {
-      top: fromTop,
+      top,
       left: fromLeft,
       width: fromWidth,
     } = peer.getBoundingClientRect();
@@ -199,8 +200,12 @@ export function animateClosing(isArchived?: boolean) {
     let {
       left: toLeft,
       width: toWidth,
-      top: toTop,
+      top: avtTop,
     } = toggleAvatar.getBoundingClientRect();
+
+    //[Animation] Fix animation scroll for story
+    const fromTop = top - 89
+    let toTop = avtTop - 89
 
     if (fromLeft > headerRight) {
       return;
