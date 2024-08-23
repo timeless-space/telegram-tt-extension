@@ -1056,7 +1056,7 @@ const Message: FC<OwnProps & StateProps> = ({
       noMediaCorners && 'no-media-corners',
     );
     const hasCustomAppendix = isLastInGroup
-    && (!hasText || (isInvertedMedia && !hasFactCheck && !hasReactions)) && !asForwarded && !withCommentButton;
+      && (!hasText || (isInvertedMedia && !hasFactCheck && !hasReactions)) && !asForwarded && !withCommentButton;
     const textContentClass = buildClassName(
       'text-content',
       'clearfix',
@@ -1635,9 +1635,9 @@ const Message: FC<OwnProps & StateProps> = ({
           {withAppendix && <MessageAppendix isOwn={isOwn} />}
           {withQuickReactionButton && quickReactionPosition === 'in-content' && renderQuickReactionButton()}
         </div>
-        {/* {message.inlineButtons && (
+        {message.inlineButtons && (
           <InlineButtons message={message} onClick={clickBotInlineButton} />
-        )} */}
+        )}
         {reactionsPosition === 'outside' && !isStoryMention && (
           <Reactions
             message={reactionMessage!}

@@ -1404,7 +1404,7 @@ const Composer: FC<OwnProps & StateProps> = ({
   const isComposerHasFocus = isBotKeyboardOpen || isSymbolMenuOpen || isEmojiTooltipOpen || isSendAsMenuOpen
     || isMentionTooltipOpen || isInlineBotTooltipOpen || isBotCommandMenuOpen || isAttachMenuOpen
     || isStickerTooltipOpen || isChatCommandTooltipOpen || isCustomEmojiTooltipOpen || isBotMenuButtonOpen
-  || isCustomSendMenuOpen || Boolean(activeVoiceRecording) || attachments.length > 0 || isInputHasFocus;
+    || isCustomSendMenuOpen || Boolean(activeVoiceRecording) || attachments.length > 0 || isInputHasFocus;
   const isReactionSelectorOpen = isComposerHasFocus && !isReactionPickerOpen && isInStoryViewer && !isAttachMenuOpen
     && !isSymbolMenuOpen;
   const placeholderForForumAsMessages = chat?.isForum && chat?.isForumAsMessages && threadId === MAIN_THREAD_ID
@@ -1579,7 +1579,7 @@ const Composer: FC<OwnProps & StateProps> = ({
 
   const handleRemoveEffect = useLastCallback(() => { saveEffectInDraft({ chatId, threadId, effectId: undefined }); });
 
-  const handleStopEffect = useLastCallback(() => { hideEffectInComposer({ }); });
+  const handleStopEffect = useLastCallback(() => { hideEffectInComposer({}); });
 
   const onSend = useMemo(() => {
     switch (mainButtonState) {
@@ -1747,14 +1747,14 @@ const Composer: FC<OwnProps & StateProps> = ({
         <div className={buildClassName('message-input-wrapper', getPeerColorClass(currentUser))}>
           {isInMessageList && (
             <>
-              {/* {withBotMenuButton && (
+              {withBotMenuButton && (
                 <BotMenuButton
                   isOpen={isBotMenuButtonOpen}
                   text={botMenuButton.text}
                   isDisabled={Boolean(activeVoiceRecording)}
                   onClick={handleClickBotMenu}
                 />
-              )} */}
+              )}
 
               {withBotCommands && (
                 <ResponsiveHoverButton
@@ -2136,7 +2136,7 @@ export default memo(withGlobal<OwnProps>(
 
     const isContactRequirePremium = selectUserFullInfo(global, chatId)?.isContactRequirePremium;
     const areEffectsSupported = isChatWithUser && !isChatWithBot
-    && !isInScheduledList && !isChatWithSelf && type !== 'story' && chatId !== SERVICE_NOTIFICATIONS_USER_ID;
+      && !isInScheduledList && !isChatWithSelf && type !== 'story' && chatId !== SERVICE_NOTIFICATIONS_USER_ID;
     const canPlayEffect = selectPerformanceSettingsValue(global, 'stickerEffects');
     const shouldPlayEffect = tabState.shouldPlayEffectInComposer;
     const effectId = areEffectsSupported && draft?.effectId;
