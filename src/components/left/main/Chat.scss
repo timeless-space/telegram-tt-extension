@@ -57,7 +57,7 @@
     &:not(.has-ripple):not(.is-static),
     body.no-page-transitions & {
       .ListItem-button:active {
-        --background-color: var(--color-chat-hover) !important;
+        --background-color: transparent !important;
       }
     }
   }
