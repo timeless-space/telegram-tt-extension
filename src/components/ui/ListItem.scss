@@ -1,5 +1,10 @@
 .ListItem {
   position: relative;
+  transition: 0.2s background-color linear;
+
+  &:hover {
+    background-color: var(--color-interactive-element-hover);
+  }
 
   body.is-ios &,
   body.is-android & {
@@ -79,14 +84,14 @@
       border-radius: 0;
     }
 
-    > .ListItem-main-icon {
+    >.ListItem-main-icon {
       font-size: 1.5rem;
       margin-inline-start: 0.125rem;
       margin-inline-end: 1.25rem;
       color: var(--color-text-secondary);
     }
 
-    > .Switcher {
+    >.Switcher {
       margin-left: auto;
     }
   }
@@ -119,7 +124,7 @@
   }
 
   &.multiline {
-    .ListItem-button > .ListItem-main-icon {
+    .ListItem-button>.ListItem-main-icon {
       position: relative;
     }
   }
@@ -141,6 +146,7 @@
       }
 
       @media (hover: hover) {
+
         &:hover,
         &:focus {
           // --background-color: var(--color-chat-hover);
@@ -156,6 +162,7 @@
   }
 
   @media (min-width: 600px) {
+
     &:not(.has-ripple):not(.is-static),
     body.no-page-transitions & {
       .ListItem-button:active {
@@ -208,6 +215,7 @@
   }
 
   &.chat-item-clickable {
+
     body.is-ios &,
     body.is-macos & {
       --color-text-secondary: var(--color-text-secondary);
@@ -351,6 +359,7 @@
     .last-message,
     .status,
     .typing-status {
+
       body.is-ios &,
       body.is-macos & {
         font-size: 0.9375rem;
@@ -367,7 +376,7 @@
         margin-right: 0;
       }
 
-      .info > .status {
+      .info>.status {
         width: 100%;
       }
     }
@@ -492,7 +501,7 @@
       line-height: 1.5rem;
       color: var(--color-text-secondary);
 
-      & + .subtitle {
+      &+.subtitle {
         margin-top: -0.25rem;
       }
 
